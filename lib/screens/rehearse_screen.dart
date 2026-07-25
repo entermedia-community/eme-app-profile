@@ -123,6 +123,14 @@ class _RehearseScreenState extends State<RehearseScreen> {
           if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
           if (incomingMsg.message != null && incomingMsg.message!.isNotEmpty) {
             if (!mounted) return;
+
+            if (incomingMsg.messageType == MessageType.progressupdate) {
+              widget.tutorial.progress = TutorialProgress.fromJson(
+                incomingMsg.rawJson,
+              );
+              return;
+            }
+
             setState(() {
               final msgId = incomingMsg.messageId;
               final existingIndex = (msgId != null && msgId.isNotEmpty)

@@ -11,6 +11,7 @@ enum MessageType {
   usercomment,
   end,
   agentcomment,
+  progressupdate,
 }
 
 class ChatMessage {

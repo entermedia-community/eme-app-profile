@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:testu_cl/models/topic.dart';
 import 'chat_message.dart';
@@ -16,9 +17,18 @@ class TutorialProgress {
 
   factory TutorialProgress.fromJson(Map<String, dynamic> json) {
     return TutorialProgress(
-      beginnerProgress: (json['beginnerprogress'] as num?)?.toDouble() ?? 0.0,
-      competentProgress: (json['competentprogress'] as num?)?.toDouble() ?? 0.0,
-      expertProgress: (json['expertprogress'] as num?)?.toDouble() ?? 0.0,
+      beginnerProgress: max(
+        0,
+        (json['beginnerprogress'] as num?)?.toDouble() ?? 0.0,
+      ),
+      competentProgress: max(
+        0,
+        (json['competentprogress'] as num?)?.toDouble() ?? 0.0,
+      ),
+      expertProgress: max(
+        0,
+        (json['expertprogress'] as num?)?.toDouble() ?? 0.0,
+      ),
     );
   }
 
@@ -59,7 +69,7 @@ class Tutorial {
   final double answersForgotten;
   final DateTime lastReviewed;
 
-  final TutorialProgress progress;
+  TutorialProgress progress;
 
   Tutorial({
     required this.id,
