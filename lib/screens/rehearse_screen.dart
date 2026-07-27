@@ -121,16 +121,18 @@ class _RehearseScreenState extends State<RehearseScreen> {
         ) {
           debugPrint("ChatSocketService incomingMsg: ${incomingMsg.toJson()}");
           if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
-          if (incomingMsg.message != null && incomingMsg.message!.isNotEmpty) {
-            if (!mounted) return;
+          if (!mounted) return;
 
-            if (incomingMsg.messageType == MessageType.progressupdate) {
+          if (incomingMsg.messageType == MessageType.progressupdate) {
+            setState(() {
               widget.tutorial.progress = TutorialProgress.fromJson(
                 incomingMsg.rawJson,
               );
-              return;
-            }
+            });
+            return;
+          }
 
+          if (incomingMsg.message != null && incomingMsg.message!.isNotEmpty) {
             setState(() {
               final msgId = incomingMsg.messageId;
               final existingIndex = (msgId != null && msgId.isNotEmpty)
@@ -223,13 +225,13 @@ class _RehearseScreenState extends State<RehearseScreen> {
           setState(() {
             _stage = 'explain_and_followup';
           });
-          _scrollToBottom(jump: true);
         }
       }
 
       setState(() {
         _isLoading = false;
       });
+      _scrollToBottom();
     } catch (e) {
       setState(() {
         _questions = [];
@@ -250,19 +252,14 @@ class _RehearseScreenState extends State<RehearseScreen> {
     super.dispose();
   }
 
-  void _scrollToBottom({bool jump = false}) {
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        if (jump) {
-          _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-          return;
-        }
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      if (!mounted || !_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -1302,11 +1299,13 @@ class _RehearseScreenState extends State<RehearseScreen> {
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
+            reverse: true,
             padding: const EdgeInsets.all(24.0),
             itemCount: _messages.length,
             itemBuilder: (context, index) {
-              final message = _messages[index];
-              final isLast = index == _messages.length - 1;
+              final messageIndex = _messages.length - 1 - index;
+              final message = _messages[messageIndex];
+              final isLast = messageIndex == _messages.length - 1;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Column(children: _buildChatMessageItem(message, isLast)),

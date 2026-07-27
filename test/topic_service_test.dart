@@ -280,26 +280,24 @@ void main() {
     test('fetchTutorChannels parses response correctly', () async {
       final mockResponseData = {
         "response": {"status": "ok", "userid": "admin"},
-        "channels": [
-          {
-            "id": "AZ-Aa2jqS4Q4NNw_6QkY",
-            "channeltype": "agenttutorchat",
-            "chatapplicationid": "site/find",
-            "name": "",
-            "dataid": "AZ-AEabUFpZTNQV7lyIV",
-            "searchtype": "entitytutorial",
-            "user": "admin",
-            "refreshdate": "2026-07-20 22:45:49 +0600",
-            "date": "",
-          },
-        ],
+        "channel": {
+          "id": "AZ-Aa2jqS4Q4NNw_6QkY",
+          "channeltype": "agenttutorchat",
+          "chatapplicationid": "site/find",
+          "name": "",
+          "dataid": "AZ-AEabUFpZTNQV7lyIV",
+          "searchtype": "entitytutorial",
+          "user": "admin",
+          "refreshdate": "2026-07-20 22:45:49 +0600",
+          "date": "",
+        },
       };
 
       final mockClient = MockClient((request) async {
         expect(
           request.url.toString(),
           contains(
-            '/views/modules/entitytutorial/editors/aichatsearch/tutorsessions.json?tutorialid=AZ-AEabUFpZTNQV7lyIV',
+            '/views/modules/entitytutorial/editors/aichatsearch/tutorsession.json?tutorialid=AZ-AEabUFpZTNQV7lyIV',
           ),
         );
         return http.Response(

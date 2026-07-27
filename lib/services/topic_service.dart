@@ -173,8 +173,11 @@ class TopicService {
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
         if (decoded is Map<String, dynamic>) {
-          final channel = decoded['channel'] as dynamic;
-          return TutorChannel.fromJson(channel as Map<String, dynamic>);
+          final channel = decoded['channel'];
+          if (channel is Map<String, dynamic>) {
+            return TutorChannel.fromJson(channel);
+          }
+          return null;
         } else {
           throw FormatException('Unexpected response format from $targetUrl');
         }

@@ -87,6 +87,10 @@ class ChatMessage {
       mainMessage = messageJson['content']?.toString() ?? '';
     } catch (_) {}
 
+    if (rawMessageType == 'progress' || rawMessageType == 'progress_update') {
+      rawMessageType = 'progressupdate';
+    }
+
     final messageType = MessageType.values.firstWhere(
       (element) => element.name.toLowerCase() == rawMessageType,
       orElse: () => MessageType.text,
@@ -182,7 +186,7 @@ class ChatMessage {
   }
 
   String? get assetCaption {
-    final cap = rawJson['content'];
+    final cap = rawJson['content'] ?? rawJson['caption'];
     if (cap != null && cap.toString().isNotEmpty) {
       return cap.toString();
     }

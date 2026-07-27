@@ -43,7 +43,7 @@ void main() {
     });
 
     test('ChatMessage.toJson generates expected payload', () {
-      const msg = ChatMessage(
+      final msg = ChatMessage(
         messageId: 'msg_999',
         channel: 'channel_test',
         userId: 'user_1',
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('ChatMessage copyWith preserves interactive state and selectedOptionIndex', () {
-      const msg = ChatMessage(
+      final msg = ChatMessage(
         messageId: 'q_1',
         messageType: MessageType.question,
         interactive: true,
@@ -93,6 +93,24 @@ void main() {
       expect(msg.assetThumbnail, equals('https://example.com/thumb.png'));
       expect(msg.assetUrl, equals('https://example.com/full.png'));
       expect(msg.assetCaption, equals('Test Asset'));
+    });
+
+    test('ChatMessage parses messagetype progress and progressupdate correctly', () {
+      final jsonProgress = {
+        'messagetype': 'progress',
+        'beginnerprogress': 0.5,
+        'competentprogress': 0.8,
+        'expertprogress': 0.2,
+      };
+      final msg1 = ChatMessage.fromJson(jsonProgress);
+      expect(msg1.messageType, equals(MessageType.progressupdate));
+
+      final jsonProgressUpdate = {
+        'messagetype': 'progressupdate',
+        'beginnerprogress': 0.6,
+      };
+      final msg2 = ChatMessage.fromJson(jsonProgressUpdate);
+      expect(msg2.messageType, equals(MessageType.progressupdate));
     });
   });
 
