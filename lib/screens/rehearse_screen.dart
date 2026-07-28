@@ -389,13 +389,14 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Future<void> _tutorialContinue() async {
-    await TopicService().continueTutorial(
-      tutorialId: widget.tutorial.id,
-      channel: _messages.last.channel,
-      sectionId: _messages.last.sectionId,
-      componentId: _messages.last.componentId,
-    );
-    _scrollToBottom();
+    logPrint("continue tutorial last message: ${_messages.last.toJson()}");
+    // await TopicService().continueTutorial(
+    //   tutorialId: widget.tutorial.id,
+    //   channel: _messages.last.channel,
+    //   sectionId: _messages.last.sectionId,
+    //   componentId: _messages.last.componentId,
+    // );
+    // _scrollToBottom();
   }
 
   double _calculateScorePercentage() {

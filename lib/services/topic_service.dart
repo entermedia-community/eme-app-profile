@@ -18,7 +18,8 @@ class TopicService {
   }) : _client = client ?? http.Client();
 
   Future<List<Topic>> fetchTopics({bool fallbackToMock = true}) async {
-    final targetUrl = "$siteRoot/mediadb/services/topic/topics.json";
+    final targetUrl =
+        "$siteRoot/mediadb/services/module/entitytopic/topics.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -64,7 +65,7 @@ class TopicService {
 
   Future<List<Tutorial>> fetchTutorialsForTopic(String topicId) async {
     final targetUrl =
-        "$siteRoot/mediadb/services/topic/tutorials.json?entitytopic=$topicId";
+        "$siteRoot/mediadb/services/module/entitytutorial/tutorials.json?entitytopic=$topicId";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -115,7 +116,7 @@ class TopicService {
 
   Future<TutorialDetail> fetchTutorialDetail(String tutorialId) async {
     final targetUrl =
-        "$siteRoot/mediadb/services/topic/tutorial.json?entitytutorial=$tutorialId";
+        "$siteRoot/mediadb/services/module/entitytutorial/tutorial.json?entitytutorial=$tutorialId";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -156,7 +157,7 @@ class TopicService {
 
   Future<TutorChannel?> fetchTutorChannel(String tutorialId) async {
     final targetUrl =
-        "$siteRoot/find/views/modules/entitytutorial/editors/aichatsearch/tutorsession.json?tutorialid=$tutorialId";
+        "$siteRoot/mediadb/services/module/entitytutorial/tutorsession.json?tutorialid=$tutorialId";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -203,7 +204,7 @@ class TopicService {
     String? fromBeforeId,
   }) async {
     final targetUrl =
-        "$siteRoot/find/views/modules/entitytutorial/editors/aichatsearch/tutorhistory.json?channel=$channelId${fromBeforeId != null ? '&fromid=$fromBeforeId' : ''}";
+        "$siteRoot/mediadb/services/module/entitytutorial/tutorhistory.json?channel=$channelId${fromBeforeId != null ? '&fromid=$fromBeforeId' : ''}";
     final url = Uri.parse(targetUrl);
 
     try {
