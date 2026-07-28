@@ -22,14 +22,12 @@ import '../utils/language_helper.dart';
 enum MessageStage {
   loading,
   error,
-  welcome,
   selectOption,
   finished,
   explainAndFollowup;
 
   bool get isLoading => this == MessageStage.loading;
   bool get isError => this == MessageStage.error;
-  bool get isWelcome => this == MessageStage.welcome;
   bool get isSelectOption => this == MessageStage.selectOption;
   bool get isFinished => this == MessageStage.finished;
   bool get isExplainAndFollowup => this == MessageStage.explainAndFollowup;
@@ -1033,8 +1031,34 @@ class _RehearseScreenState extends State<RehearseScreen> {
             ] else if (_stage.isError) ...[
               Center(
                 child: Text(
-                  'Error loading chat. Please try again later.',
+                  'An error occured while loading the chat.',
                   style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: _loadTutorialDetail,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Try Again',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(Icons.refresh, size: 16, color: Colors.white),
+                  ],
                 ),
               ),
             ] else if (_stage.isExplainAndFollowup) ...[
