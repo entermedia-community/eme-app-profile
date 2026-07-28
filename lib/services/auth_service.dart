@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:testu_cl/utils/log.dart';
 import '../models/user.dart';
 
 class AuthService {
@@ -22,9 +22,7 @@ class AuthService {
       try {
         await fetchUser();
       } catch (e) {
-        if (kDebugMode) {
-          print('Error fetching user on startup: $e');
-        }
+        logError('Error fetching user on startup: $e', e as Exception);
       }
     }
   }
@@ -51,7 +49,7 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        debugPrint("data: $data");
+        logPrint("data: $data");
         final userJson = data['user'] as Map<String, dynamic>;
         _currentUser = User.fromJson(userJson);
         if (_currentUser!.id.isNotEmpty) {
@@ -60,9 +58,7 @@ class AuthService {
         return _currentUser;
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Failed to fetch user: $e');
-      }
+      logError('Failed to fetch user: $e', e as Exception);
     }
     return null;
   }

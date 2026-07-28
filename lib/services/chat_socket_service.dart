@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:openinsitute_core/openinsitute_core.dart';
+import 'package:testu_cl/utils/log.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/chat_message.dart';
 import 'auth_service.dart';
@@ -63,9 +63,7 @@ class ChatSocketService {
     _entermediakey = entermediakey ?? _resolveToken();
 
     if (_userId == null || _userId!.isEmpty) {
-      if (kDebugMode) {
-        print('ChatSocketService: cannot connect without a valid userId');
-      }
+      logPrint('ChatSocketService: cannot connect without a valid userId');
       return;
     }
 
@@ -92,9 +90,7 @@ class ChatSocketService {
         entermediakey: _entermediakey,
       );
 
-      if (kDebugMode) {
-        print('ChatSocketService connecting to: $wsUri');
-      }
+      logPrint('ChatSocketService connecting to: $wsUri');
 
       _channel = WebSocketChannel.connect(wsUri);
       await _channel!.ready;
@@ -109,9 +105,7 @@ class ChatSocketService {
         cancelOnError: false,
       );
     } catch (e) {
-      if (kDebugMode) {
-        print('ChatSocketService connection error: $e');
-      }
+      logError('ChatSocketService connection error: $e', e as Exception);
       _handleDisconnectAndReconnect();
     }
   }
@@ -147,24 +141,18 @@ class ChatSocketService {
   void sendRaw(Map<String, dynamic> data) {
     if (_connectionState != SocketConnectionState.connected ||
         _channel == null) {
-      if (kDebugMode) {
-        print(
-          'ChatSocketService: Socket not connected. Message dropped: $data',
-        );
-      }
+      logPrint(
+        'ChatSocketService: Socket not connected. Message dropped: $data',
+      );
       return;
     }
 
     try {
       final jsonStr = json.encode(data);
       _channel!.sink.add(jsonStr);
-      if (kDebugMode) {
-        print('ChatSocketService sent: $jsonStr');
-      }
+      logPrint('ChatSocketService sent: $jsonStr');
     } catch (e) {
-      if (kDebugMode) {
-        print('ChatSocketService error sending message: $e');
-      }
+      logError('ChatSocketService error sending message: $e', e as Exception);
     }
   }
 
@@ -183,9 +171,7 @@ class ChatSocketService {
     try {
       if (rawData is String) {
         final decoded = json.decode(rawData);
-        debugPrint(
-          'ChatSocketService error parsing incoming message: $decoded',
-        );
+        logPrint('ChatSocketService decoded: $decoded');
         if (decoded is Map<String, dynamic>) {
           _rawEventController.add(decoded);
           final chatMessage = ChatMessage.fromJson(decoded);
@@ -193,9 +179,10 @@ class ChatSocketService {
         }
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('ChatSocketService error parsing incoming message: $e');
-      }
+      logError(
+        'ChatSocketService error parsing incoming message: $e',
+        e as Exception,
+      );
     }
   }
 
@@ -222,16 +209,12 @@ class ChatSocketService {
   }
 
   void _onSocketError(dynamic error) {
-    if (kDebugMode) {
-      print('ChatSocketService stream error: $error');
-    }
+    logError('ChatSocketService stream error: $error', error as Exception);
     _handleDisconnectAndReconnect();
   }
 
   void _onSocketDone() {
-    if (kDebugMode) {
-      print('ChatSocketService connection closed.');
-    }
+    logPrint('ChatSocketService connection closed.');
     _handleDisconnectAndReconnect();
   }
 

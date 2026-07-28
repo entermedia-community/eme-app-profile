@@ -9,6 +9,7 @@ import 'package:testu_cl/models/topic.dart';
 import 'package:testu_cl/services/auth_service.dart';
 import 'package:testu_cl/services/chat_socket_service.dart';
 import 'package:testu_cl/services/topic_service.dart';
+import 'package:testu_cl/utils/log.dart';
 import 'package:testu_cl/widgets/common_widgets.dart';
 import 'package:testu_cl/widgets/fullscreen_mediaviewer.dart';
 import 'package:testu_cl/widgets/asset_message_widget.dart';
@@ -17,6 +18,20 @@ import 'package:transparent_image/transparent_image.dart';
 import '../models/tutor_channel.dart';
 import '../models/tutorial.dart';
 import '../utils/language_helper.dart';
+
+enum MessageStage {
+  loading,
+  welcome,
+  selectOption,
+  finished,
+  explainAndFollowup;
+
+  bool get isLoading => this == MessageStage.loading;
+  bool get isWelcome => this == MessageStage.welcome;
+  bool get isSelectOption => this == MessageStage.selectOption;
+  bool get isFinished => this == MessageStage.finished;
+  bool get isExplainAndFollowup => this == MessageStage.explainAndFollowup;
+}
 
 class RehearseScreen extends StatefulWidget {
   final Tutorial tutorial;
@@ -56,7 +71,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
   final List<ChatMessage> _messages = [];
   int? _tempSelectedAnswerIndex;
   String? _tempConfidenceLevel;
-  String _stage = 'welcome';
+  MessageStage _stage = MessageStage.loading;
 
   @override
   void initState() {
@@ -119,7 +134,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
         _socketSubscription = ChatSocketService().messageStream.listen((
           incomingMsg,
         ) {
-          debugPrint("ChatSocketService incomingMsg: ${incomingMsg.toJson()}");
+          logPrint("ChatSocketService incomingMsg: ${incomingMsg.toJson()}");
           if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
           if (!mounted) return;
 
@@ -182,7 +197,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
               }
 
               if (incomingMsg.messageType == MessageType.question) {
-                debugPrint("$incomingMsg");
+                logPrint("$incomingMsg");
                 final question = RehearseQuestion.fromChatMessage(incomingMsg);
                 final qExistingIndex = (msgId != null && msgId.isNotEmpty)
                     ? _questions.indexWhere(
@@ -197,16 +212,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   _currentIndex = _questions.length - 1;
                   _tempSelectedAnswerIndex = null;
                   _tempConfidenceLevel = null;
-                  _stage = 'select_option';
+                  _stage = MessageStage.selectOption;
                 }
               } else if (incomingMsg.messageType == MessageType.end) {
                 setState(() {
-                  _stage = 'finished';
+                  _stage = MessageStage.finished;
                 });
                 _isFinished = true;
               } else {
                 setState(() {
-                  _stage = 'explain_and_followup';
+                  _stage = MessageStage.explainAndFollowup;
                 });
               }
             });
@@ -223,7 +238,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
           _messages.last.sectionId = lastFoundSectionId;
           _messages.last.componentId = lastFoundComponentId;
           setState(() {
-            _stage = 'explain_and_followup';
+            _stage = MessageStage.explainAndFollowup;
           });
         }
       }
@@ -308,7 +323,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
     setState(() {
       _selectedAnswers[_currentIndex] = _tempSelectedAnswerIndex;
-      _stage = 'explain_and_followup';
+      _stage = MessageStage.explainAndFollowup;
 
       final targetId = activeQuestion.messageId ?? activeQuestion.questionId;
       if (targetId != null && targetId.isNotEmpty) {
@@ -812,9 +827,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     onTap: isInteractive
                         ? () {
                             _selectOption(optIndex);
-                            if (_stage != 'select_option') {
+                            if (!_stage.isSelectOption) {
                               setState(() {
-                                _stage = 'select_option';
+                                _stage = MessageStage.selectOption;
                               });
                             }
                           }
@@ -965,7 +980,121 @@ class _RehearseScreenState extends State<RehearseScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_stage == 'select_option') ...[
+            if (_stage.isLoading) ...[
+              const SizedBox(
+                height: 48,
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF27121)),
+                ),
+              ),
+            ] else if (_stage.isExplainAndFollowup) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _followUpController,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      onSubmitted: (_) => _sendFollowUp(),
+                      decoration: InputDecoration(
+                        hintText: 'Ask a follow-up question...',
+                        hintStyle: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 14,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.04),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            width: 1.5,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            width: 1.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(
+                            color: const Color(0xFFF27121),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _sendFollowUp,
+                    icon: const Icon(Icons.send_rounded),
+                    color: const Color(0xFFF27121),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.04),
+                      padding: const EdgeInsets.all(12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: const Color(0xFFF27121),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF27121).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _tutorialContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Contnue',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ] else if (_stage.isSelectOption) ...[
               const Padding(
                 padding: EdgeInsets.only(left: 4.0, bottom: 12.0),
                 child: Text(
@@ -1086,113 +1215,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
                                 _tempConfidenceLevel != null)
                             ? Colors.white
                             : Colors.white30,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ] else if (_stage == 'explain_and_followup') ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _followUpController,
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                      onSubmitted: (_) => _sendFollowUp(),
-                      decoration: InputDecoration(
-                        hintText: 'Ask a follow-up question...',
-                        hintStyle: const TextStyle(
-                          color: Colors.white38,
-                          fontSize: 14,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white.withValues(alpha: 0.04),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            width: 1.5,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.08),
-                            width: 1.5,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide(
-                            color: const Color(0xFFF27121),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _sendFollowUp,
-                    icon: const Icon(Icons.send_rounded),
-                    color: const Color(0xFFF27121),
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.04),
-                      padding: const EdgeInsets.all(12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  color: const Color(0xFFF27121),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF27121).withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: _tutorialContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Contnue',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 16,
-                        color: Colors.white,
                       ),
                     ],
                   ),
@@ -1860,7 +1882,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                         _messages.clear();
                         _tempSelectedAnswerIndex = null;
                         _tempConfidenceLevel = null;
-                        _stage = 'select_option';
+                        _stage = MessageStage.selectOption;
                         _initializeChat();
                       });
                     },

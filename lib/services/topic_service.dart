@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:testu_cl/models/chat_message.dart';
 import 'package:testu_cl/services/auth_service.dart';
+import 'package:testu_cl/utils/log.dart';
 import '../models/topic.dart';
 import '../models/tutor_channel.dart';
 import '../models/tutorial.dart';
@@ -53,9 +54,10 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching from $targetUrl: $e',
+        e as Exception,
+      );
       rethrow;
     }
   }
@@ -103,9 +105,10 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching tutorials from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching tutorials from $targetUrl: $e',
+        e as Exception,
+      );
       rethrow;
     }
   }
@@ -142,11 +145,11 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print(
-          'TopicService error fetching tutorial detail from $targetUrl: $e',
-        );
-      }
+      logError(
+        'TopicService error fetching tutorial detail from $targetUrl: $e',
+        e as Exception,
+      );
+
       rethrow;
     }
   }
@@ -187,9 +190,10 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching tutor channels from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching tutor channels from $targetUrl: $e',
+        e as Exception,
+      );
       rethrow;
     }
   }
@@ -248,7 +252,10 @@ class TopicService {
                 }
                 messages.add(message);
               } catch (e) {
-                debugPrint('Failed to parse chat message: $e');
+                logError(
+                  'TopicService error fetching tutor history from $targetUrl: $e',
+                  e as Exception,
+                );
               }
             }
           }
@@ -262,9 +269,10 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching tutor history from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching tutor history from $targetUrl: $e',
+        e as Exception,
+      );
       rethrow;
     }
   }
@@ -299,9 +307,10 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching tutor channels from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching tutor channels from $targetUrl: $e',
+        e as Exception,
+      );
       rethrow;
     }
   }
@@ -328,7 +337,7 @@ class TopicService {
       if (sectionId != null) body += '&context_sectionid=$sectionId';
       if (componentId != null) body += '&context_componentid=$componentId';
 
-      debugPrint("Continuing with: $body");
+      logPrint("Continuing with: $body");
 
       final response = await _client.post(
         uri,
@@ -348,7 +357,10 @@ class TopicService {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('TopicService error fetching tutor channels from $targetUrl: $e');
+        logError(
+          'TopicService error fetching tutor channels from $targetUrl: $e',
+          e as Exception,
+        );
       }
       rethrow;
     }
@@ -395,9 +407,11 @@ class TopicService {
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('TopicService error fetching tutor channels from $targetUrl: $e');
-      }
+      logError(
+        'TopicService error fetching tutor channels from $targetUrl: $e',
+        e as Exception,
+      );
+
       rethrow;
     }
   }

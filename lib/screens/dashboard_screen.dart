@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:testu_cl/models/tag.dart';
+import 'package:testu_cl/utils/log.dart';
 import 'package:testu_cl/widgets/topics_card.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1174,7 +1175,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               mode: LaunchMode.externalApplication,
                             );
                           } else {
-                            debugPrint('Could not launch $url');
+                            logPrint('Could not launch $url');
                           }
                         },
                         child: Text(
