@@ -55,10 +55,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching from $targetUrl');
       rethrow;
     }
   }
@@ -106,10 +103,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutorials from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutorials from $targetUrl');
       rethrow;
     }
   }
@@ -146,18 +140,19 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutorial detail from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutorial detail from $targetUrl');
 
       rethrow;
     }
   }
 
-  Future<TutorChannel?> fetchTutorChannel(String tutorialId) async {
-    final targetUrl =
-        "$siteRoot/mediadb/services/module/entitytutorial/tutorsession.json?tutorialid=$tutorialId";
+  Future<TutorChannel?> fetchTutorChannel(
+    String tutorialId, {
+    bool createNew = false,
+  }) async {
+    String targetUrl =
+        "$siteRoot/mediadb/services/module/entitytutorial/tutorsession.json?dataid=$tutorialId";
+    if (createNew) targetUrl += "&createnew=$createNew";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -181,6 +176,9 @@ class TopicService {
           if (channel is Map<String, dynamic>) {
             return TutorChannel.fromJson(channel);
           }
+          if (!createNew) {
+            return await fetchTutorChannel(tutorialId, createNew: true);
+          }
           return null;
         } else {
           throw FormatException('Unexpected response format from $targetUrl');
@@ -191,10 +189,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutor channels from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutor channels from $targetUrl');
       rethrow;
     }
   }
@@ -206,6 +201,8 @@ class TopicService {
     final targetUrl =
         "$siteRoot/mediadb/services/module/entitytutorial/tutorhistory.json?channel=$channelId${fromBeforeId != null ? '&fromid=$fromBeforeId' : ''}";
     final url = Uri.parse(targetUrl);
+
+    logPrint("fetchTutorHistory $targetUrl");
 
     try {
       final Map<String, String> credentials =
@@ -233,10 +230,14 @@ class TopicService {
             for (final item in history) {
               try {
                 final message = ChatMessage.fromJson(item);
-                if (message.messageType == MessageType.question) {
-                  final answer = answers.firstWhere(
-                    (a) => a['questionid'] == message.rawJson['question']['id'],
-                  );
+                if (message.messageType!.isQuestion) {
+                  final answer = answers.isEmpty
+                      ? null
+                      : answers.firstWhere(
+                          (a) =>
+                              a['questionid'] ==
+                              message.rawJson['question']['id'],
+                        );
                   if (answer != null) {
                     final letterASCII = answer['selectedoption']
                         ?.toString()
@@ -248,14 +249,16 @@ class TopicService {
                     if (answer['confidence'] != null) {
                       message.rawJson['confidence'] = answer['confidence'];
                     }
+                    message.interactive = false;
+                  } else {
+                    messages.add(message);
+                    break;
                   }
-                  message.interactive = false;
                 }
                 messages.add(message);
               } catch (e) {
-                logError(
-                  'TopicService error fetching tutor history from $targetUrl: $e',
-                  e as Exception,
+                logPrint(
+                  'TopicService error fetching tutor history from $targetUrl',
                 );
               }
             }
@@ -270,10 +273,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutor history from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutor history from $targetUrl');
       rethrow;
     }
   }
@@ -293,7 +293,7 @@ class TopicService {
       final response = await _client.post(
         uri,
         body:
-            'context_tutorialid=$tutorialId&functionname=chat_tutor_welcome&currentscenario=chat_tutor',
+            'context_tutorialid=$tutorialId&functionname=chat_tutor_welcome&currentscenario=chat_tutor&channel=$channel',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
@@ -308,10 +308,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutor channels from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutor channels from $targetUrl');
       rethrow;
     }
   }
@@ -332,7 +329,7 @@ class TopicService {
       final String token = credentials['entermediakey']!;
 
       String body =
-          'functionname=chat_tutor_continue&currentscenario=chat_tutor';
+          'functionname=chat_tutor_continue&currentscenario=chat_tutor&channel=$channel';
       body += '&context_tutorialid=$tutorialId';
       if (channel != null) body += '&context_channelid=$channel';
       if (sectionId != null) body += '&context_sectionid=$sectionId';
@@ -358,10 +355,7 @@ class TopicService {
       }
     } catch (e) {
       if (kDebugMode) {
-        logError(
-          'TopicService error fetching tutor channels from $targetUrl: $e',
-          e as Exception,
-        );
+        logPrint('TopicService error fetching tutor channels from $targetUrl');
       }
       rethrow;
     }
@@ -408,10 +402,7 @@ class TopicService {
         );
       }
     } catch (e) {
-      logError(
-        'TopicService error fetching tutor channels from $targetUrl: $e',
-        e as Exception,
-      );
+      logPrint('TopicService error fetching tutor channels from $targetUrl');
 
       rethrow;
     }

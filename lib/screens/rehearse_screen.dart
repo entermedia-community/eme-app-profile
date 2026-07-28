@@ -21,12 +21,14 @@ import '../utils/language_helper.dart';
 
 enum MessageStage {
   loading,
+  error,
   welcome,
   selectOption,
   finished,
   explainAndFollowup;
 
   bool get isLoading => this == MessageStage.loading;
+  bool get isError => this == MessageStage.error;
   bool get isWelcome => this == MessageStage.welcome;
   bool get isSelectOption => this == MessageStage.selectOption;
   bool get isFinished => this == MessageStage.finished;
@@ -93,6 +95,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
       );
       if (channel == null) {
         setState(() {
+          _stage = MessageStage.error;
           _isLoading = false;
         });
         return;
@@ -101,16 +104,39 @@ class _RehearseScreenState extends State<RehearseScreen> {
       _tutorChannel = channel;
 
       if (_tutorChannel != null) {
-        final messageHistory = await TopicService().fetchTutorHistory(
+        final messageHistoryRaw = await TopicService().fetchTutorHistory(
           channelId: _tutorChannel!.id,
         );
+
+        final messageHistory = messageHistoryRaw.reversed;
 
         String? lastFoundSectionId;
         String? lastFoundComponentId;
         if (messageHistory.isNotEmpty) {
-          _messages.addAll(messageHistory.reversed);
+          _messages.addAll(messageHistory);
 
-          for (final msg in messageHistory.reversed) {
+          for (final msg in messageHistory) {
+            if (msg.messageType!.isQuestion) {
+              final question = RehearseQuestion.fromChatMessage(msg);
+              _questions.add(question);
+            }
+          }
+
+          if (messageHistory.last.messageType!.isQuestion) {
+            final rawJson = Map<String, dynamic>.from(
+              messageHistory.last.rawJson,
+            );
+            if (rawJson['selected_option_index'] == null) {
+              _currentIndex = _questions.length - 1;
+              _tempSelectedAnswerIndex = null;
+              _tempConfidenceLevel = null;
+              setState(() {
+                _stage = MessageStage.selectOption;
+              });
+            }
+          }
+
+          for (final msg in messageHistory) {
             if (msg.sectionId != null && msg.sectionId!.isNotEmpty) {
               lastFoundSectionId = msg.sectionId;
             }
@@ -129,7 +155,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
           userId: userId,
           channel: _tutorChannel!.id,
         );
-
         _socketSubscription?.cancel();
         _socketSubscription = ChatSocketService().messageStream.listen((
           incomingMsg,
@@ -138,7 +163,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
           if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
           if (!mounted) return;
 
-          if (incomingMsg.messageType == MessageType.progressupdate) {
+          if (incomingMsg.messageType!.isProgressUpdate) {
             setState(() {
               widget.tutorial.progress = TutorialProgress.fromJson(
                 incomingMsg.rawJson,
@@ -196,8 +221,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                 );
               }
 
-              if (incomingMsg.messageType == MessageType.question) {
-                logPrint("$incomingMsg");
+              if (incomingMsg.messageType!.isQuestion) {
                 final question = RehearseQuestion.fromChatMessage(incomingMsg);
                 final qExistingIndex = (msgId != null && msgId.isNotEmpty)
                     ? _questions.indexWhere(
@@ -214,7 +238,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   _tempConfidenceLevel = null;
                   _stage = MessageStage.selectOption;
                 }
-              } else if (incomingMsg.messageType == MessageType.end) {
+              } else if (incomingMsg.messageType!.isEnd) {
                 setState(() {
                   _stage = MessageStage.finished;
                 });
@@ -229,17 +253,19 @@ class _RehearseScreenState extends State<RehearseScreen> {
           }
         });
 
-        if (lastFoundSectionId == null || lastFoundComponentId == null) {
-          await TopicService().startTutorial(
-            tutorialId: widget.tutorial.id,
-            channel: _tutorChannel!.id,
-          );
-        } else {
-          _messages.last.sectionId = lastFoundSectionId;
-          _messages.last.componentId = lastFoundComponentId;
-          setState(() {
-            _stage = MessageStage.explainAndFollowup;
-          });
+        if (!_stage.isSelectOption) {
+          if (lastFoundSectionId != null && lastFoundComponentId != null) {
+            _messages.last.sectionId = lastFoundSectionId;
+            _messages.last.componentId = lastFoundComponentId;
+            setState(() {
+              _stage = MessageStage.explainAndFollowup;
+            });
+          } else {
+            await TopicService().startTutorial(
+              tutorialId: widget.tutorial.id,
+              channel: _tutorChannel!.id,
+            );
+          }
         }
       }
 
@@ -251,6 +277,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
       setState(() {
         _questions = [];
         _isLoading = false;
+        _stage = MessageStage.error;
       });
     }
   }
@@ -306,9 +333,15 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   void _submitAnswer() {
+    setState(() {
+      _stage = MessageStage.loading;
+    });
     if (_tutorChannel == null ||
         _tempSelectedAnswerIndex == null ||
         _tempConfidenceLevel == null) {
+      setState(() {
+        _stage = MessageStage.error;
+      });
       return;
     }
 
@@ -318,6 +351,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
         : null;
 
     if (activeQuestion == null) {
+      setState(() {
+        _stage = MessageStage.error;
+      });
       return;
     }
 
@@ -337,6 +373,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
             _messages[msgIdx].rawJson,
           );
           updatedRaw['selected_option_index'] = _tempSelectedAnswerIndex;
+          updatedRaw['confidence'] = _tempConfidenceLevel!;
           _messages[msgIdx] = _messages[msgIdx].copyWith(
             interactive: false,
             rawJson: updatedRaw,
@@ -349,7 +386,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
       questionId: activeQuestion.questionId!,
       selectedOption:
           "option_${String.fromCharCode(97 + _tempSelectedAnswerIndex!)}",
-      confidence: _tempConfidenceLevel!.toLowerCase().replaceAll(" ", ""),
+      confidence: _tempConfidenceLevel!,
       channel: _messages.last.channel!,
       sectionId: _messages.last.sectionId!,
       componentId: _messages.last.componentId!,
@@ -389,14 +426,19 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Future<void> _tutorialContinue() async {
-    logPrint("continue tutorial last message: ${_messages.last.toJson()}");
-    // await TopicService().continueTutorial(
-    //   tutorialId: widget.tutorial.id,
-    //   channel: _messages.last.channel,
-    //   sectionId: _messages.last.sectionId,
-    //   componentId: _messages.last.componentId,
-    // );
-    // _scrollToBottom();
+    setState(() {
+      _stage = MessageStage.loading;
+    });
+    logPrint(
+      "continue From SECTION: ${_messages.last.sectionId} and COMPONENT: ${_messages.last.componentId}",
+    );
+    await TopicService().continueTutorial(
+      tutorialId: widget.tutorial.id,
+      channel: _messages.last.channel,
+      sectionId: _messages.last.sectionId,
+      componentId: _messages.last.componentId,
+    );
+    _scrollToBottom();
   }
 
   double _calculateScorePercentage() {
@@ -988,6 +1030,13 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   child: CircularProgressIndicator(color: Color(0xFFF27121)),
                 ),
               ),
+            ] else if (_stage.isError) ...[
+              Center(
+                child: Text(
+                  'Error loading chat. Please try again later.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
             ] else if (_stage.isExplainAndFollowup) ...[
               Row(
                 children: [
@@ -1229,7 +1278,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Widget _buildQuizView() {
-    if (_isLoading || _messages.isEmpty) {
+    if (_isLoading) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

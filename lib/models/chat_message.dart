@@ -11,7 +11,18 @@ enum MessageType {
   usercomment,
   end,
   agentcomment,
-  progressupdate,
+  progressupdate;
+
+  bool get isQuestion => this == MessageType.question;
+  bool get isAsset => this == MessageType.asset;
+  bool get isWelcome => this == MessageType.welcome;
+  bool get isText => this == MessageType.text;
+  bool get isAnswer => this == MessageType.answer;
+  bool get isQuestionContinue => this == MessageType.questioncontinue;
+  bool get isUserComment => this == MessageType.usercomment;
+  bool get isEnd => this == MessageType.end;
+  bool get isAgentComment => this == MessageType.agentcomment;
+  bool get isProgressUpdate => this == MessageType.progressupdate;
 }
 
 class ChatMessage {
@@ -97,13 +108,12 @@ class ChatMessage {
     );
 
     bool interactive = false;
-    if (messageType == MessageType.question || json['interactive'] == "yes") {
+    if (messageType.isQuestion || json['interactive'] == "yes") {
       interactive = true;
     }
 
     Map<String, dynamic> rawJson = Map<String, dynamic>.from(json);
-    if (messageType == MessageType.question ||
-        messageType == MessageType.asset) {
+    if (messageType.isQuestion || messageType.isAsset) {
       mainMessage = json['message'];
       final jsonStr = json['message']?.toString() ?? "{}";
       try {
@@ -152,7 +162,7 @@ class ChatMessage {
   bool get isKeepAlive => command == 'keepalive';
 
   String get text {
-    if (messageType == MessageType.question && message != null) {
+    if (messageType!.isQuestion && message != null) {
       try {
         final decoded = jsonDecode(message!);
         if (decoded is Map<String, dynamic>) {
@@ -168,8 +178,8 @@ class ChatMessage {
 
   bool get isUser =>
       userId == AuthService.userId ||
-      messageType == MessageType.usercomment ||
-      messageType == MessageType.answer;
+      messageType!.isUserComment ||
+      messageType!.isAnswer;
 
   bool get isAI => !isUser;
 
@@ -213,8 +223,8 @@ class ChatMessage {
     if (rawJson['label'] != null) {
       return rawJson['label'].toString();
     }
-    if (messageType == MessageType.welcome) return 'Start';
-    if (messageType == MessageType.questioncontinue) return 'Continue';
+    if (messageType!.isWelcome) return 'Start';
+    if (messageType!.isQuestionContinue) return 'Continue';
     return text.isNotEmpty ? text : 'Action';
   }
 

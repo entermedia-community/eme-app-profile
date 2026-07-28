@@ -22,7 +22,7 @@ class AuthService {
       try {
         await fetchUser();
       } catch (e) {
-        logError('Error fetching user on startup: $e', e as Exception);
+        logPrint('Error fetching user on startup');
       }
     }
   }
@@ -58,7 +58,7 @@ class AuthService {
         return _currentUser;
       }
     } catch (e) {
-      logError('Failed to fetch user: $e', e as Exception);
+      logPrint('Failed to fetch user');
     }
     return null;
   }

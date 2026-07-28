@@ -105,7 +105,7 @@ class ChatSocketService {
         cancelOnError: false,
       );
     } catch (e) {
-      logError('ChatSocketService connection error: $e', e as Exception);
+      logPrint('ChatSocketService connection error');
       _handleDisconnectAndReconnect();
     }
   }
@@ -152,7 +152,7 @@ class ChatSocketService {
       _channel!.sink.add(jsonStr);
       logPrint('ChatSocketService sent: $jsonStr');
     } catch (e) {
-      logError('ChatSocketService error sending message: $e', e as Exception);
+      logPrint('ChatSocketService error sending message');
     }
   }
 
@@ -179,10 +179,7 @@ class ChatSocketService {
         }
       }
     } catch (e) {
-      logError(
-        'ChatSocketService error parsing incoming message: $e',
-        e as Exception,
-      );
+      logPrint('ChatSocketService error parsing incoming message');
     }
   }
 
@@ -209,7 +206,7 @@ class ChatSocketService {
   }
 
   void _onSocketError(dynamic error) {
-    logError('ChatSocketService stream error: $error', error as Exception);
+    logPrint('ChatSocketService stream error');
     _handleDisconnectAndReconnect();
   }
 
