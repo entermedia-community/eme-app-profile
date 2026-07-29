@@ -314,8 +314,8 @@ class ChatSocketService {
       }
     } catch (_) {}
 
-    if (AuthService.baseUrl.isNotEmpty) {
-      final uri = Uri.parse(AuthService.baseUrl);
+    if (AuthService.mediaDBRoot.isNotEmpty) {
+      final uri = Uri.parse(AuthService.mediaDBRoot);
       return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
     }
 

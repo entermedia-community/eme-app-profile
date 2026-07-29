@@ -10,16 +10,16 @@ import '../models/tutorial.dart';
 
 class TopicService {
   final http.Client _client;
-  final String mediaDBModuleRoot;
+  final String mediaDBRoot;
 
   TopicService({
     http.Client? client,
-    this.mediaDBModuleRoot =
-        'http://localhost.com:8080/site/mediadb/services/module',
+    this.mediaDBRoot = 'https://minsur.genailabs.tech/site/mediadb',
+    // 'http://localhost.com:8080/site/mediadb'
   }) : _client = client ?? http.Client();
 
   Future<List<Topic>> fetchTopics({bool fallbackToMock = true}) async {
-    final targetUrl = "$mediaDBModuleRoot/entitytopic/topics.json";
+    final targetUrl = "$mediaDBRoot/services/entitytopic/topics.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -62,7 +62,7 @@ class TopicService {
 
   Future<List<Tutorial>> fetchTutorialsForTopic(String topicId) async {
     final targetUrl =
-        "$mediaDBModuleRoot/entitytutorial/tutorials.json?entitytopic=$topicId";
+        "$mediaDBRoot/services/entitytutorial/tutorials.json?entitytopic=$topicId";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -110,7 +110,7 @@ class TopicService {
 
   Future<TutorialDetail> fetchTutorialDetail(String tutorialId) async {
     final targetUrl =
-        "$mediaDBModuleRoot/entitytutorial/tutorial.json?entitytutorial=$tutorialId";
+        "$mediaDBRoot/services/entitytutorial/tutorial.json?entitytutorial=$tutorialId";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -151,7 +151,7 @@ class TopicService {
     bool createNew = false,
   }) async {
     String targetUrl =
-        "$mediaDBModuleRoot/entitytutorial/tutorsession.json?dataid=$tutorialId";
+        "$mediaDBRoot/services/entitytutorial/tutorsession.json?dataid=$tutorialId";
     if (createNew) targetUrl += "&createnew=$createNew";
     final uri = Uri.parse(targetUrl);
 
@@ -199,7 +199,7 @@ class TopicService {
     String? fromBeforeId,
   }) async {
     final targetUrl =
-        "$mediaDBModuleRoot/entitytutorial/tutorhistory.json?channel=$channelId${fromBeforeId != null ? '&fromid=$fromBeforeId' : ''}";
+        "$mediaDBRoot/services/entitytutorial/tutorhistory.json?channel=$channelId${fromBeforeId != null ? '&fromid=$fromBeforeId' : ''}";
     final url = Uri.parse(targetUrl);
 
     logPrint("fetchTutorHistory $targetUrl");
@@ -282,7 +282,7 @@ class TopicService {
     required String tutorialId,
     required String channel,
   }) async {
-    final targetUrl = "$mediaDBModuleRoot/entitytutorial/start.json";
+    final targetUrl = "$mediaDBRoot/services/entitytutorial/start.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -318,7 +318,7 @@ class TopicService {
     String? sectionId,
     String? componentId,
   }) async {
-    final targetUrl = "$mediaDBModuleRoot/entitytutorial/start.json";
+    final targetUrl = "$mediaDBRoot/services/entitytutorial/start.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -367,7 +367,7 @@ class TopicService {
     required String sectionId,
     required String componentId,
   }) async {
-    final targetUrl = "$mediaDBModuleRoot/entitytutorial/start.json";
+    final targetUrl = "$mediaDBRoot/services/entitytutorial/start.json";
     final uri = Uri.parse(targetUrl);
     try {
       final Map<String, String> credentials =
