@@ -14,8 +14,8 @@ class TopicService {
 
   TopicService({
     http.Client? client,
-    this.mediaDBRoot = 'https://minsur.genailabs.tech/site/mediadb',
-    // 'http://localhost.com:8080/site/mediadb'
+    // this.mediaDBRoot = 'https://minsur.genailabs.tech/site/mediadb',
+    this.mediaDBRoot = 'http://localhost.com:8080/site/mediadb',
   }) : _client = client ?? http.Client();
 
   Future<List<Topic>> fetchTopics({bool fallbackToMock = true}) async {

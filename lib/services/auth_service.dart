@@ -6,8 +6,8 @@ import '../models/user.dart';
 
 class AuthService {
   static const String mediaDBRoot =
-      'https://minsur.genailabs.tech/site/mediadb';
-  // 'http://localhost.com:8080/site/mediadb';
+      // 'https://minsur.genailabs.tech/site/mediadb';
+      'http://localhost.com:8080/site/mediadb';
 
   static String? _token;
   static String? _userId;
@@ -35,7 +35,7 @@ class AuthService {
   static Future<User?> fetchUser() async {
     if (_token == null || _token!.isEmpty) return null;
 
-    final url = Uri.parse('$mediaDBRoot/authentication/user.json');
+    final url = Uri.parse('$mediaDBRoot/services/authentication/user.json');
     try {
       final response = await http.get(
         url,
@@ -88,7 +88,9 @@ class AuthService {
   }
 
   static Future<void> sendMagicLink(String email) async {
-    final url = Uri.parse('$mediaDBRoot/authentication/sendmagiclink.json');
+    final url = Uri.parse(
+      '$mediaDBRoot/services/authentication/sendmagiclink.json',
+    );
     final Map<String, String> headers = {'Content-Type': 'application/json'};
     final Map<String, String> body = {'email': email};
 
@@ -120,7 +122,7 @@ class AuthService {
   }
 
   static Future<bool> _authenticate(Map<String, dynamic> requestBody) async {
-    final url = Uri.parse('$mediaDBRoot/authentication/getkey.json');
+    final url = Uri.parse('$mediaDBRoot/services/authentication/getkey.json');
     final Map<String, String> headers = {'Content-Type': 'application/json'};
 
     try {
