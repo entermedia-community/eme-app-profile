@@ -380,6 +380,10 @@ class _RehearseScreenState extends State<RehearseScreen> {
       }
     });
 
+    setState(() {
+      _stage = MessageStage.loading;
+    });
+
     TopicService().submitAnswer(
       questionId: activeQuestion.questionId!,
       selectedOption:
@@ -701,8 +705,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   List<Widget> _buildChatMessageItem(ChatMessage message, bool isLast) {
     switch (message.messageType) {
-      case MessageType.welcome:
-        return [_buildWelcomeMessage(message, isLast)];
       case MessageType.usercomment:
         return [_buildUserCommentMessage(message)];
       case MessageType.agentcomment:
@@ -730,16 +732,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
     return _buildMessageContainer(
       isAI: message.isAI,
       child: AssetMessageWidget(message: message),
-    );
-  }
-
-  Widget _buildWelcomeMessage(ChatMessage message, bool isLast) {
-    return _buildMessageContainer(
-      isAI: true,
-      child: _buildRichText(
-        message.text,
-        const TextStyle(fontSize: 14, color: Colors.white, height: 1.4),
-      ),
     );
   }
 
@@ -1404,7 +1396,12 @@ class _RehearseScreenState extends State<RehearseScreen> {
               final isLast = messageIndex == _messages.length - 1;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: Column(children: _buildChatMessageItem(message, isLast)),
+                child: Column(
+                  children: [
+                    ..._buildChatMessageItem(message, isLast),
+                    Text("${message.createdAt}"),
+                  ],
+                ),
               );
             },
           ),

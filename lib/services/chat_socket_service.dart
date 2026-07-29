@@ -171,7 +171,6 @@ class ChatSocketService {
     try {
       if (rawData is String) {
         final decoded = json.decode(rawData);
-        logPrint('ChatSocketService decoded: $decoded');
         if (decoded is Map<String, dynamic>) {
           _rawEventController.add(decoded);
           final chatMessage = ChatMessage.fromJson(decoded);
@@ -179,7 +178,7 @@ class ChatSocketService {
         }
       }
     } catch (e) {
-      logPrint('ChatSocketService error parsing incoming message');
+      logError('ChatSocketService error parsing incoming message');
     }
   }
 

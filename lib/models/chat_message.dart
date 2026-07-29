@@ -36,7 +36,7 @@ class ChatMessage {
   final MessageType? messageType;
   final String? command;
   final String? replyToId;
-  final int? createdAt;
+  final DateTime? createdAt;
   bool? interactive;
   final Map<String, dynamic> rawJson;
 
@@ -64,12 +64,11 @@ class ChatMessage {
   };
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    int? parsedCreatedAt;
-    final rawCreatedAt = json['createdat'] ?? json['date'];
-    if (rawCreatedAt is int) {
-      parsedCreatedAt = rawCreatedAt;
-    } else if (rawCreatedAt is String) {
-      parsedCreatedAt = int.tryParse(rawCreatedAt);
+    DateTime? parsedCreatedAt;
+    final rawCreatedAt = json['date'];
+    if (rawCreatedAt is String) {
+      DateTime dateTime = DateTime.parse(rawCreatedAt);
+      parsedCreatedAt = dateTime.toLocal();
     }
 
     String mainMessage = json['message']?.toString() ?? '';
@@ -254,7 +253,7 @@ class ChatMessage {
     MessageType? messageType,
     String? command,
     String? replyToId,
-    int? createdAt,
+    DateTime? createdAt,
     bool? interactive,
     Map<String, dynamic>? rawJson,
   }) {

@@ -374,7 +374,8 @@ class TopicService {
           await AuthService.getCredentials();
       final String token = credentials['entermediakey']!;
 
-      String body = 'currentscenario=chat_tutor&functionname=chat_tutor_answer';
+      String body =
+          'currentscenario=chat_tutor&functionname=chat_tutor_answer&channel=$channel';
       body += '&context_channelid=$channel';
       body += '&context_questionid=$questionId';
       body += '&context_selectedoption=$selectedOption';
