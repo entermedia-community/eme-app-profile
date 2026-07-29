@@ -30369,7 +30369,7 @@ var $async$Mm=A.C(function(a,b){if(a===1){o.push(b)
 s=p}for(;;)switch(s){case 0:h=$.np
 if(h==null||h.length===0){q=null
 s=1
-break}n=A.de("https://minsur.genailabs.tech/site/mediadb/authentication/user.json",0,null)
+break}n=A.de("https://minsur.genailabs.tech/site/mediadb/services/authentication/user.json",0,null)
 p=4
 h=$.np
 h.toString
@@ -30448,7 +30448,7 @@ return A.z(null,r)}})
 return A.A($async$zL,r)},
 a66(a){var s=0,r=A.B(t.H),q,p=2,o=[],n,m,l,k,j,i,h,g,f,e,d,c
 var $async$a66=A.C(function(b,a0){if(b===1){o.push(a0)
-s=p}for(;;)switch(s){case 0:g=A.de("https://minsur.genailabs.tech/site/mediadb/authentication/sendmagiclink.json",0,null)
+s=p}for(;;)switch(s){case 0:g=A.de("https://minsur.genailabs.tech/site/mediadb/services/authentication/sendmagiclink.json",0,null)
 f=t.N
 e=A.a6(["Content-Type","application/json"],f,f)
 d=A.a6(["email",a],f,f)
@@ -30483,7 +30483,7 @@ return A.A($async$a66,r)},
 zK(a){return A.aX1(a)},
 aX1(a3){var s=0,r=A.B(t.y),q,p=2,o=[],n,m,l,k,j,i,h,g,f,e,d,c,b,a,a0,a1,a2
 var $async$zK=A.C(function(a4,a5){if(a4===1){o.push(a5)
-s=p}for(;;)switch(s){case 0:a=A.de("https://minsur.genailabs.tech/site/mediadb/authentication/getkey.json",0,null)
+s=p}for(;;)switch(s){case 0:a=A.de("https://minsur.genailabs.tech/site/mediadb/services/authentication/getkey.json",0,null)
 a0=t.N
 a1=A.a6(["Content-Type","application/json"],a0,a0)
 p=4
