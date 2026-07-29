@@ -297,7 +297,7 @@ void main() {
         expect(
           request.url.toString(),
           contains(
-            '/views/modules/entitytutorial/editors/aichatsearch/tutorsession.json?tutorialid=AZ-AEabUFpZTNQV7lyIV',
+            '/services/entitytutorial/tutorsession.json?dataid=AZ-AEabUFpZTNQV7lyIV',
           ),
         );
         return http.Response(

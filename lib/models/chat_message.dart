@@ -65,10 +65,12 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     DateTime? parsedCreatedAt;
-    final rawCreatedAt = json['date'];
+    final rawCreatedAt = json['date'] ?? json['createdat'];
     if (rawCreatedAt is String) {
       DateTime dateTime = DateTime.parse(rawCreatedAt);
       parsedCreatedAt = dateTime.toLocal();
+    } else if (rawCreatedAt is num) {
+      parsedCreatedAt = DateTime.fromMillisecondsSinceEpoch(rawCreatedAt.toInt()).toLocal();
     }
 
     String mainMessage = json['message']?.toString() ?? '';

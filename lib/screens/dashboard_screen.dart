@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/topic.dart';
 import '../services/auth_service.dart';
 import '../services/topic_service.dart';
+import '../services/workspace_service.dart';
 import '../utils/language_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -27,7 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TopicService _topicService = TopicService();
   late Future<List<Topic>> _topicsFuture;
-  String _activeWorkSpace = 'Minsur';
+  String _activeWorkSpace = WorkspaceService.activeWorkspace.name;
   String selectedTab = 'Catalog';
 
   @override
@@ -248,8 +249,25 @@ class _DashboardScreenState extends State<DashboardScreen>
                   maxHeight: 40,
                   maxWidth: 100,
                 ),
-                child: Image(
-                  image: AssetImage('assets/${workspace.toLowerCase()}.png'),
+                child: Image.asset(
+                  workspace.toLowerCase() == 'misur'
+                      ? 'assets/minsur.png'
+                      : 'assets/${workspace.toLowerCase()}.png',
+                  errorBuilder: (context, error, stackTrace) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.hub_rounded, color: Color(0xFF38B6FF), size: 20),
+                      const SizedBox(width: 6),
+                      Text(
+                        workspace,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -1034,13 +1052,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                             if (newValue != null) {
                               setState(() {
                                 _activeWorkSpace = newValue;
+                                WorkspaceService.setActiveWorkspaceByName(newValue);
+                                _loadTopics();
                               });
                             }
                           },
-                          items: <String>['Minsur', 'TestU']
-                              .map<DropdownMenuItem<String>>((String value) {
+                          items: WorkspaceService.workspaces
+                              .map<DropdownMenuItem<String>>((ws) {
                                 return DropdownMenuItem<String>(
-                                  value: value,
+                                  value: ws.name,
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -1049,9 +1069,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         height: 18,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: value == 'Minsur'
+                                          color: ws.id == 'misur'
                                               ? const Color(0xFF0072FF)
-                                              : const Color(0xFF8A2387),
+                                              : ws.id == 'eme'
+                                                  ? const Color(0xFF00C853)
+                                                  : const Color(0xFF8A2387),
                                         ),
                                         child: const Icon(
                                           Icons.school,
@@ -1060,7 +1082,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         ),
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(value),
+                                      Text(ws.name),
                                     ],
                                   ),
                                 );

@@ -28,7 +28,7 @@ void main() {
       expect(msg.message, equals('Hello World'));
       expect(msg.command, equals('messagereceived'));
       expect(msg.replyToId, equals('msg_122'));
-      expect(msg.createdAt, equals(1690000000000));
+      expect(msg.createdAt, equals(DateTime.fromMillisecondsSinceEpoch(1690000000000).toLocal()));
       expect(msg.isMessageRemoved, isFalse);
       expect(msg.isKeepAlive, isFalse);
     });

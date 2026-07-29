@@ -1,0 +1,103 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:testu_cl/models/workspace.dart';
+import 'package:testu_cl/services/auth_service.dart';
+import 'package:testu_cl/services/topic_service.dart';
+import 'package:testu_cl/services/workspace_service.dart';
+
+void main() {
+  group('Workspace & WorkspaceService Tests', () {
+    setUp(() {
+      // Reset active workspace to default before each test
+      WorkspaceService.setActiveWorkspaceByName('Misur');
+    });
+
+    test(
+      'WorkspaceService loads 3 static workspaces (Misur, EME, Development)',
+      () {
+        final workspaces = WorkspaceService.workspaces;
+        expect(workspaces.length, equals(3));
+
+        final names = workspaces.map((w) => w.name).toList();
+        expect(names, containsAll(['Misur', 'EME', 'Development']));
+
+        final misur = WorkspaceService.getWorkspaceByName('Misur');
+        expect(misur.id, equals('misur'));
+        expect(
+          misur.mediaDBRoot,
+          equals('https://minsur.genailabs.tech/site/mediadb'),
+        );
+
+        final eme = WorkspaceService.getWorkspaceByName('EME');
+        expect(eme.id, equals('eme'));
+        expect(eme.mediaDBRoot, equals('https://eme.world/site/mediadb'));
+
+        final dev = WorkspaceService.getWorkspaceByName('Development');
+        expect(dev.id, equals('development'));
+        expect(
+          dev.mediaDBRoot,
+          equals('http://localhost.com:8080/site/mediadb'),
+        );
+      },
+    );
+
+    test(
+      'Switching active workspace updates WorkspaceService and AuthService.mediaDBRoot',
+      () {
+        expect(WorkspaceService.activeWorkspace.name, equals('Misur'));
+        expect(
+          AuthService.mediaDBRoot,
+          equals('https://minsur.genailabs.tech/site/mediadb'),
+        );
+
+        // Switch to EME
+        WorkspaceService.setActiveWorkspaceByName('EME');
+        expect(WorkspaceService.activeWorkspace.name, equals('EME'));
+        expect(
+          WorkspaceService.currentMediaDBRoot,
+          equals('https://eme.world/site/mediadb'),
+        );
+        expect(
+          AuthService.mediaDBRoot,
+          equals('https://eme.world/site/mediadb'),
+        );
+
+        // Switch to Development
+        WorkspaceService.setActiveWorkspaceByName('Development');
+        expect(WorkspaceService.activeWorkspace.name, equals('Development'));
+        expect(
+          WorkspaceService.currentMediaDBRoot,
+          equals('http://localhost.com:8080/site/mediadb'),
+        );
+        expect(
+          AuthService.mediaDBRoot,
+          equals('http://localhost.com:8080/site/mediadb'),
+        );
+
+        // TopicService should also reflect current active workspace mediaDBRoot
+        final topicService = TopicService();
+        expect(
+          topicService.mediaDBRoot,
+          equals('http://localhost.com:8080/site/mediadb'),
+        );
+      },
+    );
+
+    test('Workspace model JSON serialization', () {
+      final ws = const Workspace(
+        id: 'test_id',
+        name: 'Test Workspace',
+        mediaDBRoot: 'http://test.com/site/mediadb',
+        iconAsset: 'assets/test.png',
+      );
+
+      final json = ws.toJson();
+      expect(json['id'], equals('test_id'));
+      expect(json['name'], equals('Test Workspace'));
+      expect(json['mediaDBRoot'], equals('http://test.com/site/mediadb'));
+      expect(json['iconAsset'], equals('assets/test.png'));
+
+      final deserialized = Workspace.fromJson(json);
+      expect(deserialized, equals(ws));
+    });
+  });
+}

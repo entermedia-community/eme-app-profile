@@ -8,15 +8,20 @@ import '../models/topic.dart';
 import '../models/tutor_channel.dart';
 import '../models/tutorial.dart';
 
+import 'workspace_service.dart';
+
 class TopicService {
   final http.Client _client;
-  final String mediaDBRoot;
+  final String? _customMediaDBRoot;
 
   TopicService({
     http.Client? client,
-    // this.mediaDBRoot = 'https://minsur.genailabs.tech/site/mediadb',
-    this.mediaDBRoot = 'http://localhost.com:8080/site/mediadb',
-  }) : _client = client ?? http.Client();
+    String? mediaDBRoot,
+  })  : _client = client ?? http.Client(),
+        _customMediaDBRoot = mediaDBRoot;
+
+  String get mediaDBRoot =>
+      _customMediaDBRoot ?? WorkspaceService.currentMediaDBRoot;
 
   Future<List<Topic>> fetchTopics({bool fallbackToMock = true}) async {
     final targetUrl = "$mediaDBRoot/services/entitytopic/topics.json";
