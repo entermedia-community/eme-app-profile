@@ -2,14 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/status/http_status.dart';
-import 'package:http/http.dart' as http;
-import 'package:openinsitute_core/models/emData.dart';
-import 'package:openinsitute_core/models/emUser.dart';
-import 'package:openinsitute_core/models/oiChatMessage.dart';
-import 'package:openinsitute_core/models/taskList.dart';
+import 'package:openinsitute_core/models/em_data.dart';
+import 'package:openinsitute_core/models/em_user.dart';
+import 'package:openinsitute_core/models/task_list.dart';
 import 'package:openinsitute_core/openinsitute_core.dart';
-import 'package:openinsitute_core/services/emDataManager.dart';
+import 'package:openinsitute_core/services/em_data_manager.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized(); //Nasty!
@@ -27,13 +24,12 @@ void main() {
     // expect(datatest.isNotEmpty, true);
 
     var url = "${settings['dev']?['websocket_url']}";
-    print(url);
 
     expect(url.isNotEmpty, true);
     EmUser? user = await oi.authenticationManager?.login("admin", "admin");
     if (user != null) {
-      var email = user.email;
-      expect(user != null, true);
+      // var email = user.email;
+      expect(true, true);
     }
     // bool? emailed = await oi.emEmailKey("support@openedit.org");
     // expect(emailed, true);
@@ -48,13 +44,13 @@ void main() {
       }
     };
 
-    List<emData> listsearch =
+    List<EmData> listsearch =
         await (await oi.datamanager.getDataModule("purpose"))
             .getRemoteData(simplesearch);
     expect(listsearch.isNotEmpty, true);
 
-    List<emData> checkcache =
-        (await oi.datamanager.getDataModule("purpose")).getAllHits();
+    // List<emData> checkcache =
+    (await oi.datamanager.getDataModule("purpose")).getAllHits();
 
     expect(user != null, true);
 
@@ -96,12 +92,12 @@ void main() {
   });
   test('Test Module Crud Operations', () async {
     DataModule testmodule = await oi.dataManager!.getDataModule("purpose");
-    List<emData> hits = testmodule.getAllHits();
+    List<EmData> hits = testmodule.getAllHits();
     expect(hits.isNotEmpty, true);
 
     Map tosave = {"name": "Test"};
 
-    emData saved = await testmodule.addData(tosave);
+    EmData saved = await testmodule.addData(tosave);
     testmodule.deleteData(saved.id);
   });
 
@@ -111,7 +107,6 @@ void main() {
 
     Map? settings = await oi.loadAppSettings();
 
-    //TODO: Get list of all projects
     var projects = await oi.projectManager?.getUserProjects(1);
     expect(projects!.isNotEmpty, true);
 

@@ -1,7 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:openinsitute_core/models/emUser.dart';
+import 'package:flutter/foundation.dart';
+import 'package:openinsitute_core/models/em_user.dart';
 import 'package:openinsitute_core/openinsitute_core.dart';
-import 'package:openinsitute_core/services/sharedpreferences.dart';
+import 'package:openinsitute_core/services/shared_preferences.dart';
 import 'package:get/get.dart';
 
 //firebase log in code - Mando
@@ -24,10 +25,11 @@ class AuthenticationManager {
     // tempKey = null;
     // final resMap = await postEntermedia(EMFinder + '/services/authentication/sendmagiclink.json', {"to": email}, context);
     final resMap = await oi.postEntermedia(
-        oi.app!["mediadb"] +
-            '/services/authentication/emailonlysendmagiclinkfinish.json',
-        {"to": email},);
-    print("Sending email to..." + email);
+      oi.app!["mediadb"] +
+          '/services/authentication/emailonlysendmagiclinkfinish.json',
+      {"to": email},
+    );
+    debugPrint("Sending email to..." + email);
     if (resMap != null) {
       var loggedin = true;
       return loggedin;
@@ -42,9 +44,10 @@ class AuthenticationManager {
     this.email = email;
     // tempKey = null;
     final resMap = await oi.postEntermedia(
-        oi.app!["mediadb"] + '/services/authentication/sendmagiclink.json',
-        {"to": email},);
-    print("Sending email with login code to..." + email);
+      oi.app!["mediadb"] + '/services/authentication/sendmagiclink.json',
+      {"to": email},
+    );
+    debugPrint("Sending email with login code to..." + email);
     if (resMap != null) {
       var loggedin = true;
       return loggedin;
@@ -59,9 +62,10 @@ class AuthenticationManager {
     emUser = null;
 
     final resMap = await oi.postEntermedia(
-        oi.app!["mediadb"] + '/services/authentication/sendnewuseremail.json',
-        {"email": email, "firstName": firstName, "lastName": lastName},);
-    print("Creating new user " + firstName + " with email: " + email);
+      oi.app!["mediadb"] + '/services/authentication/sendnewuseremail.json',
+      {"email": email, "firstName": firstName, "lastName": lastName},
+    );
+    debugPrint("Creating new user " + firstName + " with email: " + email);
     if (resMap != null) {
       var loggedin = true;
       return loggedin;
@@ -77,7 +81,7 @@ class AuthenticationManager {
       {"email": email, "password": password},
       customError: "Invalid credentials. Please try again!",
     );
-    print("Logging in");
+    debugPrint("Logging in");
     if (resMap != null) {
       Map<String, dynamic> results = resMap["results"];
       emUser!.firebasepassword = results["firebasepassword"];
@@ -92,15 +96,15 @@ class AuthenticationManager {
         oi.app!["mediadb"] + '/services/authentication/login.json',
         {"id": id, "password": password},
         customError: "Invalid credentials. Please try again!");
-    print("Logging in");
+    debugPrint("Logging in");
     if (resMap != null) {
       Map<String, dynamic> results = resMap["results"];
       emUser = EmUser.fromJson(results);
-      print("complete");
-      await sharedPref.saveEmUser(emUser!);
+      debugPrint("complete");
+      await SharedPref.saveEmUser(emUser!);
       return emUser;
     } else {
-      print("login failed");
+      debugPrint("login failed");
       return null;
     }
   }
@@ -112,17 +116,17 @@ class AuthenticationManager {
         oi.app!["mediadb"] + '/services/authentication/login.json',
         {"email": email, "templogincode": logincode},
         customError: "Invalid credentials. Please try again!");
-    print("Logging in with code: " + logincode);
+    debugPrint("Logging in with code: " + logincode);
     if (resMap != null) {
       Map<String, dynamic> results = resMap["results"];
       emUser = EmUser.fromJson(results);
-      print("complete");
+      debugPrint("complete");
       emUser = await firebaseLogin(email!, emUser!.entermediakey);
       await signIn(email: email!, password: emUser!.firebasepassword!);
-      await sharedPref.saveEmUser(emUser!);
+      await SharedPref.saveEmUser(emUser!);
       return emUser;
     } else {
-      print("login failed");
+      debugPrint("login failed");
       return null;
     }
   }
@@ -130,12 +134,12 @@ class AuthenticationManager {
   // todo: logout
   Future<bool?> logout() async {
     emUser = null;
-    await sharedPref.resetValues();
+    await SharedPref.resetValues();
     return true;
   }
 
   Future<bool> isAuthenticated() async {
-    emUser ??= await sharedPref.getEmUser();
+    emUser ??= await SharedPref.getEmUser();
     return emUser != null;
   }
 
@@ -150,7 +154,7 @@ class AuthenticationManager {
     } on FirebaseAuthException catch (e) {
       return e.message;
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       return "Unknown error";
     }
   }

@@ -8,15 +8,15 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:openinsitute_core/Helper/customException.dart';
+import 'package:openinsitute_core/Helper/custom_exception.dart';
 import 'package:openinsitute_core/Helper/request_type.dart';
-import 'package:openinsitute_core/services/FeedManager.dart';
+import 'package:openinsitute_core/services/feed_manager.dart';
 import 'package:openinsitute_core/services/authentication_manager.dart';
-import 'package:openinsitute_core/services/emDataManager.dart';
-import 'package:openinsitute_core/services/emSocketManager.dart';
+import 'package:openinsitute_core/services/em_data_manager.dart';
+import 'package:openinsitute_core/services/em_socket_manager.dart';
 import 'package:openinsitute_core/services/hive_manager.dart';
 import 'package:openinsitute_core/services/project_manager.dart';
-import 'package:openinsitute_core/services/oiChatManager.dart';
+import 'package:openinsitute_core/services/oi_chat_manager.dart';
 import 'package:openinsitute_core/services/task_manager.dart';
 
 //import 'contact.dart';
@@ -87,10 +87,8 @@ class OpenI {
     return _settings;
   }
 
-  //TODO: Add prefix before the token
   String handleTokenKey(String token) {
-    final String newToken = /*"em" + */ token;
-    return newToken;
+    return token;
   }
 
   //Generic post method to entermedias server
@@ -110,11 +108,11 @@ class OpenI {
       requestUrl: url,
       body: json.encode(jsonBody),
       headers: headers,
-      requestType: RequestType.POST,
+      requestType: RequestType.post,
       customError: customError,
     );
     if (response != null && response.statusCode == 200) {
-      print("Success user info is:" + response.body);
+      debugPrint("Success user info is:" + response.body);
       final String responseString = response.body;
       return json.decode(responseString);
     } else {
@@ -135,10 +133,7 @@ class OpenI {
           handleTokenKey(authenticationmanager.emUser!.entermediakey);
       headers.addAll({"X-token": tokenKey});
     } else {
-      //TODO: Remove this ASAP
-      String tokenKey =
-          handleTokenKey("adminmd5421c0af185908a6c0c40d50fd5e3f16760d5580bc");
-      headers.addAll({"X-token": tokenKey});
+      throw CustomException("No token key found");
     }
 
     final response = await httpRequest(
@@ -149,7 +144,7 @@ class OpenI {
       customError: customError,
     );
     if (response != null && response.statusCode == 200) {
-      print("Success user info is:" + response.body);
+      debugPrint("Success user info is:" + response.body);
       final String responseString = response.body;
       return responseString;
     } else {
@@ -165,35 +160,35 @@ class OpenI {
     String customError = "Some Error",
   }) async {
     String url = requestUrl;
-    print(url);
+    debugPrint(url);
     http.Response response;
     try {
       http.Response? responseJson;
-      if (requestType == RequestType.PUT) {
+      if (requestType == RequestType.put) {
         responseJson = await http.put(
           Uri.parse(url),
           body: body,
           headers: headers,
         );
-      } else if (requestType == RequestType.POST) {
+      } else if (requestType == RequestType.post) {
         responseJson = await http.post(
           Uri.parse(url),
           body: body,
           headers: headers,
         );
-      } else if (requestType == RequestType.GET) {
+      } else if (requestType == RequestType.get) {
         responseJson = await http.get(
           Uri.parse(url),
           headers: headers,
         );
-      } else if (requestType == RequestType.DELETE) {
+      } else if (requestType == RequestType.delete) {
         responseJson = await http.delete(
           Uri.parse(url),
           headers: headers,
           body: body,
         );
       }
-      print(responseJson!.statusCode);
+      debugPrint('${responseJson!.statusCode}');
       response = await handleException(responseJson);
       return response;
     } on BadRequestException catch (_) {
@@ -212,7 +207,7 @@ class OpenI {
   }
 
   dynamic handleException(http.Response response) {
-    print("Response code: " + response.statusCode.toString());
+    debugPrint("Response code: " + response.statusCode.toString());
     switch (response.statusCode) {
       case 200:
         final http.Response responseJson = response;
@@ -269,7 +264,7 @@ class OpenI {
   //   });
   //
   //   final allContacts = await isar.contacts.where().findAll();
-  //   print(allContacts);
+  //   debugPrint(allContacts);
   //   return allContacts;
   //
   // }

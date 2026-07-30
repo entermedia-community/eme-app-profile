@@ -1,10 +1,10 @@
-import 'package:openinsitute_core/models/emData.dart';
+import 'package:openinsitute_core/models/em_data.dart';
 
 class ToDo {
   late String id;
   String? name;
   late Map<String, dynamic> properties;
-  List<emData>? _tasks;
+  List<EmData>? _tasks;
 
   ToDo.fromJson(Map<String, dynamic> json) {
     id = json["id"];
@@ -12,22 +12,18 @@ class ToDo {
     properties = json;
   }
 
-
   Map<String, dynamic> toJson() {
     properties[id] = id;
     return properties;
   }
 
-  List<emData>? get tasks{
-    if(_tasks == null){
+  List<EmData>? get tasks {
+    if (_tasks == null) {
       var taskjson = properties["tasks"];
-      if(taskjson != null){
-        _tasks = taskjson.map<emData>((json) => emData.fromJson(json)).toList();
+      if (taskjson != null) {
+        _tasks = taskjson.map<EmData>((json) => EmData.fromJson(json)).toList();
       }
     }
     return _tasks;
   }
 }
-
-
-

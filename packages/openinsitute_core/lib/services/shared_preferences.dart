@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:openinsitute_core/models/emUser.dart';
+import 'package:openinsitute_core/models/em_user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class sharedPref {
+class SharedPref {
   static saveEMKey(String key) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('entermediakey', key);
@@ -15,6 +15,7 @@ class sharedPref {
     String? stringValue = prefs.getString('entermediakey');
     return stringValue;
   }
+
   static saveEmUser(EmUser emUser) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('emUser', emUser.toJson());
@@ -23,7 +24,7 @@ class sharedPref {
   static Future<EmUser?> getEmUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? stringValue = prefs.getString('emUser');
-    if(stringValue == null){
+    if (stringValue == null) {
       return null;
     }
     return EmUser.fromJson(jsonDecode(stringValue));

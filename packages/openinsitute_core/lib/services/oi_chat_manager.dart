@@ -1,7 +1,8 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:openinsitute_core/models/oiChatMessage.dart';
+import 'package:openinsitute_core/models/oi_chat_message.dart';
 import 'package:openinsitute_core/openinsitute_core.dart';
 import 'package:openinsitute_core/services/hive_manager.dart';
 
@@ -13,7 +14,7 @@ class OiChatManager {
     return Get.find();
   }
 
-  Future<void> cacheChat(String projectId, List<oiChatMessage> messages) async {
+  Future<void> cacheChat(String projectId, List<OIChatMessage> messages) async {
     messages.sort(
       (a, b) => DateTime.parse(a.properties["date"])
           .compareTo(DateTime.parse(b.properties["date"])),
@@ -25,37 +26,29 @@ class OiChatManager {
   }
 
   Future<void> saveSingleChat(
-      oiChatMessage chatMessage, String projectId) async {
+      OIChatMessage chatMessage, String projectId) async {
     await HiveManager.instance.saveData(chatMessage.messageid,
         chatMessage.properties, chatBox + "_" + projectId);
   }
 
-  Future<List<oiChatMessage>> loadChatCache(String projectId) async {
+  Future<List<OIChatMessage>> loadChatCache(String projectId) async {
     List<Map<String, dynamic>> cache =
         await HiveManager.instance.getAllHits(chatBox + "_" + projectId);
-    List<oiChatMessage> messages = [];
+    List<OIChatMessage> messages = [];
     for (var e in cache) {
-      messages.add(oiChatMessage.fromJson(e));
+      messages.add(OIChatMessage.fromJson(e));
     }
     return messages;
   }
 
   Future<void> loadChat(String projectId, int page) async {
-    List<oiChatMessage> messages = [];
-    List<oiChatMessage> result = await getProjectChatMessages(projectId, page);
+    List<OIChatMessage> messages = [];
+    List<OIChatMessage> result = await getProjectChatMessages(projectId, page);
     if (result.isNotEmpty) {
       messages.addAll(result);
       await cacheChat(projectId, result);
     }
   }
-
-  /**
-   * TODO: Create a call back
-   */
-  // void addProjectChatChangeListener(ChatUiListener inListener)
-  // {
-  //   fieldProjectChatChangeListeners.add(inListener);
-  // }
 
   /// Firebase can call this when it sees that a chat event came in
   /// so we can invalidate our local cache and update our list of chats
@@ -69,20 +62,20 @@ class OiChatManager {
     return {"page": "$page", "hitsperpage": "20", "collectionid": inProjectId};
   }
 
-  Future<List<oiChatMessage>> getProjectChatMessages(
+  Future<List<OIChatMessage>> getProjectChatMessages(
       String inProjectId, int page) async {
     final Map? responded = await oi.postEntermedia(
       oi.app!["mediadb"] +
           '/services/module/librarycollection/viewmessages.json',
       getParams(page, inProjectId),
     );
-    List<oiChatMessage> messages = responded!["results"]!
-        .map<oiChatMessage>((json) => oiChatMessage.fromJson(json))
+    List<OIChatMessage> messages = responded!["results"]!
+        .map<OIChatMessage>((json) => OIChatMessage.fromJson(json))
         .toList();
     return Future.value(messages);
   }
 
-  Future<void> saveChat(oiChatMessage inMessage, String projectId) async {
+  Future<void> saveChat(OIChatMessage inMessage, String projectId) async {
     await saveSingleChat(inMessage, projectId);
     try {
       final Map? responded = await oi.postEntermedia(
@@ -92,7 +85,7 @@ class OiChatManager {
       );
       log("Saved chat message: " + responded.toString());
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 }
