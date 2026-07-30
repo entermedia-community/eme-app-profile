@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:eme_world/utils/log.dart';
 import '../models/user.dart';
+import '../models/workspace.dart';
 import 'workspace_service.dart';
 
 class AuthService {
@@ -12,18 +13,46 @@ class AuthService {
   static String? _userId;
   static User? _currentUser;
 
-  static Future<void> init() async {
+  static Future<void> loadSessionForActiveWorkspace() async {
     final prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('entermediakey');
-    _userId = prefs.getString('user');
+    final wsId = WorkspaceService.activeWorkspace.id;
 
-    if (isLoggedIn) {
+    _token = prefs.getString('entermediakey_$wsId');
+    _userId = prefs.getString('user_$wsId');
+
+    // Migration / fallback for legacy single key storage
+    if ((_token == null || _token!.isEmpty) &&
+        (wsId == 'development' || wsId == WorkspaceService.workspaces.first.id)) {
+      final legacyToken = prefs.getString('entermediakey');
+      final legacyUser = prefs.getString('user');
+      if (legacyToken != null && legacyToken.isNotEmpty) {
+        _token = legacyToken;
+        _userId = legacyUser;
+        await saveCredentials(_userId ?? '', _token!);
+      }
+    }
+
+    if (_token != null && _token!.isNotEmpty) {
       try {
         await fetchUser();
       } catch (e) {
-        logPrint('Error fetching user on startup');
+        logPrint('Error fetching user for workspace $wsId: $e');
       }
+    } else {
+      _token = null;
+      _userId = null;
+      _currentUser = null;
     }
+  }
+
+  static Future<void> init() async {
+    await loadSessionForActiveWorkspace();
+  }
+
+  static Future<bool> switchWorkspace(Workspace workspace) async {
+    await WorkspaceService.setActiveWorkspace(workspace);
+    await loadSessionForActiveWorkspace();
+    return isLoggedIn;
   }
 
   static bool get isLoggedIn => _token != null && _token!.isNotEmpty;
@@ -64,23 +93,33 @@ class AuthService {
 
   static Future<Map<String, String>> getCredentials() async {
     final prefs = await SharedPreferences.getInstance();
-    _userId = prefs.getString('user');
-    _token = prefs.getString('entermediakey');
-    return {'user': _userId!, 'entermediakey': _token!};
+    final wsId = WorkspaceService.activeWorkspace.id;
+    _userId = prefs.getString('user_$wsId') ?? prefs.getString('user');
+    _token = prefs.getString('entermediakey_$wsId') ?? prefs.getString('entermediakey');
+    return {'user': _userId ?? '', 'entermediakey': _token ?? ''};
   }
 
   static Future<void> saveCredentials(String userId, String key) async {
     final prefs = await SharedPreferences.getInstance();
+    final wsId = WorkspaceService.activeWorkspace.id;
+
+    await prefs.setString('user_$wsId', userId);
+    await prefs.setString('entermediakey_$wsId', key);
+
     await prefs.setString('user', userId);
     await prefs.setString('entermediakey', key);
+
     _token = key;
     _userId = userId;
   }
 
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user');
-    await prefs.remove('entermediakey');
+    final wsId = WorkspaceService.activeWorkspace.id;
+
+    await prefs.remove('user_$wsId');
+    await prefs.remove('entermediakey_$wsId');
+
     _token = null;
     _userId = null;
     _currentUser = null;

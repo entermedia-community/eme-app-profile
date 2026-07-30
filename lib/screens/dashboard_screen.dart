@@ -16,8 +16,14 @@ import '../utils/language_helper.dart';
 class DashboardScreen extends StatefulWidget {
   final String username;
   final VoidCallback? onLogout;
+  final VoidCallback? onWorkspaceChanged;
 
-  const DashboardScreen({super.key, required this.username, this.onLogout});
+  const DashboardScreen({
+    super.key,
+    required this.username,
+    this.onLogout,
+    this.onWorkspaceChanged,
+  });
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -1047,15 +1053,23 @@ class _DashboardScreenState extends State<DashboardScreen>
                             letterSpacing: 0.5,
                             color: Colors.white70,
                           ),
-                          onChanged: (String? newValue) {
+                          onChanged: (String? newValue) async {
                             if (newValue != null) {
-                              setState(() {
-                                _activeWorkSpace = newValue;
-                                WorkspaceService.setActiveWorkspaceByName(
-                                  newValue,
-                                );
-                                _loadTopics();
-                              });
+                              final targetWorkspace =
+                                  WorkspaceService.getWorkspaceByName(newValue);
+                              final isLoggedIn =
+                                  await AuthService.switchWorkspace(
+                                targetWorkspace,
+                              );
+                              if (isLoggedIn) {
+                                setState(() {
+                                  _activeWorkSpace = targetWorkspace.name;
+                                  _loadTopics();
+                                });
+                                widget.onWorkspaceChanged?.call();
+                              } else {
+                                widget.onWorkspaceChanged?.call();
+                              }
                             }
                           },
                           items: WorkspaceService.workspaces

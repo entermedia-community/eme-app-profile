@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'services/auth_service.dart';
+import 'services/workspace_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await WorkspaceService.init();
   await AuthService.init();
   runApp(const MyApp());
 }
@@ -96,14 +98,30 @@ class _AppEntryState extends State<AppEntry> {
     });
   }
 
+  void _handleWorkspaceChanged() {
+    setState(() {
+      _isLoggedIn = AuthService.isLoggedIn;
+      _username = AuthService.userId ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoggedIn) {
       return SelectionArea(
-        child: DashboardScreen(username: _username, onLogout: _handleLogout),
+        child: DashboardScreen(
+          username: _username,
+          onLogout: _handleLogout,
+          onWorkspaceChanged: _handleWorkspaceChanged,
+        ),
       );
     } else {
-      return SelectionArea(child: LoginScreen(onLoginSuccess: _handleLogin));
+      return SelectionArea(
+        child: LoginScreen(
+          onLoginSuccess: _handleLogin,
+          onWorkspaceChanged: _handleWorkspaceChanged,
+        ),
+      );
     }
   }
 }

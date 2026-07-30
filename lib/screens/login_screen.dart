@@ -3,12 +3,19 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../models/workspace.dart';
 import '../services/auth_service.dart';
+import '../services/workspace_service.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String) onLoginSuccess;
+  final VoidCallback? onWorkspaceChanged;
 
-  const LoginScreen({super.key, required this.onLoginSuccess});
+  const LoginScreen({
+    super.key,
+    required this.onLoginSuccess,
+    this.onWorkspaceChanged,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -21,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _otpController = TextEditingController();
   final _otpFocusNode = FocusNode();
 
+  late Workspace _selectedWorkspace;
   bool _isOtpStage = false;
   bool _rememberMe = true;
   bool _isLoading = false;
@@ -34,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void initState() {
     super.initState();
+    _selectedWorkspace = WorkspaceService.activeWorkspace;
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -329,6 +338,19 @@ class _LoginScreenState extends State<LoginScreen>
                                   const SizedBox(height: 32),
 
                                   if (!_isOtpStage) ...[
+                                    // Workspace Selection Menu
+                                    const Text(
+                                      'Workspace',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildWorkspaceDropdown(),
+                                    const SizedBox(height: 20),
+
                                     // Email Address Input
                                     const Text(
                                       'Email Address',
@@ -445,6 +467,25 @@ class _LoginScreenState extends State<LoginScreen>
                                         color: Color(0xFF90A4AE),
                                         fontSize: 12,
                                       ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.hub_rounded,
+                                          size: 12,
+                                          color: Color(0xFF38B6FF),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'Workspace: ${_selectedWorkspace.name}',
+                                          style: const TextStyle(
+                                            color: Color(0xFF38B6FF),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                     const SizedBox(height: 16),
                                     _buildOtpInput(),
@@ -709,8 +750,114 @@ class _LoginScreenState extends State<LoginScreen>
             minHeight: 20,
           ),
           suffixIcon: suffixIcon,
-          border: InputBorder.none,
           errorStyle: const TextStyle(color: Color(0xFFF50057), fontSize: 11),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWorkspaceDropdown() {
+    final currentWorkspace = WorkspaceService.workspaces.firstWhere(
+      (w) => w.id.toLowerCase() == _selectedWorkspace.id.toLowerCase(),
+      orElse: () => _selectedWorkspace,
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F1319),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<Workspace>(
+          value: currentWorkspace,
+          isExpanded: true,
+          dropdownColor: const Color(0xFF161C24),
+          borderRadius: BorderRadius.circular(14),
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Colors.white54,
+          ),
+          items: WorkspaceService.workspaces.map((ws) {
+            final isSelected = ws.id == currentWorkspace.id;
+            final color = ws.id == 'misur'
+                ? const Color(0xFF0072FF)
+                : ws.id == 'eme'
+                    ? const Color(0xFF00C853)
+                    : const Color(0xFF8A2387);
+            return DropdownMenuItem<Workspace>(
+              value: ws,
+              child: Row(
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color.withValues(alpha: 0.15),
+                      border: Border.all(
+                        color: color,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.hub_rounded,
+                      size: 13,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ws.name,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF38B6FF)
+                                : Colors.white,
+                            fontSize: 14,
+                            fontWeight:
+                                isSelected ? FontWeight.bold : FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          ws.mediaDBRoot,
+                          style: const TextStyle(
+                            color: Colors.white38,
+                            fontSize: 11,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: (Workspace? newWorkspace) async {
+            if (newWorkspace != null) {
+              final isLoggedIn =
+                  await AuthService.switchWorkspace(newWorkspace);
+              if (isLoggedIn) {
+                widget.onLoginSuccess(
+                  AuthService.currentUser?.email ?? AuthService.userId ?? '',
+                );
+              } else {
+                setState(() {
+                  _selectedWorkspace = newWorkspace;
+                  _isOtpStage = false;
+                  _otpController.clear();
+                  _otpError = null;
+                });
+                widget.onWorkspaceChanged?.call();
+              }
+            }
+          },
         ),
       ),
     );
