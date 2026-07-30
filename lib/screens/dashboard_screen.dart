@@ -1225,32 +1225,38 @@ class _DashboardScreenState extends State<DashboardScreen>
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
+      child: Material(
         color: selected
             ? const Color(0xFF38B6FF).withValues(alpha: 0.08)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: selected
-              ? const Color(0xFF38B6FF).withValues(alpha: 0.15)
-              : Colors.transparent,
-        ),
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: selected ? const Color(0xFF38B6FF) : Colors.white54,
-          size: 20,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: selected ? Colors.white : Colors.white70,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 14,
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected
+                  ? const Color(0xFF38B6FF).withValues(alpha: 0.15)
+                  : Colors.transparent,
+            ),
+          ),
+          child: ListTile(
+            leading: Icon(
+              icon,
+              color: selected ? const Color(0xFF38B6FF) : Colors.white54,
+              size: 20,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.white70,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 14,
+              ),
+            ),
+            onTap: onTap,
           ),
         ),
-        onTap: onTap,
       ),
     );
   }
@@ -1331,95 +1337,99 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ws,
                         );
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF1E2638)
-                                : const Color(0xFF0F1319),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(
-                                      0xFF38B6FF,
-                                    ).withValues(alpha: 0.4)
-                                  : Colors.white.withValues(alpha: 0.05),
-                            ),
-                          ),
-                          child: ListTile(
-                            onTap: () async {
-                              Navigator.pop(sheetContext);
-                              await AuthService.switchWorkspace(ws);
-                              setState(() {
-                                _activeWorkSpace = ws.name;
-                                _loadTopics();
-                              });
-                              widget.onWorkspaceChanged?.call();
-                            },
-                            leading: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: color.withValues(alpha: 0.15),
-                                border: Border.all(color: color, width: 1.5),
-                              ),
-                              child: Icon(
-                                Icons.hub_rounded,
-                                size: 16,
-                                color: color,
-                              ),
-                            ),
-                            title: Text(
-                              ws.name,
-                              style: TextStyle(
+                        return Material(
+                          color: isSelected
+                              ? const Color(0xFF1E2638)
+                              : const Color(0xFF0F1319),
+                          borderRadius: BorderRadius.circular(14),
+                          clipBehavior: Clip.antiAlias,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF38B6FF)
-                                    : Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                    ? const Color(
+                                        0xFF38B6FF,
+                                      ).withValues(alpha: 0.4)
+                                    : Colors.white.withValues(alpha: 0.05),
                               ),
                             ),
-                            subtitle: Text(
-                              ws.mediaDBRoot,
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
+                            child: ListTile(
+                              onTap: () async {
+                                Navigator.pop(sheetContext);
+                                await AuthService.switchWorkspace(ws);
+                                setState(() {
+                                  _activeWorkSpace = ws.name;
+                                  _loadTopics();
+                                });
+                                widget.onWorkspaceChanged?.call();
+                              },
+                              leading: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: color.withValues(alpha: 0.15),
+                                  border: Border.all(color: color, width: 1.5),
+                                ),
+                                child: Icon(
+                                  Icons.hub_rounded,
+                                  size: 16,
+                                  color: color,
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: canDelete
-                                ? IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline_rounded,
-                                      color: Color(0xFFF50057),
-                                      size: 20,
-                                    ),
-                                    onPressed: () async {
-                                      final confirmed =
-                                          await _showConfirmDeleteDialog(
-                                            context,
+                              title: Text(
+                                ws.name,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFF38B6FF)
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              subtitle: Text(
+                                ws.mediaDBRoot,
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: canDelete
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Color(0xFFF50057),
+                                        size: 20,
+                                      ),
+                                      onPressed: () async {
+                                        final confirmed =
+                                            await _showConfirmDeleteDialog(
+                                              context,
+                                              ws,
+                                            );
+                                        if (confirmed) {
+                                          await WorkspaceService.removeWorkspace(
                                             ws,
                                           );
-                                      if (confirmed) {
-                                        await WorkspaceService.removeWorkspace(
-                                          ws,
-                                        );
-                                        await AuthService.loadSessionForActiveWorkspace();
-                                        if (mounted) {
-                                          setState(() {
-                                            _activeWorkSpace = WorkspaceService
-                                                .activeWorkspace
-                                                .name;
-                                            _loadTopics();
-                                          });
-                                          widget.onWorkspaceChanged?.call();
+                                          await AuthService.loadSessionForActiveWorkspace();
+                                          if (mounted) {
+                                            setState(() {
+                                              _activeWorkSpace = WorkspaceService
+                                                  .activeWorkspace
+                                                  .name;
+                                              _loadTopics();
+                                            });
+                                            widget.onWorkspaceChanged?.call();
+                                          }
+                                          setSheetState(() {});
                                         }
-                                        setSheetState(() {});
-                                      }
-                                    },
-                                  )
-                                : null,
+                                      },
+                                    )
+                                  : null,
+                            ),
                           ),
                         );
                       },

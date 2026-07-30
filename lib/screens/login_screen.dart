@@ -25,7 +25,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'support@openedit.org');
+  final _emailController = TextEditingController();
   final _otpController = TextEditingController();
   final _otpFocusNode = FocusNode();
 
@@ -351,7 +351,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     const SizedBox(height: 8),
                                     _buildInputField(
                                       controller: _emailController,
-                                      hintText: 'Enter your enterprise email',
+                                      hintText: 'Enter your email',
                                       prefixIcon: Icons.email_outlined,
                                       validator: (val) {
                                         if (val == null || val.trim().isEmpty) {
@@ -794,10 +794,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                   Text(
                     currentWorkspace.mediaDBRoot,
-                    style: const TextStyle(
-                      color: Colors.white38,
-                      fontSize: 11,
-                    ),
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -885,106 +882,113 @@ class _LoginScreenState extends State<LoginScreen>
                             : ws.id == 'eme'
                             ? const Color(0xFF00C853)
                             : const Color(0xFF8A2387);
-                        final canDelete = WorkspaceService.canDeleteWorkspace(ws);
+                        final canDelete = WorkspaceService.canDeleteWorkspace(
+                          ws,
+                        );
 
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF1E2638)
-                                : const Color(0xFF0F1319),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF38B6FF).withValues(alpha: 0.4)
-                                  : Colors.white.withValues(alpha: 0.05),
-                            ),
-                          ),
-                          child: ListTile(
-                            onTap: () async {
-                              Navigator.pop(sheetContext);
-                              final isLoggedIn =
-                                  await AuthService.switchWorkspace(ws);
-                              if (isLoggedIn) {
-                                widget.onLoginSuccess(
-                                  AuthService.currentUser?.email ??
-                                      AuthService.userId ??
-                                      '',
-                                );
-                              } else {
-                                setState(() {
-                                  _selectedWorkspace = ws;
-                                  _isOtpStage = false;
-                                  _otpController.clear();
-                                  _otpError = null;
-                                });
-                                widget.onWorkspaceChanged?.call();
-                              }
-                            },
-                            leading: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: color.withValues(alpha: 0.15),
-                                border: Border.all(color: color, width: 1.5),
-                              ),
-                              child: Icon(
-                                Icons.hub_rounded,
-                                size: 16,
-                                color: color,
-                              ),
-                            ),
-                            title: Text(
-                              ws.name,
-                              style: TextStyle(
+                        return Material(
+                          color: isSelected
+                              ? const Color(0xFF1E2638)
+                              : const Color(0xFF0F1319),
+                          borderRadius: BorderRadius.circular(14),
+                          clipBehavior: Clip.antiAlias,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF38B6FF)
-                                    : Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                    ? const Color(
+                                        0xFF38B6FF,
+                                      ).withValues(alpha: 0.4)
+                                    : Colors.white.withValues(alpha: 0.05),
                               ),
                             ),
-                            subtitle: Text(
-                              ws.mediaDBRoot,
-                              style: const TextStyle(
-                                color: Colors.white38,
-                                fontSize: 11,
+                            child: ListTile(
+                              onTap: () async {
+                                Navigator.pop(sheetContext);
+                                final isLoggedIn =
+                                    await AuthService.switchWorkspace(ws);
+                                if (isLoggedIn) {
+                                  widget.onLoginSuccess(
+                                    AuthService.currentUser?.email ??
+                                        AuthService.userId ??
+                                        '',
+                                  );
+                                } else {
+                                  setState(() {
+                                    _selectedWorkspace = ws;
+                                    _isOtpStage = false;
+                                    _otpController.clear();
+                                    _otpError = null;
+                                  });
+                                  widget.onWorkspaceChanged?.call();
+                                }
+                              },
+                              leading: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: color.withValues(alpha: 0.15),
+                                  border: Border.all(color: color, width: 1.5),
+                                ),
+                                child: Icon(
+                                  Icons.hub_rounded,
+                                  size: 16,
+                                  color: color,
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            trailing: canDelete
-                                ? IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline_rounded,
-                                      color: Color(0xFFF50057),
-                                      size: 20,
-                                    ),
-                                    onPressed: () async {
-                                      final confirmed =
-                                          await _showConfirmDeleteDialog(
-                                        context,
-                                        ws,
-                                      );
-                                      if (confirmed) {
-                                        await WorkspaceService.removeWorkspace(
-                                          ws,
-                                        );
-                                        await AuthService
-                                            .loadSessionForActiveWorkspace();
-                                        if (mounted) {
-                                          setState(() {
-                                            _selectedWorkspace =
-                                                WorkspaceService
-                                                    .activeWorkspace;
-                                          });
-                                          widget.onWorkspaceChanged?.call();
+                              title: Text(
+                                ws.name,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? const Color(0xFF38B6FF)
+                                      : Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              subtitle: Text(
+                                ws.mediaDBRoot,
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: canDelete
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Color(0xFFF50057),
+                                        size: 20,
+                                      ),
+                                      onPressed: () async {
+                                        final confirmed =
+                                            await _showConfirmDeleteDialog(
+                                              context,
+                                              ws,
+                                            );
+                                        if (confirmed) {
+                                          await WorkspaceService.removeWorkspace(
+                                            ws,
+                                          );
+                                          await AuthService.loadSessionForActiveWorkspace();
+                                          if (mounted) {
+                                            setState(() {
+                                              _selectedWorkspace =
+                                                  WorkspaceService
+                                                      .activeWorkspace;
+                                            });
+                                            widget.onWorkspaceChanged?.call();
+                                          }
+                                          setSheetState(() {});
                                         }
-                                        setSheetState(() {});
-                                      }
-                                    },
-                                  )
-                                : null,
+                                      },
+                                    )
+                                  : null,
+                            ),
                           ),
                         );
                       },
@@ -999,7 +1003,10 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Future<bool> _showConfirmDeleteDialog(BuildContext context, Workspace ws) async {
+  Future<bool> _showConfirmDeleteDialog(
+    BuildContext context,
+    Workspace ws,
+  ) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) {
@@ -1007,9 +1014,7 @@ class _LoginScreenState extends State<LoginScreen>
           backgroundColor: const Color(0xFF161C24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.08),
-            ),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
           ),
           title: const Row(
             children: [
@@ -1061,9 +1066,7 @@ class _LoginScreenState extends State<LoginScreen>
           backgroundColor: const Color(0xFF161C24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.08),
-            ),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
           ),
           title: const Row(
             children: [
@@ -1090,7 +1093,10 @@ class _LoginScreenState extends State<LoginScreen>
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'https://minsur.genailabs.tech/site/mediadb',
-                    hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
+                    hintStyle: const TextStyle(
+                      color: Colors.white38,
+                      fontSize: 12,
+                    ),
                     filled: true,
                     fillColor: const Color(0xFF0F1319),
                     border: OutlineInputBorder(
@@ -1123,8 +1129,8 @@ class _LoginScreenState extends State<LoginScreen>
                 if (formKey.currentState!.validate()) {
                   final newWs =
                       WorkspaceService.getOrCreateWorkspaceFromMediaDBRoot(
-                    urlController.text.trim(),
-                  );
+                        urlController.text.trim(),
+                      );
                   await AuthService.switchWorkspace(newWs);
                   if (mounted) {
                     setState(() {
