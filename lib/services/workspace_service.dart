@@ -3,6 +3,11 @@ import '../models/workspace.dart';
 class WorkspaceService {
   static const List<Workspace> workspaces = [
     Workspace(
+      id: 'development',
+      name: 'Development',
+      mediaDBRoot: 'http://localhost.com:8080/site/mediadb',
+    ),
+    Workspace(
       id: 'misur',
       name: 'Misur',
       mediaDBRoot: 'https://minsur.genailabs.tech/site/mediadb',
@@ -12,11 +17,6 @@ class WorkspaceService {
       id: 'eme',
       name: 'EME',
       mediaDBRoot: 'https://eme.world/site/mediadb',
-    ),
-    Workspace(
-      id: 'development',
-      name: 'Development',
-      mediaDBRoot: 'http://localhost.com:8080/site/mediadb',
     ),
   ];
 

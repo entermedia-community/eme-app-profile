@@ -256,7 +256,6 @@ class _DashboardScreenState extends State<DashboardScreen>
                   errorBuilder: (context, error, stackTrace) => Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.hub_rounded, color: Color(0xFF38B6FF), size: 20),
                       const SizedBox(width: 6),
                       Text(
                         workspace,
@@ -1052,7 +1051,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                             if (newValue != null) {
                               setState(() {
                                 _activeWorkSpace = newValue;
-                                WorkspaceService.setActiveWorkspaceByName(newValue);
+                                WorkspaceService.setActiveWorkspaceByName(
+                                  newValue,
+                                );
                                 _loadTopics();
                               });
                             }
@@ -1072,8 +1073,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           color: ws.id == 'misur'
                                               ? const Color(0xFF0072FF)
                                               : ws.id == 'eme'
-                                                  ? const Color(0xFF00C853)
-                                                  : const Color(0xFF8A2387),
+                                              ? const Color(0xFF00C853)
+                                              : const Color(0xFF8A2387),
                                         ),
                                         child: const Icon(
                                           Icons.school,
