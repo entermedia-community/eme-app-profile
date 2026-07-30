@@ -4,9 +4,14 @@ import 'package:eme_world/services/auth_service.dart';
 import 'package:eme_world/services/topic_service.dart';
 import 'package:eme_world/services/workspace_service.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Workspace & WorkspaceService Tests', () {
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       // Reset active workspace to default before each test
       WorkspaceService.setActiveWorkspaceByName('Misur');
     });

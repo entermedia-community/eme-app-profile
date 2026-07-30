@@ -3,6 +3,7 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'services/auth_service.dart';
 import 'services/workspace_service.dart';
+import 'services/deep_link_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,20 @@ class _AppEntryState extends State<AppEntry> {
     super.initState();
     _isLoggedIn = AuthService.isLoggedIn;
     _username = AuthService.userId ?? '';
+
+    DeepLinkService.init(
+      onWorkspaceOpened: (workspace) {
+        if (mounted) {
+          _handleWorkspaceChanged();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    DeepLinkService.dispose();
+    super.dispose();
   }
 
   void _handleLogin(String email) {

@@ -297,7 +297,7 @@ void main() {
         expect(
           request.url.toString(),
           contains(
-            '/services/entitytutorial/tutorsession.json?dataid=AZ-AEabUFpZTNQV7lyIV',
+            '/services/module/entitytutorial/tutorsession.json?dataid=AZ-AEabUFpZTNQV7lyIV',
           ),
         );
         return http.Response(

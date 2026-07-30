@@ -49,6 +49,7 @@ dependencies:
     path: packages/openinsitute_core
   logger: ^2.7.0
   get: ^4.7.3
+  app_links: ^6.3.2
 
 dev_dependencies:
   flutter_test:
