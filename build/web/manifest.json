@@ -1,6 +1,6 @@
 {
-	"name": "eme_world",
-	"short_name": "eme_world",
+	"name": "EMe World",
+	"short_name": "EMe World",
 	"start_url": ".",
 	"display": "standalone",
 	"background_color": "#0175C2",
