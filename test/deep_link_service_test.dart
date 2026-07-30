@@ -121,7 +121,7 @@ void main() {
 
     test('Resolves dynamic workspace from mediadbroot parameter in URL', () {
       final uri = Uri.parse(
-        'http://localhost:8080/?mediadbroot=https://dynamic-server.com/site/mediadb',
+        'http://localhost:8080/?mediadbroot=dynamic-server.com/site/mediadb',
       );
       final ws = DeepLinkService.parseWorkspaceFromUri(uri);
       expect(ws, isNotNull);
@@ -129,6 +129,16 @@ void main() {
       expect(ws.name, equals('Dynamic-server'));
       expect(ws.mediaDBRoot, equals('https://dynamic-server.com/site/mediadb'));
       expect(ws.iconAsset, isNull);
+    });
+
+    test('Honors https=false parameter in deep link URLs', () {
+      final uri = Uri.parse(
+        'http://localhost:8080/?mediadbroot=http-server.com/site/mediadb&https=false',
+      );
+      final ws = DeepLinkService.parseWorkspaceFromUri(uri);
+      expect(ws, isNotNull);
+      expect(ws!.id, equals('http-server'));
+      expect(ws.mediaDBRoot, equals('http://http-server.com/site/mediadb'));
     });
   });
 }

@@ -74,17 +74,23 @@ class WorkspaceService {
 
   /// Retrieves an existing workspace matching [mediaDBRoot] or [id],
   /// or dynamically creates a new Workspace requiring only [mediaDBRoot].
+  /// Defaults scheme to `https://` unless [useHttps] is false.
   static Workspace getOrCreateWorkspaceFromMediaDBRoot(
     String mediaDBRoot, {
     String? id,
     String? name,
     String? iconAsset,
+    bool useHttps = true,
   }) {
     if (mediaDBRoot.trim().isEmpty) {
       return _activeWorkspace;
     }
 
-    final cleanedRoot = mediaDBRoot.trim().toLowerCase();
+    final formattedRoot = Workspace.normalizeMediaDBRoot(
+      mediaDBRoot,
+      useHttps: useHttps,
+    );
+    final cleanedRoot = formattedRoot.toLowerCase();
     final targetId = id?.trim().toLowerCase();
 
     for (final ws in _workspaces) {
@@ -95,10 +101,11 @@ class WorkspaceService {
     }
 
     final dynamicWs = Workspace.fromMediaDBRoot(
-      mediaDBRoot,
+      formattedRoot,
       id: id,
       name: name,
       iconAsset: iconAsset,
+      useHttps: useHttps,
     );
 
     _workspaces.add(dynamicWs);

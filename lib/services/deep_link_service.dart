@@ -208,6 +208,9 @@ class DeepLinkService {
   static Workspace? parseWorkspaceFromUri(Uri uri) {
     final params = parseParametersFromUri(uri);
 
+    final httpsVal = params['https'] ?? params['ssl'];
+    final useHttps = httpsVal?.toLowerCase() != 'false';
+
     // 1. Direct mediadbroot parameter in URL or deep link
     final mediaDBRoot = params['mediadbroot'];
     if (mediaDBRoot != null && mediaDBRoot.trim().isNotEmpty) {
@@ -217,6 +220,7 @@ class DeepLinkService {
         mediaDBRoot,
         id: wsId,
         name: wsName,
+        useHttps: useHttps,
       );
     }
 
@@ -233,7 +237,10 @@ class DeepLinkService {
       }
 
       if (target.contains('://') || (target.contains('.') && target.contains('/'))) {
-        return WorkspaceService.getOrCreateWorkspaceFromMediaDBRoot(target);
+        return WorkspaceService.getOrCreateWorkspaceFromMediaDBRoot(
+          target,
+          useHttps: useHttps,
+        );
       }
     }
 
