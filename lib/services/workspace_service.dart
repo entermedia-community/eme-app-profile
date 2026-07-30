@@ -9,8 +9,8 @@ class WorkspaceService {
       mediaDBRoot: 'http://localhost.com:8080/site/mediadb',
     ),
     Workspace(
-      id: 'misur',
-      name: 'Misur',
+      id: 'minsur',
+      name: 'Minsur',
       mediaDBRoot: 'https://minsur.genailabs.tech/site/mediadb',
       iconAsset: 'assets/minsur.png',
     ),

@@ -781,11 +781,11 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           items: WorkspaceService.workspaces.map((ws) {
             final isSelected = ws.id == currentWorkspace.id;
-            final color = ws.id == 'misur'
+            final color = ws.id == 'minsur'
                 ? const Color(0xFF0072FF)
                 : ws.id == 'eme'
-                    ? const Color(0xFF00C853)
-                    : const Color(0xFF8A2387);
+                ? const Color(0xFF00C853)
+                : const Color(0xFF8A2387);
             return DropdownMenuItem<Workspace>(
               value: ws,
               child: Row(
@@ -796,16 +796,9 @@ class _LoginScreenState extends State<LoginScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: color.withValues(alpha: 0.15),
-                      border: Border.all(
-                        color: color,
-                        width: 1.5,
-                      ),
+                      border: Border.all(color: color, width: 1.5),
                     ),
-                    child: Icon(
-                      Icons.hub_rounded,
-                      size: 13,
-                      color: color,
-                    ),
+                    child: Icon(Icons.hub_rounded, size: 13, color: color),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -820,8 +813,9 @@ class _LoginScreenState extends State<LoginScreen>
                                 ? const Color(0xFF38B6FF)
                                 : Colors.white,
                             fontSize: 14,
-                            fontWeight:
-                                isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
                           ),
                         ),
                         Text(
@@ -841,8 +835,9 @@ class _LoginScreenState extends State<LoginScreen>
           }).toList(),
           onChanged: (Workspace? newWorkspace) async {
             if (newWorkspace != null) {
-              final isLoggedIn =
-                  await AuthService.switchWorkspace(newWorkspace);
+              final isLoggedIn = await AuthService.switchWorkspace(
+                newWorkspace,
+              );
               if (isLoggedIn) {
                 widget.onLoginSuccess(
                   AuthService.currentUser?.email ?? AuthService.userId ?? '',

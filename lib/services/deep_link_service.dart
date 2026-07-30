@@ -41,7 +41,7 @@ class DeepLinkService {
   static Workspace? parseWorkspaceFromUri(Uri uri) {
     String? target;
 
-    // 1. Check query parameters (?workspace=misur or ?id=misur or ?name=misur)
+    // 1. Check query parameters (?workspace=minsur or ?id=minsur or ?name=minsur)
     if (uri.queryParameters.containsKey('workspace')) {
       target = uri.queryParameters['workspace'];
     } else if (uri.queryParameters.containsKey('id')) {
@@ -72,7 +72,7 @@ class DeepLinkService {
       }
     }
 
-    // 3. Check scheme host if custom scheme like emeworld://misur
+    // 3. Check scheme host if custom scheme like emeworld://minsur
     if ((target == null || target.isEmpty) && uri.host.isNotEmpty) {
       if (uri.host.toLowerCase() != 'workspace' &&
           uri.host.toLowerCase() != 'eme.world' &&
@@ -105,7 +105,9 @@ class DeepLinkService {
     logPrint('Handling deep link URI: $uri');
     final workspace = parseWorkspaceFromUri(uri);
     if (workspace != null) {
-      logPrint('Deep link resolved workspace: ${workspace.name} (${workspace.id})');
+      logPrint(
+        'Deep link resolved workspace: ${workspace.name} (${workspace.id})',
+      );
       await WorkspaceService.setActiveWorkspace(workspace);
       await AuthService.loadSessionForActiveWorkspace();
       if (onWorkspaceOpened != null) {

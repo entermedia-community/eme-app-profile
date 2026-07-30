@@ -256,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   maxWidth: 100,
                 ),
                 child: Image.asset(
-                  workspace.toLowerCase() == 'misur'
+                  workspace.toLowerCase() == 'minsur'
                       ? 'assets/minsur.png'
                       : 'assets/${workspace.toLowerCase()}.png',
                   errorBuilder: (context, error, stackTrace) => Row(
@@ -1059,8 +1059,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                                   WorkspaceService.getWorkspaceByName(newValue);
                               final isLoggedIn =
                                   await AuthService.switchWorkspace(
-                                targetWorkspace,
-                              );
+                                    targetWorkspace,
+                                  );
                               if (isLoggedIn) {
                                 setState(() {
                                   _activeWorkSpace = targetWorkspace.name;
@@ -1084,7 +1084,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         height: 18,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: ws.id == 'misur'
+                                          color: ws.id == 'minsur'
                                               ? const Color(0xFF0072FF)
                                               : ws.id == 'eme'
                                               ? const Color(0xFF00C853)

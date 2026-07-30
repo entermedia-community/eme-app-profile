@@ -13,22 +13,22 @@ void main() {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
       // Reset active workspace to default before each test
-      WorkspaceService.setActiveWorkspaceByName('Misur');
+      WorkspaceService.setActiveWorkspaceByName('Minsur');
     });
 
     test(
-      'WorkspaceService loads 3 static workspaces (Misur, EME, Development)',
+      'WorkspaceService loads 3 static workspaces (Minsur, EME, Development)',
       () {
         final workspaces = WorkspaceService.workspaces;
         expect(workspaces.length, equals(3));
 
         final names = workspaces.map((w) => w.name).toList();
-        expect(names, containsAll(['Misur', 'EME', 'Development']));
+        expect(names, containsAll(['Minsur', 'EME', 'Development']));
 
-        final misur = WorkspaceService.getWorkspaceByName('Misur');
-        expect(misur.id, equals('misur'));
+        final minsur = WorkspaceService.getWorkspaceByName('Minsur');
+        expect(minsur.id, equals('minsur'));
         expect(
-          misur.mediaDBRoot,
+          minsur.mediaDBRoot,
           equals('https://minsur.genailabs.tech/site/mediadb'),
         );
 
@@ -48,7 +48,7 @@ void main() {
     test(
       'Switching active workspace updates WorkspaceService and AuthService.mediaDBRoot',
       () {
-        expect(WorkspaceService.activeWorkspace.name, equals('Misur'));
+        expect(WorkspaceService.activeWorkspace.name, equals('Minsur'));
         expect(
           AuthService.mediaDBRoot,
           equals('https://minsur.genailabs.tech/site/mediadb'),

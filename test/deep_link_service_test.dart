@@ -3,12 +3,12 @@ import 'package:eme_world/services/deep_link_service.dart';
 
 void main() {
   group('DeepLinkService URI Parsing Tests', () {
-    test('Parses custom scheme emeworld://workspace/misur', () {
-      final uri = Uri.parse('emeworld://workspace/misur');
+    test('Parses custom scheme emeworld://workspace/minsur', () {
+      final uri = Uri.parse('emeworld://workspace/minsur');
       final ws = DeepLinkService.parseWorkspaceFromUri(uri);
       expect(ws, isNotNull);
-      expect(ws!.id, equals('misur'));
-      expect(ws.name, equals('Misur'));
+      expect(ws!.id, equals('minsur'));
+      expect(ws.name, equals('Minsur'));
     });
 
     test('Parses custom scheme emeworld://workspace/eme', () {
@@ -27,11 +27,11 @@ void main() {
       expect(ws.name, equals('Development'));
     });
 
-    test('Parses query parameter emeworld://workspace?id=misur', () {
-      final uri = Uri.parse('emeworld://workspace?id=misur');
+    test('Parses query parameter emeworld://workspace?id=minsur', () {
+      final uri = Uri.parse('emeworld://workspace?id=minsur');
       final ws = DeepLinkService.parseWorkspaceFromUri(uri);
       expect(ws, isNotNull);
-      expect(ws!.id, equals('misur'));
+      expect(ws!.id, equals('minsur'));
     });
 
     test('Parses query parameter emeworld://workspace?workspace=eme', () {
@@ -41,11 +41,11 @@ void main() {
       expect(ws!.id, equals('eme'));
     });
 
-    test('Parses HTTPS universal link https://eme.world/workspace/misur', () {
-      final uri = Uri.parse('https://eme.world/workspace/misur');
+    test('Parses HTTPS universal link https://eme.world/workspace/minsur', () {
+      final uri = Uri.parse('https://eme.world/workspace/minsur');
       final ws = DeepLinkService.parseWorkspaceFromUri(uri);
       expect(ws, isNotNull);
-      expect(ws!.id, equals('misur'));
+      expect(ws!.id, equals('minsur'));
     });
 
     test('Parses HTTPS universal link https://eme.world/eme', () {
