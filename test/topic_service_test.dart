@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:testu_cl/models/topic.dart';
-import 'package:testu_cl/models/tutorial.dart';
-import 'package:testu_cl/services/topic_service.dart';
+import 'package:eme_world/models/topic.dart';
+import 'package:eme_world/models/tutorial.dart';
+import 'package:eme_world/services/topic_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

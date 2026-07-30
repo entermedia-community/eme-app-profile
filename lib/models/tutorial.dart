@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:testu_cl/models/topic.dart';
+import 'package:eme_world/models/topic.dart';
 import 'chat_message.dart';
 
 class TutorialProgress {

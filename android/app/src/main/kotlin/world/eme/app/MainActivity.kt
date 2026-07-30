@@ -1,4 +1,4 @@
-package com.example.testu_cl
+package world.eme.app
 
 import io.flutter.embedding.android.FlutterActivity
 

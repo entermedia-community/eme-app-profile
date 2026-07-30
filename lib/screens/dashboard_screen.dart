@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:testu_cl/models/tag.dart';
-import 'package:testu_cl/utils/log.dart';
-import 'package:testu_cl/widgets/topics_card.dart';
+import 'package:eme_world/models/tag.dart';
+import 'package:eme_world/utils/log.dart';
+import 'package:eme_world/widgets/topics_card.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 

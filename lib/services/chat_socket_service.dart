@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:get/get.dart';
 import 'package:openinsitute_core/openinsitute_core.dart';
-import 'package:testu_cl/utils/log.dart';
+import 'package:eme_world/utils/log.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/chat_message.dart';
 import 'auth_service.dart';

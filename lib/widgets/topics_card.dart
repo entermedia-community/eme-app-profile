@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:testu_cl/models/topic.dart';
-import 'package:testu_cl/widgets/common_widgets.dart';
+import 'package:eme_world/models/topic.dart';
+import 'package:eme_world/widgets/common_widgets.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../screens/topic_tutorials_screen.dart';

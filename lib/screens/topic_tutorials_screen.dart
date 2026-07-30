@@ -1,7 +1,7 @@
 import 'dart:math' show min;
 
 import 'package:flutter/material.dart';
-import 'package:testu_cl/widgets/topics_card.dart';
+import 'package:eme_world/widgets/topics_card.dart';
 
 import '../models/topic.dart';
 import '../models/tutorial.dart';

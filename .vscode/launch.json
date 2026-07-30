@@ -5,19 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "testu_cl",
+			"name": "eme_world",
 			"request": "launch",
 			"type": "dart",
 			"deviceId": "chrome"
 		},
 		{
-			"name": "testu_cl (profile mode)",
+			"name": "eme_world (profile mode)",
 			"request": "launch",
 			"type": "dart",
 			"flutterMode": "profile"
 		},
 		{
-			"name": "testu_cl (release mode)",
+			"name": "eme_world (release mode)",
 			"request": "launch",
 			"type": "dart",
 			"flutterMode": "release"

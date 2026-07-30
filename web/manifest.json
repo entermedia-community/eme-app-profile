@@ -1,6 +1,6 @@
 {
-	"name": "testu_cl",
-	"short_name": "testu_cl",
+	"name": "EMe World",
+	"short_name": "EMe World",
 	"start_url": ".",
 	"display": "standalone",
 	"background_color": "#0175C2",

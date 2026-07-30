@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:testu_cl/models/topic.dart';
-import 'package:testu_cl/models/tutorial.dart';
-import 'package:testu_cl/utils/language_helper.dart';
+import 'package:eme_world/models/topic.dart';
+import 'package:eme_world/models/tutorial.dart';
+import 'package:eme_world/utils/language_helper.dart';
 
 class CommonWidgets {
   static Future<void> showInfoDialog({

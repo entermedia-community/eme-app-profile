@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:testu_cl/utils/log.dart';
+import 'package:eme_world/utils/log.dart';
 import '../models/user.dart';
 import 'workspace_service.dart';
 

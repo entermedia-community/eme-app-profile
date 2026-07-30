@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:testu_cl/models/workspace.dart';
-import 'package:testu_cl/services/auth_service.dart';
-import 'package:testu_cl/services/topic_service.dart';
-import 'package:testu_cl/services/workspace_service.dart';
+import 'package:eme_world/models/workspace.dart';
+import 'package:eme_world/services/auth_service.dart';
+import 'package:eme_world/services/topic_service.dart';
+import 'package:eme_world/services/workspace_service.dart';
 
 void main() {
   group('Workspace & WorkspaceService Tests', () {

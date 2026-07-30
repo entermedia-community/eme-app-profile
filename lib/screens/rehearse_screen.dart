@@ -3,16 +3,16 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:testu_cl/models/chat_message.dart' as socket_msg;
-import 'package:testu_cl/models/chat_message.dart';
-import 'package:testu_cl/models/topic.dart';
-import 'package:testu_cl/services/auth_service.dart';
-import 'package:testu_cl/services/chat_socket_service.dart';
-import 'package:testu_cl/services/topic_service.dart';
-import 'package:testu_cl/utils/log.dart';
-import 'package:testu_cl/widgets/common_widgets.dart';
-import 'package:testu_cl/widgets/fullscreen_mediaviewer.dart';
-import 'package:testu_cl/widgets/asset_message_widget.dart';
+import 'package:eme_world/models/chat_message.dart' as socket_msg;
+import 'package:eme_world/models/chat_message.dart';
+import 'package:eme_world/models/topic.dart';
+import 'package:eme_world/services/auth_service.dart';
+import 'package:eme_world/services/chat_socket_service.dart';
+import 'package:eme_world/services/topic_service.dart';
+import 'package:eme_world/utils/log.dart';
+import 'package:eme_world/widgets/common_widgets.dart';
+import 'package:eme_world/widgets/fullscreen_mediaviewer.dart';
+import 'package:eme_world/widgets/asset_message_widget.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../models/tutor_channel.dart';
