@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:transparent_image/transparent_image.dart';
 import '../models/workspace.dart';
 import '../services/auth_service.dart';
 import '../services/workspace_service.dart';
@@ -293,50 +294,37 @@ class _LoginScreenState extends State<LoginScreen>
                                 children: [
                                   // Logo Container
                                   Center(
-                                    child: Container(
-                                      width: 64,
-                                      height: 64,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(
-                                              0xFF38B6FF,
-                                            ).withValues(alpha: 0.2),
-                                            blurRadius: 15,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
                                       ),
-                                      child: const Image(
-                                        image: AssetImage('assets/testu.png'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  // Title
-                                  const Text(
-                                    'TestU Labs',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.5,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  const Text(
-                                    'Single Sign-On (SSO)',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF90A4AE),
-                                      fontWeight: FontWeight.w500,
+                                      child:
+                                          _selectedWorkspace.iconAsset != null
+                                          ? ConstrainedBox(
+                                              constraints: BoxConstraints(
+                                                maxWidth: 200,
+                                                maxHeight: 100,
+                                              ),
+                                              child: FadeInImage.memoryNetwork(
+                                                placeholder: kTransparentImage,
+                                                image: _selectedWorkspace
+                                                    .iconAsset!,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            )
+                                          : Text(
+                                              _selectedWorkspace.name,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 28,
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: -0.5,
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(height: 32),
-
                                   if (!_isOtpStage) ...[
                                     // Workspace Selection Menu
                                     const Text(
