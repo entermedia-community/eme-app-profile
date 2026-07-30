@@ -104,5 +104,53 @@ void main() {
       final deserialized = Workspace.fromJson(json);
       expect(deserialized, equals(ws));
     });
+
+    test('Dynamic Workspace creation requiring only mediaDBRoot', () {
+      final ws1 = Workspace.fromMediaDBRoot('https://minsur.genailabs.tech/site/mediadb');
+      expect(ws1.id, equals('minsur'));
+      expect(ws1.name, equals('Minsur'));
+      expect(ws1.mediaDBRoot, equals('https://minsur.genailabs.tech/site/mediadb'));
+      expect(ws1.iconAsset, isNull);
+
+      final ws2 = Workspace.fromMediaDBRoot('http://localhost:8080/site/mediadb');
+      expect(ws2.id, equals('localhost'));
+      expect(ws2.name, equals('Localhost'));
+      expect(ws2.iconAsset, isNull);
+
+      final ws3 = Workspace.fromJson({
+        'mediadbroot': 'https://custom-portal.org/site/mediadb',
+      });
+      expect(ws3.id, equals('custom-portal'));
+      expect(ws3.name, equals('Custom-portal'));
+      expect(ws3.iconAsset, isNull);
+    });
+
+    test('WorkspaceService dynamically registers new workspace from mediaDBRoot', () {
+      final dynWs = WorkspaceService.getOrCreateWorkspaceFromMediaDBRoot(
+        'https://newdomain.com/site/mediadb',
+      );
+      expect(dynWs.id, equals('newdomain'));
+      expect(dynWs.name, equals('Newdomain'));
+      expect(dynWs.mediaDBRoot, equals('https://newdomain.com/site/mediadb'));
+      expect(WorkspaceService.workspaces, contains(dynWs));
+    });
+
+    test('WorkspaceService removes workspace and falls back active workspace', () async {
+      final dynWs = WorkspaceService.getOrCreateWorkspaceFromMediaDBRoot(
+        'https://deleteme.com/site/mediadb',
+      );
+      expect(WorkspaceService.workspaces, contains(dynWs));
+
+      await WorkspaceService.setActiveWorkspace(dynWs);
+      expect(WorkspaceService.activeWorkspace.id, equals('deleteme'));
+
+      final canDel = WorkspaceService.canDeleteWorkspace(dynWs);
+      expect(canDel, isTrue);
+
+      final success = await WorkspaceService.removeWorkspace(dynWs);
+      expect(success, isTrue);
+      expect(WorkspaceService.workspaces, isNot(contains(dynWs)));
+      expect(WorkspaceService.activeWorkspace.id, isNot(equals('deleteme')));
+    });
   });
 }

@@ -89,6 +89,11 @@ class _AppEntryState extends State<AppEntry> {
           _handleWorkspaceChanged();
         }
       },
+      onParametersReceived: (parameters) {
+        if (mounted) {
+          _handleWorkspaceChanged();
+        }
+      },
     );
   }
 
