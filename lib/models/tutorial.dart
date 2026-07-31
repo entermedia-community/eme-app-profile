@@ -19,15 +19,15 @@ class TutorialProgress {
     return TutorialProgress(
       beginnerProgress: max(
         0,
-        (json['beginnerprogress'] as num?)?.toDouble() ?? 0.0,
+        _parseDouble(json['beginnerprogress']),
       ),
       competentProgress: max(
         0,
-        (json['competentprogress'] as num?)?.toDouble() ?? 0.0,
+        _parseDouble(json['competentprogress']),
       ),
       expertProgress: max(
         0,
-        (json['expertprogress'] as num?)?.toDouble() ?? 0.0,
+        _parseDouble(json['expertprogress']),
       ),
     );
   }
@@ -62,6 +62,13 @@ class TutorialProgress {
   }
 }
 
+double _parseDouble(dynamic value) {
+  if (value == null) return 0.0;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? 0.0;
+  return 0.0;
+}
+
 class Tutorial {
   final String id;
   final String title;
@@ -92,7 +99,7 @@ class Tutorial {
               competentProgress: 0,
               expertProgress: 0,
             ),
-      answersForgotten: (json['answersforgotten'] as num?)?.toDouble() ?? 0.0,
+      answersForgotten: _parseDouble(json['answersforgotten']),
       lastReviewed: json['lastreviewed'] != null
           ? DateTime.tryParse(json['lastreviewed'].toString()) ?? DateTime.now()
           : DateTime.now(),
