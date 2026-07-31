@@ -1397,10 +1397,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Column(
-                  children: [
-                    ..._buildChatMessageItem(message, isLast),
-                    Text("${message.createdAt}"),
-                  ],
+                  children: [..._buildChatMessageItem(message, isLast)],
                 ),
               );
             },
