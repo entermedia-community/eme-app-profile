@@ -125,12 +125,22 @@ class AuthService {
     _currentUser = null;
   }
 
-  static Future<void> sendMagicLink(String email) async {
+  static Future<Map<String, dynamic>> sendUserCode({
+    required String email,
+    String? firstName,
+    String? lastName,
+  }) async {
     final url = Uri.parse(
-      '$mediaDBRoot/services/authentication/sendmagiclink.json',
+      '$mediaDBRoot/services/authentication/sendusercode.json',
     );
     final Map<String, String> headers = {'Content-Type': 'application/json'};
-    final Map<String, String> body = {'email': email};
+    final Map<String, dynamic> body = {'email': email};
+    if (firstName != null && firstName.trim().isNotEmpty) {
+      body['firstName'] = firstName.trim();
+    }
+    if (lastName != null && lastName.trim().isNotEmpty) {
+      body['lastName'] = lastName.trim();
+    }
 
     try {
       final response = await http.post(
@@ -141,26 +151,32 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        final responseObj = data['response'];
-        if (responseObj != null && responseObj['status'] == 'ok') {
-          return;
+        final responseObj = data['response'] as Map<String, dynamic>?;
+        if (responseObj != null) {
+          return responseObj;
         } else {
-          final errorMsg =
-              responseObj?['message'] ?? 'Failed to send magic link';
-          throw Exception(errorMsg);
+          throw Exception('Invalid response format from server');
         }
       } else {
         throw Exception(
-          'Failed to send magic link: Server returned status code ${response.statusCode}',
+          'Failed to send user code: Server returned status code ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Failed to send magic link: $e');
+      throw Exception('Failed to send user code: $e');
     }
   }
 
-  static Future<bool> _authenticate(Map<String, dynamic> requestBody) async {
-    final url = Uri.parse('$mediaDBRoot/services/authentication/getkey.json');
+  static Future<bool> loginWithPassword(String email, String password) async {
+    return _login({'email': email, 'password': password});
+  }
+
+  static Future<bool> loginWithOtp(String email, String otp) async {
+    return _login({'email': email, 'templogincode': otp});
+  }
+
+  static Future<bool> _login(Map<String, dynamic> requestBody) async {
+    final url = Uri.parse('$mediaDBRoot/services/authentication/login.json');
     final Map<String, String> headers = {'Content-Type': 'application/json'};
 
     try {
@@ -172,28 +188,31 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        final responseObj = data['response'];
-        if (responseObj != null && responseObj['status'] == 'ok') {
-          final userId = responseObj['user']?.toString() ?? '';
-          final results = data['results'];
-          final key = results?['entermediakey']?.toString() ?? '';
+        final responseObj = data['response'] as Map<String, dynamic>?;
 
-          if (userId.isNotEmpty && key.isNotEmpty) {
+        if (responseObj != null && responseObj['status'] == 'ok') {
+          final userJson = data['user'] as Map<String, dynamic>?;
+          final key = data['entermediakey']?.toString() ?? '';
+          final userId = userJson?['id']?.toString() ?? responseObj['user']?.toString() ?? '';
+
+          if (key.isNotEmpty) {
             await saveCredentials(userId, key);
 
-            final userJson = results?['user'];
-            if (userJson is Map<String, dynamic>) {
+            if (userJson != null) {
               _currentUser = User.fromJson(userJson);
-            } else {
+            } else if (userId.isNotEmpty) {
               await fetchUser();
             }
 
             return true;
           } else {
-            throw Exception('Authentication response missing user ID or key');
+            throw Exception('Login response missing entermediakey');
           }
         } else {
-          final errorMsg = responseObj?['message'] ?? 'Authentication failed';
+          final errorMsg =
+              data['error']?.toString() ??
+              responseObj?['message']?.toString() ??
+              'Authentication failed';
           throw Exception(errorMsg);
         }
       } else {
@@ -202,11 +221,7 @@ class AuthService {
         );
       }
     } catch (e) {
-      throw Exception('Authentication failed: $e');
+      throw Exception('Authentication failed: ${e.toString().replaceAll('Exception: ', '')}');
     }
-  }
-
-  static Future<bool> loginWithOtp(String email, String otp) async {
-    return _authenticate({'email': email, 'templogincode': otp});
   }
 }

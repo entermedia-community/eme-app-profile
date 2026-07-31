@@ -26,11 +26,17 @@ class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _otpController = TextEditingController();
   final _otpFocusNode = FocusNode();
 
   late Workspace _selectedWorkspace;
+  bool _isLegacyMode = false;
+  bool _isRegistrationStage = false;
   bool _isOtpStage = false;
+  bool _obscurePassword = true;
   bool _rememberMe = true;
   bool _isLoading = false;
   int _timerSeconds = 0;
@@ -63,6 +69,9 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   void dispose() {
     _emailController.dispose();
+    _passwordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _otpController.dispose();
     _otpFocusNode.dispose();
     _fadeController.dispose();
@@ -97,56 +106,138 @@ class _LoginScreenState extends State<LoginScreen>
     });
 
     try {
-      await AuthService.sendMagicLink(_emailController.text.trim());
+      final response = await AuthService.sendUserCode(
+        email: _emailController.text.trim(),
+        firstName:
+            _isRegistrationStage ? _firstNameController.text.trim() : null,
+        lastName:
+            _isRegistrationStage ? _lastNameController.text.trim() : null,
+      );
 
       if (!mounted) return;
 
+      final status = response['status']?.toString();
+
+      if (status == 'ok') {
+        setState(() {
+          _isLoading = false;
+          _isOtpStage = true;
+          _isRegistrationStage = false;
+          _otpController.clear();
+        });
+
+        _startResendTimer();
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.mark_email_read_rounded,
+                  color: Color(0xFF38B6FF),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isResend
+                        ? 'Verification code resent to your email!'
+                        : 'Verification code sent to your email!',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF161C24),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: const Color(0xFF38B6FF).withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+          ),
+        );
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_otpFocusNode.canRequestFocus) {
+            _otpFocusNode.requestFocus();
+          }
+        });
+      } else if (status == 'nouser') {
+        final allowGuest = response['allowguestregistration'] == true;
+        if (allowGuest) {
+          setState(() {
+            _isLoading = false;
+            _isRegistrationStage = true;
+          });
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('User does not exist.'),
+              backgroundColor: Color(0xFFF50057),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        final msg = response['message']?.toString() ?? 'Failed to send code';
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: const Color(0xFFF50057),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _isOtpStage = true;
-        _otpController.clear();
       });
-
-      _startResendTimer();
-
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.mark_email_read_rounded,
-                color: Color(0xFF38B6FF),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  isResend
-                      ? 'Verification code resent to your email!'
-                      : 'Verification code sent to your email!',
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF161C24),
+          content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}'),
+          backgroundColor: const Color(0xFFF50057),
           behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(
-              color: const Color(0xFF38B6FF).withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
         ),
       );
+    }
+  }
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_otpFocusNode.canRequestFocus) {
-          _otpFocusNode.requestFocus();
-        }
-      });
+  void _loginLegacy() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final success = await AuthService.loginWithPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        widget.onLoginSuccess(_emailController.text.trim());
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -206,7 +297,9 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   void _submit() {
-    if (_isOtpStage) {
+    if (_isLegacyMode) {
+      _loginLegacy();
+    } else if (_isOtpStage) {
       _verifyOtp();
     } else {
       _sendOtp();
@@ -325,7 +418,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                   ),
                                   const SizedBox(height: 32),
-                                  if (!_isOtpStage) ...[
+
+                                  if (_isLegacyMode) ...[
                                     // Workspace Selection Menu
                                     const Text(
                                       'Workspace',
@@ -365,40 +459,291 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     const SizedBox(height: 20),
 
-                                    // Remember me checkbox
+                                    // Password Input
+                                    const Text(
+                                      'Password',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInputField(
+                                      controller: _passwordController,
+                                      hintText: 'Enter your password',
+                                      prefixIcon: Icons.lock_outline,
+                                      obscureText: _obscurePassword,
+                                      suffixIcon: IconButton(
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_outlined
+                                              : Icons.visibility_off_outlined,
+                                          color: Colors.white38,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _obscurePassword =
+                                                !_obscurePassword;
+                                          });
+                                        },
+                                      ),
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'Please enter your password';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 12),
+
                                     Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        SizedBox(
-                                          width: 24,
-                                          height: 24,
-                                          child: Checkbox(
-                                            value: _rememberMe,
-                                            activeColor: const Color(
-                                              0xFF38B6FF,
-                                            ),
-                                            checkColor: Colors.black,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            side: BorderSide(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.2,
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: Checkbox(
+                                                value: _rememberMe,
+                                                activeColor: const Color(
+                                                  0xFF38B6FF,
+                                                ),
+                                                checkColor: Colors.black,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                side: BorderSide(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.2),
+                                                ),
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    _rememberMe = val ?? false;
+                                                  });
+                                                },
                                               ),
                                             ),
-                                            onChanged: (val) {
-                                              setState(() {
-                                                _rememberMe = val ?? false;
-                                              });
-                                            },
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'Remember session',
+                                              style: TextStyle(
+                                                color: Color(0xFF90A4AE),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _isLegacyMode = false;
+                                              _passwordController.clear();
+                                            });
+                                          },
+                                          child: const Text(
+                                            'Use Verification Code',
+                                            style: TextStyle(
+                                              color: Color(0xFF38B6FF),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                      ],
+                                    ),
+                                  ] else if (_isRegistrationStage) ...[
+                                    // Guest Registration Form Stage
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
                                         const Text(
-                                          'Remember my session',
+                                          'Create Account',
                                           style: TextStyle(
-                                            color: Color(0xFF90A4AE),
-                                            fontSize: 13,
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _isRegistrationStage = false;
+                                              _firstNameController.clear();
+                                              _lastNameController.clear();
+                                            });
+                                          },
+                                          child: const Row(
+                                            children: [
+                                              Icon(
+                                                Icons.edit,
+                                                color: Color(0xFF38B6FF),
+                                                size: 14,
+                                              ),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'Edit Email',
+                                                style: TextStyle(
+                                                  color: Color(0xFF38B6FF),
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'No account found for ${_emailController.text}. Please enter your details to register.',
+                                      style: const TextStyle(
+                                        color: Color(0xFF90A4AE),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    const Text(
+                                      'First Name',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInputField(
+                                      controller: _firstNameController,
+                                      hintText: 'Enter your first name',
+                                      prefixIcon: Icons.person_outline,
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'Please enter your first name';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    const Text(
+                                      'Last Name',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInputField(
+                                      controller: _lastNameController,
+                                      hintText: 'Enter your last name',
+                                      prefixIcon: Icons.person_outline,
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'Please enter your last name';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ] else if (!_isOtpStage) ...[
+                                    // Workspace Selection Menu
+                                    const Text(
+                                      'Workspace',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildWorkspaceDropdown(),
+                                    const SizedBox(height: 20),
+
+                                    // Email Address Input
+                                    const Text(
+                                      'Email Address',
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInputField(
+                                      controller: _emailController,
+                                      hintText: 'Enter your email',
+                                      prefixIcon: Icons.email_outlined,
+                                      validator: (val) {
+                                        if (val == null || val.trim().isEmpty) {
+                                          return 'Please enter your email';
+                                        }
+                                        if (!val.contains('@')) {
+                                          return 'Please enter a valid email address';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(height: 12),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                              width: 24,
+                                              height: 24,
+                                              child: Checkbox(
+                                                value: _rememberMe,
+                                                activeColor: const Color(
+                                                  0xFF38B6FF,
+                                                ),
+                                                checkColor: Colors.black,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(6),
+                                                ),
+                                                side: BorderSide(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.2),
+                                                ),
+                                                onChanged: (val) {
+                                                  setState(() {
+                                                    _rememberMe = val ?? false;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Text(
+                                              'Remember session',
+                                              style: TextStyle(
+                                                color: Color(0xFF90A4AE),
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() {
+                                              _isLegacyMode = true;
+                                            });
+                                          },
+                                          child: const Text(
+                                            'Legacy Login',
+                                            style: TextStyle(
+                                              color: Color(0xFF38B6FF),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -421,6 +766,8 @@ class _LoginScreenState extends State<LoginScreen>
                                           onTap: () {
                                             setState(() {
                                               _isOtpStage = false;
+                                              _isRegistrationStage = false;
+                                              _isLegacyMode = false;
                                               _otpController.clear();
                                               _otpError = null;
                                               _resendTimer?.cancel();
@@ -572,9 +919,13 @@ class _LoginScreenState extends State<LoginScreen>
                                               ),
                                             ),
                                             child: Text(
-                                              _isOtpStage
-                                                  ? 'Verify & Sign In'
-                                                  : 'Send Verification Code',
+                                              _isLegacyMode
+                                                  ? 'Sign In'
+                                                  : _isRegistrationStage
+                                                      ? 'Register & Send Code'
+                                                      : _isOtpStage
+                                                          ? 'Verify & Sign In'
+                                                          : 'Send Verification Code',
                                               style: const TextStyle(
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.bold,
