@@ -75,13 +75,13 @@ class AppEntry extends StatefulWidget {
 
 class _AppEntryState extends State<AppEntry> {
   late bool _isLoggedIn;
-  late String _username;
+  late String _fullName;
 
   @override
   void initState() {
     super.initState();
     _isLoggedIn = AuthService.isLoggedIn;
-    _username = AuthService.userId ?? '';
+    _fullName = AuthService.currentUser?.fullName ?? '';
 
     DeepLinkService.init(
       onWorkspaceOpened: (workspace) {
@@ -106,7 +106,7 @@ class _AppEntryState extends State<AppEntry> {
   void _handleLogin(String email) {
     setState(() {
       _isLoggedIn = true;
-      _username = AuthService.userId ?? email;
+      _fullName = AuthService.currentUser?.fullName ?? '';
     });
   }
 
@@ -114,14 +114,14 @@ class _AppEntryState extends State<AppEntry> {
     await AuthService.logout();
     setState(() {
       _isLoggedIn = false;
-      _username = '';
+      _fullName = '';
     });
   }
 
   void _handleWorkspaceChanged() {
     setState(() {
       _isLoggedIn = AuthService.isLoggedIn;
-      _username = AuthService.userId ?? '';
+      _fullName = AuthService.currentUser?.fullName ?? '';
     });
   }
 
@@ -130,7 +130,7 @@ class _AppEntryState extends State<AppEntry> {
     if (_isLoggedIn) {
       return SelectionArea(
         child: DashboardScreen(
-          username: _username,
+          fullName: _fullName,
           onLogout: _handleLogout,
           onWorkspaceChanged: _handleWorkspaceChanged,
         ),

@@ -15,13 +15,13 @@ import '../services/workspace_service.dart';
 import '../utils/language_helper.dart';
 
 class DashboardScreen extends StatefulWidget {
-  final String username;
+  final String fullName;
   final VoidCallback? onLogout;
   final VoidCallback? onWorkspaceChanged;
 
   const DashboardScreen({
     super.key,
-    required this.username,
+    required this.fullName,
     this.onLogout,
     this.onWorkspaceChanged,
   });
@@ -472,7 +472,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         ? '${user.firstName} ${user.lastName}'.trim()
         : (user?.screenName.isNotEmpty == true
               ? user!.screenName
-              : (widget.username.isNotEmpty ? widget.username : 'John Smith'));
+              : (widget.fullName.isNotEmpty ? widget.fullName : 'John Smith'));
 
     final String portraitUrl = user?.assetPortrait.isNotEmpty == true
         ? user!.assetPortrait
@@ -942,8 +942,8 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                           child: Center(
                             child: Text(
-                              widget.username.isNotEmpty
-                                  ? widget.username[0].toUpperCase()
+                              widget.fullName.isNotEmpty
+                                  ? widget.fullName[0].toUpperCase()
                                   : 'U',
                               style: const TextStyle(
                                 fontSize: 20,
@@ -959,7 +959,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.username,
+                                widget.fullName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -1417,9 +1417,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           await AuthService.loadSessionForActiveWorkspace();
                                           if (mounted) {
                                             setState(() {
-                                              _activeWorkSpace = WorkspaceService
-                                                  .activeWorkspace
-                                                  .name;
+                                              _activeWorkSpace =
+                                                  WorkspaceService
+                                                      .activeWorkspace
+                                                      .name;
                                               _loadTopics();
                                             });
                                             widget.onWorkspaceChanged?.call();

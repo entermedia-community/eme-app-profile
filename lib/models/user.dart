@@ -15,6 +15,14 @@ class User {
     required this.email,
   });
 
+  String get fullName {
+    if (screenName.isNotEmpty) return screenName;
+    if (firstName.isNotEmpty && lastName.isNotEmpty) {
+      return '$firstName $lastName';
+    }
+    return '';
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] as String? ?? '',
