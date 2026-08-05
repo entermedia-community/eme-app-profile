@@ -776,12 +776,18 @@ class _RehearseScreenState extends State<RehearseScreen> {
     );
   }
 
-  Widget _buildMessageContainer({required bool isAI, required Widget child}) {
+  Widget _buildMessageContainer({
+    required bool isAgent,
+    required bool isAiGenerated,
+    required Widget child,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: isAI ? MainAxisAlignment.start : MainAxisAlignment.end,
+      mainAxisAlignment: isAgent
+          ? MainAxisAlignment.start
+          : MainAxisAlignment.end,
       children: [
-        if (isAI) ...[
+        if (isAgent) ...[
           Container(
             width: 32,
             height: 32,
@@ -808,10 +814,10 @@ class _RehearseScreenState extends State<RehearseScreen> {
         Flexible(
           child: Container(
             decoration: BoxDecoration(
-              color: isAI
+              color: isAgent
                   ? const Color(0xFF161C24).withValues(alpha: 0.8)
                   : const Color(0xFFF27121).withValues(alpha: 0.15),
-              borderRadius: isAI
+              borderRadius: isAgent
                   ? const BorderRadius.only(
                       topLeft: Radius.circular(4),
                       topRight: Radius.circular(16),
@@ -825,14 +831,14 @@ class _RehearseScreenState extends State<RehearseScreen> {
                       bottomRight: Radius.circular(16),
                     ),
               border: Border.all(
-                color: isAI
+                color: isAgent
                     ? Colors.white.withValues(alpha: 0.06)
                     : const Color(0xFFF27121).withValues(alpha: 0.4),
                 width: 1.5,
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: isAI
+            child: isAgent
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -840,26 +846,27 @@ class _RehearseScreenState extends State<RehearseScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.auto_awesome,
-                                size: 12,
-                                color: Color(0xFF38B6FF),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                LanguageHelper.translate('ai_generated'),
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                          if (isAiGenerated)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.auto_awesome,
+                                  size: 12,
                                   color: Color(0xFF38B6FF),
-                                  letterSpacing: 0.5,
                                 ),
-                              ),
-                            ],
-                          ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  LanguageHelper.translate('ai_generated'),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF38B6FF),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           InkWell(
                             onTap: () => _showReportAiDialog(context),
                             borderRadius: BorderRadius.circular(12),
@@ -881,7 +888,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
                                     'Report',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.white.withValues(alpha: 0.4),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.4,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -897,7 +906,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                 : child,
           ),
         ),
-        if (!isAI) ...[
+        if (!isAgent) ...[
           const SizedBox(width: 12),
           Container(
             width: 32,
@@ -952,14 +961,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   Widget _buildAssetMessage(ChatMessage message) {
     return _buildMessageContainer(
-      isAI: message.isAI,
+      isAgent: message.isAI,
+      isAiGenerated: false,
       child: AssetMessageWidget(message: message),
     );
   }
 
   Widget _buildUserCommentMessage(ChatMessage message) {
     return _buildMessageContainer(
-      isAI: false,
+      isAgent: false,
+      isAiGenerated: false,
       child: _buildRichText(
         message.text,
         const TextStyle(fontSize: 14, color: Colors.white, height: 1.4),
@@ -969,7 +980,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   Widget _buildAgentCommentMessage(ChatMessage message) {
     return _buildMessageContainer(
-      isAI: true,
+      isAgent: true,
+      isAiGenerated: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -988,7 +1000,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   Widget _buildEndMessage(ChatMessage message) {
     return _buildMessageContainer(
-      isAI: true,
+      isAgent: true,
+      isAiGenerated: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1023,7 +1036,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   Widget _buildTextMessage(ChatMessage message) {
     return _buildMessageContainer(
-      isAI: message.isAI,
+      isAgent: message.isAI,
+      isAiGenerated: false,
       child: _buildRichText(
         message.text,
         TextStyle(
@@ -1052,7 +1066,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
     final color = _getConfidenceColor(message.confidence?.$1 ?? '');
 
     return _buildMessageContainer(
-      isAI: true,
+      isAgent: true,
+      isAiGenerated: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1183,7 +1198,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
     required Function() onPressed,
   }) {
     return _buildMessageContainer(
-      isAI: true,
+      isAgent: true,
+      isAiGenerated: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
