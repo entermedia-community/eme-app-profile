@@ -616,6 +616,166 @@ class _RehearseScreenState extends State<RehearseScreen> {
     );
   }
 
+  void _showReportAiDialog(BuildContext context) {
+    String selectedReason = 'reason_hallucination';
+    final TextEditingController commentsController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF141923),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            title: Row(
+              children: [
+                const Icon(Icons.outlined_flag, color: Color(0xFFF50057)),
+                const SizedBox(width: 10),
+                Text(
+                  LanguageHelper.translate('report_ai'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Report hallucination, inaccurate information, or inappropriate AI response:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...[
+                    'reason_hallucination',
+                    'reason_inappropriate',
+                    'reason_offensive',
+                    'reason_other',
+                  ].map((reasonKey) {
+                    final isSelected = selectedReason == reasonKey;
+                    return InkWell(
+                      onTap: () => setState(() => selectedReason = reasonKey),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF38B6FF).withValues(alpha: 0.15)
+                              : Colors.white.withValues(alpha: 0.03),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected
+                                ? const Color(0xFF38B6FF)
+                                : Colors.white.withValues(alpha: 0.05),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              isSelected
+                                  ? Icons.radio_button_checked
+                                  : Icons.radio_button_off,
+                              size: 16,
+                              color: isSelected
+                                  ? const Color(0xFF38B6FF)
+                                  : Colors.white38,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                LanguageHelper.translate(reasonKey),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.white70,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: commentsController,
+                    maxLines: 2,
+                    style: const TextStyle(fontSize: 12, color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Additional details (optional)...',
+                      hintStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white38,
+                      ),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.04),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(
+                  LanguageHelper.translate('cancel'),
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38B6FF),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        LanguageHelper.translate('report_ai_success'),
+                      ),
+                      backgroundColor: const Color(0xFF141923),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildMessageContainer({required bool isAI, required Widget child}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,7 +832,69 @@ class _RehearseScreenState extends State<RehearseScreen> {
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: child,
+            child: isAI
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.auto_awesome,
+                                size: 12,
+                                color: Color(0xFF38B6FF),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                LanguageHelper.translate('ai_generated'),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF38B6FF),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () => _showReportAiDialog(context),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.outlined_flag,
+                                    size: 13,
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'Report',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      child,
+                    ],
+                  )
+                : child,
           ),
         ),
         if (!isAI) ...[
@@ -1377,6 +1599,39 @@ class _RehearseScreenState extends State<RehearseScreen> {
                       ],
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // AI Role Disclosure Banner
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF38B6FF).withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFF38B6FF).withValues(alpha: 0.2),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.info_outline,
+                size: 16,
+                color: Color(0xFF38B6FF),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  LanguageHelper.translate('ai_disclaimer_body'),
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.3,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
                 ),
               ),
             ],

@@ -13,6 +13,8 @@ import '../services/auth_service.dart';
 import '../services/topic_service.dart';
 import '../services/workspace_service.dart';
 import '../utils/language_helper.dart';
+import '../widgets/data_consent_dialog.dart';
+import 'compliance_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String fullName;
@@ -42,6 +44,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   void initState() {
     super.initState();
     _loadTopics();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DataCollectionConsentDialog.showIfNeeded(context);
+    });
   }
 
   void _loadTopics() {
@@ -1000,6 +1005,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                         selected: selectedTab == 'Catalog',
                         onTap: () {
                           Navigator.pop(context);
+                        },
+                      ),
+                      _buildDrawerItem(
+                        icon: Icons.verified_user_outlined,
+                        title: LanguageHelper.translate('app_compliance'),
+                        selected: false,
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ComplianceScreen(onLogout: widget.onLogout),
+                            ),
+                          );
                         },
                       ),
                     ],
