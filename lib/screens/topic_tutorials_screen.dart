@@ -1,8 +1,9 @@
 import 'dart:math' show min;
 
 import 'package:eme_world/l10n/app_localizations.dart';
-import 'package:eme_world/models/workspace.dart';
+import 'package:eme_world/providers/workspace_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/widgets/topics_card.dart';
 
 import '../models/topic.dart';
@@ -10,16 +11,16 @@ import '../models/tutorial.dart';
 import '../services/topic_service.dart';
 import '../widgets/tutorial_card.dart';
 
-class TopicTutorialsScreen extends StatefulWidget {
+class TopicTutorialsScreen extends ConsumerStatefulWidget {
   final Topic topic;
 
   const TopicTutorialsScreen({super.key, required this.topic});
 
   @override
-  State<TopicTutorialsScreen> createState() => _TopicTutorialsScreenState();
+  ConsumerState<TopicTutorialsScreen> createState() => _TopicTutorialsScreenState();
 }
 
-class _TopicTutorialsScreenState extends State<TopicTutorialsScreen> {
+class _TopicTutorialsScreenState extends ConsumerState<TopicTutorialsScreen> {
   final TopicService _topicService = TopicService();
   late Future<List<Tutorial>> _tutorialsFuture;
 
@@ -42,10 +43,8 @@ class _TopicTutorialsScreenState extends State<TopicTutorialsScreen> {
     final isDesktop = size.width > 900;
     final mainColor = const Color(0xFF38B6FF);
 
-    return ValueListenableBuilder<Locale>(
-      valueListenable: Workspace.languageNotifier,
-      builder: (context, currentLanguage, _) {
-        return Scaffold(
+    ref.watch(localeProvider);
+    return Scaffold(
           body: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -195,8 +194,6 @@ class _TopicTutorialsScreenState extends State<TopicTutorialsScreen> {
             ),
           ),
         );
-      },
-    );
   }
 
   Widget _buildHeader(BuildContext context, Color mainColor) {

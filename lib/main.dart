@@ -1,6 +1,8 @@
 import 'package:eme_world/l10n/app_localizations.dart';
-import 'package:eme_world/models/workspace.dart';
+import 'package:eme_world/providers/auth_provider.dart';
+import 'package:eme_world/providers/workspace_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'services/auth_service.dart';
@@ -11,16 +13,22 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WorkspaceService.init();
   await AuthService.init();
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+
     return MaterialApp(
-      locale: Workspace.currentLanguage,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       title: 'Catalog Dashboard',
@@ -71,32 +79,29 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AppEntry extends StatefulWidget {
+class AppEntry extends ConsumerStatefulWidget {
   const AppEntry({super.key});
 
   @override
-  State<AppEntry> createState() => _AppEntryState();
+  ConsumerState<AppEntry> createState() => _AppEntryState();
 }
 
-class _AppEntryState extends State<AppEntry> {
-  late bool _isLoggedIn;
-  late String _fullName;
-
+class _AppEntryState extends ConsumerState<AppEntry> {
   @override
   void initState() {
     super.initState();
-    _isLoggedIn = AuthService.isLoggedIn;
-    _fullName = AuthService.currentUser?.fullName ?? '';
 
     DeepLinkService.init(
       onWorkspaceOpened: (workspace) {
         if (mounted) {
-          _handleWorkspaceChanged();
+          ref.read(authProvider.notifier).refresh();
+          ref.read(workspaceProvider.notifier).refresh();
         }
       },
       onParametersReceived: (parameters) {
         if (mounted) {
-          _handleWorkspaceChanged();
+          ref.read(authProvider.notifier).refresh();
+          ref.read(workspaceProvider.notifier).refresh();
         }
       },
     );
@@ -109,33 +114,26 @@ class _AppEntryState extends State<AppEntry> {
   }
 
   void _handleLogin(String email) {
-    setState(() {
-      _isLoggedIn = true;
-      _fullName = AuthService.currentUser?.fullName ?? '';
-    });
+    ref.read(authProvider.notifier).refresh();
   }
 
   void _handleLogout() async {
-    await AuthService.logout();
-    setState(() {
-      _isLoggedIn = false;
-      _fullName = '';
-    });
+    await ref.read(authProvider.notifier).logout();
   }
 
   void _handleWorkspaceChanged() {
-    setState(() {
-      _isLoggedIn = AuthService.isLoggedIn;
-      _fullName = AuthService.currentUser?.fullName ?? '';
-    });
+    ref.read(authProvider.notifier).refresh();
+    ref.read(workspaceProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoggedIn) {
+    final authState = ref.watch(authProvider);
+
+    if (authState.isLoggedIn) {
       return SelectionArea(
         child: DashboardScreen(
-          fullName: _fullName,
+          fullName: authState.fullName,
           onLogout: _handleLogout,
           onWorkspaceChanged: _handleWorkspaceChanged,
         ),
@@ -150,3 +148,4 @@ class _AppEntryState extends State<AppEntry> {
     }
   }
 }
+

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/models/tag.dart';
 import 'package:eme_world/utils/log.dart';
 import 'package:eme_world/widgets/topics_card.dart';
@@ -10,13 +11,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../models/topic.dart';
 import '../models/workspace.dart';
+import '../providers/workspace_provider.dart';
 import '../services/auth_service.dart';
 import '../services/topic_service.dart';
 import '../services/workspace_service.dart';
 import '../widgets/data_consent_dialog.dart';
 import 'compliance_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   final String fullName;
   final VoidCallback? onLogout;
   final VoidCallback? onWorkspaceChanged;
@@ -29,10 +31,10 @@ class DashboardScreen extends StatefulWidget {
   });
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen>
+class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final TopicService _topicService = TopicService();
@@ -68,10 +70,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 900;
 
-    return ValueListenableBuilder<Locale>(
-      valueListenable: Workspace.languageNotifier,
-      builder: (context, currentLanguage, _) {
-        return Scaffold(
+    ref.watch(localeProvider);
+    return Scaffold(
           key: _scaffoldKey,
           drawer: _buildDrawer(),
           body: Container(
@@ -226,8 +226,6 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ),
         );
-      },
-    );
   }
 
   Widget _buildHeader(BuildContext context, bool isDesktop, String workspace) {
@@ -1152,11 +1150,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                           ),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
-                              setState(() {
-                                Workspace.currentLanguage = Locale(
-                                  newValue.substring(0, 2),
-                                );
-                              });
+                              final langCode =
+                                  newValue == 'Español' ? 'es' : 'en';
+                              ref
+                                  .read(localeProvider.notifier)
+                                  .setLocale(Locale(langCode));
                             }
                           },
                           items: <String>['English', 'Español']
