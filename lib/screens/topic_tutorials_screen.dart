@@ -1,12 +1,13 @@
 import 'dart:math' show min;
 
+import 'package:eme_world/l10n/app_localizations.dart';
+import 'package:eme_world/models/workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:eme_world/widgets/topics_card.dart';
 
 import '../models/topic.dart';
 import '../models/tutorial.dart';
 import '../services/topic_service.dart';
-import '../utils/language_helper.dart';
 import '../widgets/tutorial_card.dart';
 
 class TopicTutorialsScreen extends StatefulWidget {
@@ -36,12 +37,13 @@ class _TopicTutorialsScreenState extends State<TopicTutorialsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 900;
     final mainColor = const Color(0xFF38B6FF);
 
-    return ValueListenableBuilder<String>(
-      valueListenable: LanguageHelper.languageNotifier,
+    return ValueListenableBuilder<Locale>(
+      valueListenable: Workspace.languageNotifier,
       builder: (context, currentLanguage, _) {
         return Scaffold(
           body: Container(
@@ -83,7 +85,7 @@ class _TopicTutorialsScreenState extends State<TopicTutorialsScreen> {
 
                               // Section Title
                               Text(
-                                '${widget.topic.totalTutorials} ${LanguageHelper.translate('tutorials')}',
+                                '${widget.topic.totalTutorials} ${l10n.tutorials}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,

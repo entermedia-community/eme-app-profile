@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:eme_world/models/topic.dart';
-import 'package:eme_world/utils/language_helper.dart';
 import 'package:eme_world/widgets/common_widgets.dart';
 
 import '../models/tutorial.dart';
@@ -41,6 +41,7 @@ class _TutorialCardState extends State<TutorialCard>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statusColor = widget.tutorial.progress.getStatusColor();
 
     return Container(
@@ -140,8 +141,8 @@ class _TutorialCardState extends State<TutorialCard>
                               child: Text(
                                 widget.tutorial.progress.getEfficiency() ==
                                         Efficiency.expert
-                                    ? LanguageHelper.translate('refresh')
-                                    : LanguageHelper.translate('improve'),
+                                    ? l10n.refresh
+                                    : l10n.improve,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,

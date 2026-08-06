@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../services/workspace_service.dart';
 
 class Workspace {
@@ -5,13 +7,25 @@ class Workspace {
   final String name;
   final String mediaDBRoot;
   final String? iconAsset;
+  final Locale? locale;
 
   const Workspace({
     required this.id,
     required this.name,
     required this.mediaDBRoot,
     this.iconAsset,
+    this.locale = const Locale('en'),
   });
+
+  static final ValueNotifier<Locale> languageNotifier = ValueNotifier<Locale>(
+    const Locale('en'),
+  );
+
+  static Locale get currentLanguage => languageNotifier.value;
+
+  static set currentLanguage(Locale locale) {
+    languageNotifier.value = locale;
+  }
 
   /// Extracts the hostname label from a URL or mediaDBRoot string.
   /// Example: 'https://minsur.genailabs.tech/site/mediadb' -> 'minsur'
@@ -107,7 +121,8 @@ class Workspace {
   factory Workspace.fromJson(Map<String, dynamic> json) {
     final rawRoot =
         json['mediaDBRoot'] as String? ?? json['mediadbroot'] as String? ?? '';
-    final httpsParam = json['https']?.toString().toLowerCase() ??
+    final httpsParam =
+        json['https']?.toString().toLowerCase() ??
         json['ssl']?.toString().toLowerCase();
     final useHttps = httpsParam != 'false';
 

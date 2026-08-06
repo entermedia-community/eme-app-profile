@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:eme_world/models/topic.dart';
 import 'package:eme_world/models/tutorial.dart';
-import 'package:eme_world/utils/language_helper.dart';
 
 class CommonWidgets {
   static Future<void> showInfoDialog({
@@ -53,7 +52,7 @@ class CommonWidgets {
             Icon(icon, size: 18, color: color),
             const SizedBox(width: 8),
             Text(
-              LanguageHelper.translate(efficiency.name),
+              efficiency.name,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -92,7 +91,7 @@ class CommonWidgets {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
-          LanguageHelper.translate(efficiency.name),
+          efficiency.name,
           style: const TextStyle(
             color: Colors.white70,
             fontSize: 10,

@@ -1,10 +1,11 @@
+import 'package:eme_world/l10n/app_localizations.dart';
+import 'package:eme_world/models/workspace.dart';
 import 'package:flutter/material.dart';
 import 'package:eme_world/models/topic.dart';
 import 'package:eme_world/widgets/common_widgets.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../screens/topic_tutorials_screen.dart';
-import '../utils/language_helper.dart';
 
 class TopicCard extends StatelessWidget {
   final Topic topic;
@@ -13,10 +14,11 @@ class TopicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final mainColor = const Color(0xFF38B6FF);
 
-    return ValueListenableBuilder<String>(
-      valueListenable: LanguageHelper.languageNotifier,
+    return ValueListenableBuilder<Locale>(
+      valueListenable: Workspace.languageNotifier,
       builder: (context, currentLanguage, _) {
         return Material(
           color: Colors.transparent,
@@ -95,11 +97,8 @@ class TopicCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                LanguageHelper.translate(
-                                  'tutorials_count',
-                                  placeholders: {
-                                    'count': topic.totalTutorials.toString(),
-                                  },
+                                l10n.tutorialsCount(
+                                  topic.totalTutorials.toString(),
                                 ),
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -141,9 +140,7 @@ class TopicCard extends StatelessWidget {
                             Column(
                               children: [
                                 Text(
-                                  LanguageHelper.translate(
-                                    'average_rank',
-                                  ).toUpperCase(),
+                                  l10n.averageRank.toUpperCase(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(

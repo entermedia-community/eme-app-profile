@@ -1,7 +1,7 @@
+import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
-import '../utils/language_helper.dart';
 import '../widgets/data_consent_dialog.dart';
 
 class ComplianceScreen extends StatefulWidget {
@@ -51,6 +51,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   }
 
   void _showDeleteAccountDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -64,20 +65,23 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             const Icon(Icons.warning_amber_rounded, color: Color(0xFFF50057)),
             const SizedBox(width: 10),
             Text(
-              LanguageHelper.translate('delete_account'),
+              l10n.deleteAccount,
               style: const TextStyle(color: Colors.white, fontSize: 18),
             ),
           ],
         ),
         content: Text(
-          LanguageHelper.translate('delete_account_confirm'),
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+          l10n.deleteAccountConfirm,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.8),
+            fontSize: 14,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              LanguageHelper.translate('cancel'),
+              l10n.cancel,
               style: const TextStyle(color: Colors.white70),
             ),
           ),
@@ -104,8 +108,11 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               }
             },
             child: Text(
-              LanguageHelper.translate('delete_account'),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              l10n.deleteAccount,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -114,6 +121,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   }
 
   void _showDeleteDataDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -127,20 +135,23 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             const Icon(Icons.delete_sweep_rounded, color: Colors.orangeAccent),
             const SizedBox(width: 10),
             Text(
-              LanguageHelper.translate('delete_data'),
+              l10n.deleteData,
               style: const TextStyle(color: Colors.white, fontSize: 18),
             ),
           ],
         ),
         content: Text(
-          LanguageHelper.translate('delete_data_confirm'),
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+          l10n.deleteDataConfirm,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.8),
+            fontSize: 14,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: Text(
-              LanguageHelper.translate('cancel'),
+              l10n.cancel,
               style: const TextStyle(color: Colors.white70),
             ),
           ),
@@ -155,14 +166,19 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Personal collected data and progress cache deleted.'),
+                    content: Text(
+                      'Personal collected data and progress cache deleted.',
+                    ),
                   ),
                 );
               }
             },
             child: Text(
-              LanguageHelper.translate('confirm'),
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              l10n.confirm,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -172,6 +188,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F1319),
       appBar: AppBar(
@@ -182,7 +200,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          LanguageHelper.translate('app_compliance'),
+          l10n.appCompliance,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -197,14 +215,14 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
           children: [
             // Section 1: AI Assistant Role Disclosure
             _buildSectionCard(
-              title: LanguageHelper.translate('ai_disclaimer_title'),
+              title: l10n.aiDisclaimerTitle,
               icon: Icons.psychology_outlined,
               iconColor: const Color(0xFF38B6FF),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    LanguageHelper.translate('ai_disclaimer_body'),
+                    l10n.aiDisclaimerBody,
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.5,
@@ -212,9 +230,15 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildBulletPoint('Questions & answers are human-authored and human-reviewed.'),
-                  _buildBulletPoint('AI serves purely as an interactive learning assistant.'),
-                  _buildBulletPoint('AI is not the evaluator or driving force behind assessments.'),
+                  _buildBulletPoint(
+                    'Questions & answers are human-authored and human-reviewed.',
+                  ),
+                  _buildBulletPoint(
+                    'AI serves purely as an interactive learning assistant.',
+                  ),
+                  _buildBulletPoint(
+                    'AI is not the evaluator or driving force behind assessments.',
+                  ),
                 ],
               ),
             ),
@@ -223,14 +247,14 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
             // Section 2: Privacy Policy & Data Collection
             _buildSectionCard(
-              title: LanguageHelper.translate('privacy_policy'),
+              title: l10n.privacyPolicy,
               icon: Icons.privacy_tip_outlined,
               iconColor: const Color(0xFF38EF7D),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    LanguageHelper.translate('data_consent_body'),
+                    l10n.dataConsentBody,
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.5,
@@ -239,11 +263,16 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -280,10 +309,18 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBulletPoint('Google Play & Apple App Store User Safety Compliant'),
-                  _buildBulletPoint('Includes immediate Reporting mechanism for AI generated responses'),
-                  _buildBulletPoint('Provides full User Account & Personal Data Deletion options'),
-                  _buildBulletPoint('All network communications strictly secured using TLS/HTTPS'),
+                  _buildBulletPoint(
+                    'Google Play & Apple App Store User Safety Compliant',
+                  ),
+                  _buildBulletPoint(
+                    'Includes immediate Reporting mechanism for AI generated responses',
+                  ),
+                  _buildBulletPoint(
+                    'Provides full User Account & Personal Data Deletion options',
+                  ),
+                  _buildBulletPoint(
+                    'All network communications strictly secured using TLS/HTTPS',
+                  ),
                 ],
               ),
             ),
@@ -320,10 +357,17 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          icon: const Icon(Icons.cleaning_services, size: 16, color: Colors.orange),
+                          icon: const Icon(
+                            Icons.cleaning_services,
+                            size: 16,
+                            color: Colors.orange,
+                          ),
                           label: Text(
-                            LanguageHelper.translate('delete_data'),
-                            style: const TextStyle(fontSize: 11, color: Colors.orange),
+                            l10n.deleteData,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.orange,
+                            ),
                           ),
                           onPressed: _showDeleteDataDialog,
                         ),
@@ -338,10 +382,17 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          icon: const Icon(Icons.delete_forever, size: 16, color: Colors.white),
+                          icon: const Icon(
+                            Icons.delete_forever,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                           label: Text(
-                            LanguageHelper.translate('delete_account'),
-                            style: const TextStyle(fontSize: 11, color: Colors.white),
+                            l10n.deleteAccount,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white,
+                            ),
                           ),
                           onPressed: _showDeleteAccountDialog,
                         ),
@@ -371,9 +422,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFF141923),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,7 +456,14 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: Color(0xFF38B6FF), fontSize: 14, fontWeight: FontWeight.bold)),
+          const Text(
+            '• ',
+            style: TextStyle(
+              color: Color(0xFF38B6FF),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           Expanded(
             child: Text(
               text,

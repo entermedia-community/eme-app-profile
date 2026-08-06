@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:eme_world/models/tag.dart';
 import 'package:eme_world/utils/log.dart';
@@ -12,7 +13,6 @@ import '../models/workspace.dart';
 import '../services/auth_service.dart';
 import '../services/topic_service.dart';
 import '../services/workspace_service.dart';
-import '../utils/language_helper.dart';
 import '../widgets/data_consent_dialog.dart';
 import 'compliance_screen.dart';
 
@@ -64,12 +64,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    // final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 900;
 
-    return ValueListenableBuilder<String>(
-      valueListenable: LanguageHelper.languageNotifier,
+    return ValueListenableBuilder<Locale>(
+      valueListenable: Workspace.languageNotifier,
       builder: (context, currentLanguage, _) {
         return Scaffold(
           key: _scaffoldKey,
@@ -118,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
                                 // Section Title
                                 Text(
-                                  LanguageHelper.translate('topics'),
+                                  l10n.topics,
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -231,6 +231,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildHeader(BuildContext context, bool isDesktop, String workspace) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isDesktop ? 40 : 20,
@@ -341,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          LanguageHelper.translate('notifications'),
+                          l10n.notifications,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -360,7 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            LanguageHelper.translate('new_tutorials'),
+                            l10n.newTutorials,
                             style: const TextStyle(
                               color: Color(0xFFF50057),
                               fontSize: 9,
@@ -375,18 +376,18 @@ class _DashboardScreenState extends State<DashboardScreen>
                   PopupMenuItem<int>(
                     value: 0,
                     child: _buildNotificationItem(
-                      title: LanguageHelper.translate('new_tutorial_title'),
-                      body: LanguageHelper.translate('new_tutorial_body'),
-                      time: LanguageHelper.translate('time_5m'),
+                      title: l10n.newTutorialTitle,
+                      body: l10n.newTutorialBody,
+                      time: l10n.time5m,
                       isNew: true,
                     ),
                   ),
                   PopupMenuItem<int>(
                     value: 1,
                     child: _buildNotificationItem(
-                      title: LanguageHelper.translate('achievement_title'),
-                      body: LanguageHelper.translate('achievement_body'),
-                      time: LanguageHelper.translate('time_2h'),
+                      title: l10n.achievementTitle,
+                      body: l10n.achievementBody,
+                      time: l10n.time2h,
                       isNew: true,
                     ),
                   ),
@@ -471,6 +472,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildOverviewCard() {
+    final l10n = AppLocalizations.of(context)!;
     final user = AuthService.currentUser;
     final String displayName =
         user != null && (user.firstName.isNotEmpty || user.lastName.isNotEmpty)
@@ -487,7 +489,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          LanguageHelper.translate('profile'),
+          l10n.profile,
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
@@ -661,6 +663,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   void _showAchievementsBottomSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final sorted = List<Tag>.from(mockTags)
       ..sort((a, b) => b.score.compareTo(a.score));
     final top10 = sorted.where((t) => t.score >= 70).toList();
@@ -711,7 +714,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       children: [
                         Expanded(
                           child: Text(
-                            LanguageHelper.translate('topics_you_excel_at'),
+                            l10n.topicsYouExcelAt,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -897,6 +900,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildDrawer() {
+    final l10n = AppLocalizations.of(context)!;
     return Drawer(
       backgroundColor: const Color(0xFF0F1319),
       child: Container(
@@ -975,7 +979,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                LanguageHelper.translate('level'),
+                                l10n.level,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Color(0xFF38B6FF),
@@ -1001,7 +1005,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     children: [
                       _buildDrawerItem(
                         icon: Icons.dashboard_rounded,
-                        title: LanguageHelper.translate('catalog_dashboard'),
+                        title: l10n.catalogDashboard,
                         selected: selectedTab == 'Catalog',
                         onTap: () {
                           Navigator.pop(context);
@@ -1009,7 +1013,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       _buildDrawerItem(
                         icon: Icons.verified_user_outlined,
-                        title: LanguageHelper.translate('app_compliance'),
+                        title: l10n.appCompliance,
                         selected: false,
                         onTap: () {
                           Navigator.pop(context);
@@ -1041,7 +1045,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      LanguageHelper.translate('workspace'),
+                      l10n.workspace,
                       style: const TextStyle(
                         color: Colors.white38,
                         fontSize: 10,
@@ -1111,7 +1115,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     const SizedBox(height: 20),
 
                     Text(
-                      LanguageHelper.translate('language'),
+                      l10n.language,
                       style: const TextStyle(
                         color: Colors.white38,
                         fontSize: 10,
@@ -1131,7 +1135,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
-                          value: LanguageHelper.currentLanguage,
+                          value: Workspace.currentLanguage.languageCode == 'es'
+                              ? 'Español'
+                              : 'English',
                           dropdownColor: const Color(0xFF1E2631),
                           isExpanded: true,
                           icon: const Icon(
@@ -1147,7 +1153,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                           onChanged: (String? newValue) {
                             if (newValue != null) {
                               setState(() {
-                                LanguageHelper.currentLanguage = newValue;
+                                Workspace.currentLanguage = Locale(
+                                  newValue.substring(0, 2),
+                                );
                               });
                             }
                           },
@@ -1191,7 +1199,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              LanguageHelper.translate('logout'),
+                              l10n.logout,
                               style: const TextStyle(
                                 color: Color(0xFFF50057),
                                 fontSize: 13,
@@ -1218,7 +1226,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                           }
                         },
                         child: Text(
-                          LanguageHelper.translate('powered_by'),
+                          l10n.poweredBy,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.white30,

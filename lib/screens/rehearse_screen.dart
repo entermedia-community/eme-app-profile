@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:eme_world/models/chat_message.dart' as socket_msg;
 import 'package:eme_world/models/chat_message.dart';
@@ -17,7 +18,6 @@ import 'package:transparent_image/transparent_image.dart';
 
 import '../models/tutor_channel.dart';
 import '../models/tutorial.dart';
-import '../utils/language_helper.dart';
 
 enum MessageStage {
   loading,
@@ -617,6 +617,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   void _showReportAiDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     String selectedReason = 'reason_hallucination';
     final TextEditingController commentsController = TextEditingController();
 
@@ -635,7 +636,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                 const Icon(Icons.outlined_flag, color: Color(0xFFF50057)),
                 const SizedBox(width: 10),
                 Text(
-                  LanguageHelper.translate('report_ai'),
+                  l10n.reportAi,
                   style: const TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -658,10 +659,10 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   ),
                   const SizedBox(height: 12),
                   ...[
-                    'reason_hallucination',
-                    'reason_inappropriate',
-                    'reason_offensive',
-                    'reason_other',
+                    l10n.reasonHallucination,
+                    l10n.reasonInappropriate,
+                    l10n.reasonOffensive,
+                    l10n.reasonOther,
                   ].map((reasonKey) {
                     final isSelected = selectedReason == reasonKey;
                     return InkWell(
@@ -697,7 +698,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                LanguageHelper.translate(reasonKey),
+                                reasonKey,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: isSelected
@@ -742,7 +743,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(
-                  LanguageHelper.translate('cancel'),
+                  l10n.cancel,
                   style: const TextStyle(color: Colors.white70),
                 ),
               ),
@@ -754,9 +755,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        LanguageHelper.translate('report_ai_success'),
-                      ),
+                      content: Text(l10n.reportAiSuccess),
                       backgroundColor: const Color(0xFF141923),
                     ),
                   );
@@ -781,6 +780,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
     required bool isAiGenerated,
     required Widget child,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: isAgent
@@ -857,7 +857,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  LanguageHelper.translate('ai_generated'),
+                                  l10n.aiGenerated,
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -1052,6 +1052,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Widget _buildQuestionMessage(ChatMessage message, bool isLast) {
+    final l10n = AppLocalizations.of(context)!;
     final question = RehearseQuestion.fromChatMessage(message);
     final optionLetters = ['A', 'B', 'C', 'D'];
     final bool isInteractive = message.interactive ?? true;
@@ -1172,7 +1173,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "${LanguageHelper.translate('confidence')}:",
+                    "${l10n.confidence}:",
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
@@ -1532,6 +1533,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Widget _buildQuizView() {
+    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(
         child: Column(
@@ -1642,7 +1644,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  LanguageHelper.translate('ai_disclaimer_body'),
+                  l10n.aiDisclaimerBody,
                   style: TextStyle(
                     fontSize: 11,
                     height: 1.3,

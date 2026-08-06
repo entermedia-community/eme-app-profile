@@ -1,14 +1,12 @@
+import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../utils/language_helper.dart';
 
 class DataCollectionConsentDialog extends StatelessWidget {
   final VoidCallback onConsentGiven;
 
-  const DataCollectionConsentDialog({
-    super.key,
-    required onConsentGiven,
-  }) : onConsentGiven = onConsentGiven;
+  const DataCollectionConsentDialog({super.key, required onConsentGiven})
+    : onConsentGiven = onConsentGiven;
 
   static const String prefsKey = 'data_collection_consented';
 
@@ -39,14 +37,13 @@ class DataCollectionConsentDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Dialog(
       backgroundColor: const Color(0xFF141923),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: Colors.white.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1),
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Padding(
@@ -73,7 +70,7 @@ class DataCollectionConsentDialog extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      LanguageHelper.translate('data_consent_title'),
+                      l10n.dataConsentTitle,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -85,7 +82,7 @@ class DataCollectionConsentDialog extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                LanguageHelper.translate('data_consent_body'),
+                l10n.dataConsentBody,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
@@ -107,13 +104,15 @@ class DataCollectionConsentDialog extends StatelessWidget {
                     _buildDataPoint(
                       icon: Icons.person_outline,
                       title: 'Account Information',
-                      subtitle: 'Name, email address, and authentication credentials.',
+                      subtitle:
+                          'Name, email address, and authentication credentials.',
                     ),
                     const SizedBox(height: 8),
                     _buildDataPoint(
                       icon: Icons.chat_bubble_outline,
                       title: 'Interactive Chat & Learning Data',
-                      subtitle: 'Prompts, responses, diagnostic test scores & progress.',
+                      subtitle:
+                          'Prompts, responses, diagnostic test scores & progress.',
                     ),
                     const SizedBox(height: 8),
                     _buildDataPoint(
@@ -143,7 +142,7 @@ class DataCollectionConsentDialog extends StatelessWidget {
                         onConsentGiven();
                       },
                       child: Text(
-                        LanguageHelper.translate('decline_consent'),
+                        l10n.declineConsent,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 12,
@@ -168,7 +167,7 @@ class DataCollectionConsentDialog extends StatelessWidget {
                         onConsentGiven();
                       },
                       child: Text(
-                        LanguageHelper.translate('accept_consent'),
+                        l10n.acceptConsent,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 12,

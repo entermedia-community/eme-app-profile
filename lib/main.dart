@@ -1,3 +1,5 @@
+import 'package:eme_world/l10n/app_localizations.dart';
+import 'package:eme_world/models/workspace.dart';
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -18,6 +20,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      locale: Workspace.currentLanguage,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       title: 'Catalog Dashboard',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.dark,
