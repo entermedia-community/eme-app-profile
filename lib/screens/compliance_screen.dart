@@ -1,7 +1,6 @@
 import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart';
 import '../widgets/data_consent_dialog.dart';
 
 class ComplianceScreen extends StatefulWidget {
@@ -48,76 +47,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         ),
       );
     }
-  }
-
-  void _showDeleteAccountDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF141923),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.red.withValues(alpha: 0.3)),
-        ),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFF50057)),
-            const SizedBox(width: 10),
-            Text(
-              l10n.deleteAccount,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Text(
-          l10n.deleteAccountConfirm,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
-            fontSize: 14,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              l10n.cancel,
-              style: const TextStyle(color: Colors.white70),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF50057),
-            ),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await AuthService.logout();
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.clear();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Account data cleared successfully.'),
-                  ),
-                );
-                if (widget.onLogout != null) {
-                  widget.onLogout!();
-                } else {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                }
-              }
-            },
-            child: Text(
-              l10n.deleteAccount,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showDeleteDataDialog() {
@@ -272,7 +201,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             _buildSectionCard(
               title: l10n.accountManagementTitle,
               icon: Icons.manage_accounts_outlined,
-              iconColor: const Color(0xFFF50057),
+              iconColor: Colors.orange,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -285,60 +214,30 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(
-                              color: Colors.orange.withValues(alpha: 0.5),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.cleaning_services,
-                            size: 16,
-                            color: Colors.orange,
-                          ),
-                          label: Text(
-                            l10n.deleteData,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          onPressed: _showDeleteDataDialog,
-                        ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                      backgroundColor: Colors.orange.withValues(alpha: 0.05),
+                      side: BorderSide(
+                        color: Colors.orange.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF50057),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          icon: const Icon(
-                            Icons.delete_forever,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            l10n.deleteAccount,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white,
-                            ),
-                          ),
-                          onPressed: _showDeleteAccountDialog,
-                        ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ],
+                    ),
+                    icon: const Icon(
+                      Icons.cleaning_services,
+                      size: 16,
+                      color: Colors.orange,
+                    ),
+                    label: Text(
+                      l10n.deleteData,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    onPressed: _showDeleteDataDialog,
                   ),
                 ],
               ),

@@ -62,10 +62,10 @@ class ProfileOverviewCard extends StatelessWidget {
                         image: portraitUrl,
                         imageErrorBuilder: (context, error, stackTrace) =>
                             const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.white54,
-                        ),
+                              Icons.person,
+                              size: 40,
+                              color: Colors.white54,
+                            ),
                       ),
                     ),
                   ),
@@ -281,11 +281,11 @@ class ProfileOverviewCard extends StatelessWidget {
                       padding: const EdgeInsets.all(24),
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 400,
-                        mainAxisExtent: 90,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
+                            maxCrossAxisExtent: 400,
+                            mainAxisExtent: 90,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
                       itemCount: top10.length,
                       itemBuilder: (context, index) {
                         final tag = top10[index];
