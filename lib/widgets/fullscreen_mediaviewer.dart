@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'pip_video_overlay.dart';
 
 enum DetectedMediaType { image, audio, video, pdf, unknown }
 
@@ -832,6 +833,25 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               ),
             ),
           ),
+          if (_resolvedType == DetectedMediaType.video)
+            IconButton(
+              icon: const Icon(Icons.picture_in_picture_alt, color: Colors.white),
+              tooltip: 'Picture in Picture',
+              onPressed: () {
+                final currentPos = _videoController?.value.position ?? Duration.zero;
+                final videoUrl = widget.effectiveUrl;
+                final caption = widget.caption;
+                final mediaType = widget.mediaType;
+                Navigator.of(context).pop();
+                PipVideoOverlay.show(
+                  context,
+                  videoUrl: videoUrl,
+                  caption: caption,
+                  mediaType: mediaType,
+                  startPosition: currentPos,
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.open_in_new, color: Colors.white),
             tooltip: 'Open link',
