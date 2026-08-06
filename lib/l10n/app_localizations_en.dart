@@ -147,7 +147,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyPolicy => 'Privacy Policy';
 
   @override
-  String get appCompliance => 'Privacy Policy & Compliance';
+  String get appCompliance => 'Privacy & Data';
 
   @override
   String get dataConsentTitle => 'Data Collection Disclosure & Consent';
@@ -156,10 +156,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataConsentBody => 'We value your privacy. We collect account details (email, name), chat interactions, and learning progress to provide personalized AI tutoring. All data is transmitted securely over HTTPS and stored safely. We do not sell your personal data.';
 
   @override
-  String get acceptConsent => 'Accept & Continue';
+  String get acceptConsent => 'Accept';
 
   @override
-  String get declineConsent => 'Decline Non-Essential Data';
+  String get declineConsent => 'Decline';
 
   @override
   String get deleteAccount => 'Delete Account';
@@ -181,12 +181,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportAiSuccess => 'Thank you! Your report has been submitted for review.';
-
-  @override
-  String get aiDisclaimerTitle => 'AI Assistant Disclosure';
-
-  @override
-  String get aiDisclaimerBody => 'The AI is a learning assistant designed to explain concepts and help you understand human-authored, human-reviewed questions and answers. AI is not the driving force or evaluator in this chat.';
 
   @override
   String get cancel => 'Cancel';

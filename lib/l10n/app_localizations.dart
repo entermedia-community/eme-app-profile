@@ -350,7 +350,7 @@ abstract class AppLocalizations {
   /// No description provided for @appCompliance.
   ///
   /// In en, this message translates to:
-  /// **'Privacy Policy & Compliance'**
+  /// **'Privacy & Data'**
   String get appCompliance;
 
   /// No description provided for @dataConsentTitle.
@@ -368,13 +368,13 @@ abstract class AppLocalizations {
   /// No description provided for @acceptConsent.
   ///
   /// In en, this message translates to:
-  /// **'Accept & Continue'**
+  /// **'Accept'**
   String get acceptConsent;
 
   /// No description provided for @declineConsent.
   ///
   /// In en, this message translates to:
-  /// **'Decline Non-Essential Data'**
+  /// **'Decline'**
   String get declineConsent;
 
   /// No description provided for @deleteAccount.
@@ -418,18 +418,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thank you! Your report has been submitted for review.'**
   String get reportAiSuccess;
-
-  /// No description provided for @aiDisclaimerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'AI Assistant Disclosure'**
-  String get aiDisclaimerTitle;
-
-  /// No description provided for @aiDisclaimerBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The AI is a learning assistant designed to explain concepts and help you understand human-authored, human-reviewed questions and answers. AI is not the driving force or evaluator in this chat.'**
-  String get aiDisclaimerBody;
 
   /// No description provided for @cancel.
   ///

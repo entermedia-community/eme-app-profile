@@ -147,7 +147,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get privacyPolicy => 'Política de Privacidad';
 
   @override
-  String get appCompliance => 'Cumplimiento de Tiendas y Datos';
+  String get appCompliance => 'Privacidad y datos';
 
   @override
   String get dataConsentTitle => 'Divulgación y Consentimiento de Datos';
@@ -156,10 +156,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dataConsentBody => 'Valoramos su privacidad. Recopilamos datos de la cuenta (correo, nombre), interacciones de chat y progreso de aprendizaje para ofrecer tutoría con IA personalizada. Todos los datos se transmiten de forma segura por HTTPS y se guardan con seguridad. No vendemos sus datos personales.';
 
   @override
-  String get acceptConsent => 'Aceptar y Continuar';
+  String get acceptConsent => 'Continuar';
 
   @override
-  String get declineConsent => 'Rechazar Datos No Esenciales';
+  String get declineConsent => 'Rechazar';
 
   @override
   String get deleteAccount => 'Eliminar Cuenta';
@@ -181,12 +181,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportAiSuccess => '¡Gracias! Su reporte ha sido enviado para revisión.';
-
-  @override
-  String get aiDisclaimerTitle => 'Divulgación del Asistente de IA';
-
-  @override
-  String get aiDisclaimerBody => 'La IA es un asistente de aprendizaje diseñado para explicar conceptos y ayudarle a entender preguntas y respuestas creadas y revisadas por humanos. La IA no es la fuerza motriz ni la evaluadora en este chat.';
 
   @override
   String get cancel => 'Cancelar';

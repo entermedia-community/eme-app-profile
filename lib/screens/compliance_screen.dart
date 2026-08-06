@@ -213,39 +213,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section 1: AI Assistant Role Disclosure
-            _buildSectionCard(
-              title: l10n.aiDisclaimerTitle,
-              icon: Icons.psychology_outlined,
-              iconColor: const Color(0xFF38B6FF),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.aiDisclaimerBody,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBulletPoint(
-                    'Questions & answers are human-authored and human-reviewed.',
-                  ),
-                  _buildBulletPoint(
-                    'AI serves purely as an interactive learning assistant.',
-                  ),
-                  _buildBulletPoint(
-                    'AI is not the evaluator or driving force behind assessments.',
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Section 2: Privacy Policy & Data Collection
             _buildSectionCard(
               title: l10n.privacyPolicy,
               icon: Icons.privacy_tip_outlined,
@@ -294,32 +261,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Section 3: App Store & Play Store Compliance Standards
-            _buildSectionCard(
-              title: 'Play Store & App Store Compliance',
-              icon: Icons.verified_user_outlined,
-              iconColor: const Color(0xFFFFB74D),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildBulletPoint(
-                    'Google Play & Apple App Store User Safety Compliant',
-                  ),
-                  _buildBulletPoint(
-                    'Includes immediate Reporting mechanism for AI generated responses',
-                  ),
-                  _buildBulletPoint(
-                    'Provides full User Account & Personal Data Deletion options',
-                  ),
-                  _buildBulletPoint(
-                    'All network communications strictly secured using TLS/HTTPS',
                   ),
                 ],
               ),
@@ -445,35 +386,6 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
           ),
           const SizedBox(height: 14),
           child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBulletPoint(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            '• ',
-            style: TextStyle(
-              color: Color(0xFF38B6FF),
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.8),
-                height: 1.4,
-              ),
-            ),
-          ),
         ],
       ),
     );
