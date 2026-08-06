@@ -26,32 +26,30 @@ enum MessageType {
 }
 
 class ChatMessage {
-  final String? messageId;
-  final String? channel;
+  final String messageId;
+  final String channel;
   String? sectionId;
   String? componentId;
-  final String? userId;
-  final String? userName;
+  final String userId;
   final String? message;
   final MessageType? messageType;
   final String? command;
   final String? replyToId;
-  final DateTime? createdAt;
+  final DateTime createdAt;
   bool? interactive;
   final Map<String, dynamic> rawJson;
 
   ChatMessage({
-    this.messageId,
-    this.channel,
+    required this.messageId,
+    required this.channel,
     this.sectionId,
     this.componentId,
-    this.userId,
-    this.userName,
+    required this.userId,
     this.message,
     this.messageType,
     this.command,
     this.replyToId,
-    this.createdAt,
+    required this.createdAt,
     this.interactive = false,
     this.rawJson = const {},
   });
@@ -67,10 +65,13 @@ class ChatMessage {
     DateTime? parsedCreatedAt;
     final rawCreatedAt = json['date'] ?? json['createdat'];
     if (rawCreatedAt is String) {
-      DateTime dateTime = DateTime.parse(rawCreatedAt);
-      parsedCreatedAt = dateTime.toLocal();
+      parsedCreatedAt = DateTime.parse(rawCreatedAt).toLocal();
     } else if (rawCreatedAt is num) {
-      parsedCreatedAt = DateTime.fromMillisecondsSinceEpoch(rawCreatedAt.toInt()).toLocal();
+      parsedCreatedAt = DateTime.fromMillisecondsSinceEpoch(
+        rawCreatedAt.toInt(),
+      ).toLocal();
+    } else {
+      parsedCreatedAt = DateTime.now().toLocal();
     }
 
     String mainMessage = json['message']?.toString() ?? '';
@@ -126,13 +127,12 @@ class ChatMessage {
     }
 
     return ChatMessage(
-      messageId: (json['messageid'] ?? json['id'])?.toString(),
-      channel: json['channel']?.toString(),
+      messageId: (json['messageid'] ?? json['id']).toString(),
+      channel: json['channel'].toString(),
       sectionId: sectionId,
       componentId: componentId,
       interactive: interactive,
-      userId: (json['user'] ?? json['userid'])?.toString(),
-      userName: json['name']?.toString(),
+      userId: (json['user'] ?? json['userid']).toString(),
       message: mainMessage,
       messageType: messageType,
       command: json['command']?.toString(),
@@ -144,17 +144,16 @@ class ChatMessage {
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
-      if (messageId != null) 'messageid': messageId,
-      if (channel != null) 'channel': channel,
+      'messageid': messageId,
+      'channel': channel,
       if (sectionId != null) 'sectionid': sectionId,
       if (componentId != null) 'componentid': componentId,
-      if (userId != null) 'userid': userId,
-      if (userName != null) 'name': userName,
+      'userid': userId,
       if (message != null) 'message': message,
       if (messageType != null) 'messagetype': messageType!.name,
       if (command != null) 'command': command,
       if (replyToId != null) 'replytoid': replyToId,
-      if (createdAt != null) 'createdat': createdAt,
+      'createdat': createdAt,
     };
     return map;
   }
@@ -250,7 +249,6 @@ class ChatMessage {
     String? sectionId,
     String? componentId,
     String? userId,
-    String? userName,
     String? message,
     MessageType? messageType,
     String? command,
@@ -265,7 +263,6 @@ class ChatMessage {
       sectionId: sectionId ?? this.sectionId,
       componentId: componentId ?? this.componentId,
       userId: userId ?? this.userId,
-      userName: userName ?? this.userName,
       message: message ?? this.message,
       messageType: messageType ?? this.messageType,
       command: command ?? this.command,

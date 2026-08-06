@@ -173,9 +173,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
           if (incomingMsg.message != null && incomingMsg.message!.isNotEmpty) {
             setState(() {
               final msgId = incomingMsg.messageId;
-              final existingIndex = (msgId != null && msgId.isNotEmpty)
-                  ? _messages.indexWhere((m) => m.messageId == msgId)
-                  : -1;
+              final existingIndex = _messages.indexWhere(
+                (m) => m.messageId == msgId,
+              );
 
               if (existingIndex != -1) {
                 // final oldMsg = _messages[existingIndex];
@@ -201,9 +201,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     messageType: incomingMsg.messageType ?? MessageType.text,
                     userId: incomingMsg.userId,
                     interactive: incomingMsg.interactive,
-                    channel:
-                        incomingMsg.channel ??
-                        (_messages.isNotEmpty ? _messages.last.channel : null),
+                    channel: incomingMsg.channel,
                     sectionId:
                         incomingMsg.sectionId ??
                         (_messages.isNotEmpty
@@ -215,17 +213,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
                             ? _messages.last.componentId
                             : null),
                     rawJson: incomingMsg.rawJson,
+                    createdAt: incomingMsg.createdAt,
                   ),
                 );
               }
 
               if (incomingMsg.messageType!.isQuestion) {
                 final question = RehearseQuestion.fromChatMessage(incomingMsg);
-                final qExistingIndex = (msgId != null && msgId.isNotEmpty)
-                    ? _questions.indexWhere(
-                        (q) => q.messageId == msgId || q.questionId == msgId,
-                      )
-                    : -1;
+                final qExistingIndex = _questions.indexWhere(
+                  (q) => q.messageId == msgId,
+                );
 
                 if (qExistingIndex != -1) {
                   _questions[qExistingIndex] = question;
@@ -389,7 +386,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
       selectedOption:
           "option_${String.fromCharCode(97 + _tempSelectedAnswerIndex!)}",
       confidence: _tempConfidenceLevel!,
-      channel: _messages.last.channel!,
+      channel: _messages.last.channel,
       sectionId: _messages.last.sectionId!,
       componentId: _messages.last.componentId!,
     );
@@ -421,6 +418,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
           channel: _messages.last.channel,
           sectionId: _messages.last.sectionId,
           componentId: _messages.last.componentId,
+          createdAt: DateTime.now().toLocal(),
         ),
       );
     });
@@ -665,57 +663,65 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     l10n.reasonOther,
                   ].map((reasonKey) {
                     final isSelected = selectedReason == reasonKey;
-                    return InkWell(
-                      onTap: () => setState(() => selectedReason = reasonKey),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 6),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF38B6FF).withValues(alpha: 0.15)
-                              : Colors.white.withValues(alpha: 0.03),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected
-                                ? const Color(0xFF38B6FF)
-                                : Colors.white.withValues(alpha: 0.05),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              isSelected
-                                  ? Icons.radio_button_checked
-                                  : Icons.radio_button_off,
-                              size: 16,
-                              color: isSelected
-                                  ? const Color(0xFF38B6FF)
-                                  : Colors.white38,
+                    return Column(
+                      children: [
+                        InkWell(
+                          onTap: () =>
+                              setState(() => selectedReason = reasonKey),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
                             ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                reasonKey,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.white70,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(
+                                      0xFF38B6FF,
+                                    ).withValues(alpha: 0.15)
+                                  : Colors.white.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF38B6FF)
+                                    : Colors.white.withValues(alpha: 0.05),
                               ),
                             ),
-                          ],
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isSelected
+                                      ? Icons.radio_button_checked
+                                      : Icons.radio_button_off,
+                                  size: 16,
+                                  color: isSelected
+                                      ? const Color(0xFF38B6FF)
+                                      : Colors.white38,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    reasonKey,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.white70,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
+                      ],
                     );
                   }),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
+
                   TextField(
                     controller: commentsController,
                     maxLines: 2,
@@ -760,8 +766,8 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     ),
                   );
                 },
-                child: const Text(
-                  'Submit',
+                child: Text(
+                  'Report',
                   style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -843,30 +849,33 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      child,
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          if (isAiGenerated)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.auto_awesome,
-                                  size: 12,
-                                  color: Color(0xFF38B6FF),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l10n.aiGenerated,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF38B6FF),
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: isAiGenerated
+                                ? [
+                                    const Icon(
+                                      Icons.auto_awesome,
+                                      size: 12,
+                                      color: Color(0xFF38B6FF),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      l10n.aiGenerated,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF38B6FF),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ]
+                                : [],
+                          ),
                           InkWell(
                             onTap: () => _showReportAiDialog(context),
                             borderRadius: BorderRadius.circular(12),
@@ -899,8 +908,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      child,
                     ],
                   )
                 : child,
@@ -1533,7 +1540,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Widget _buildQuizView() {
-    final l10n = AppLocalizations.of(context)!;
     if (_isLoading) {
       return const Center(
         child: Column(
