@@ -70,10 +70,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final size = MediaQuery.of(context).size;
     final isDesktop = size.width > 900;
 
+    final user = AuthService.currentUser;
+    final String displayName =
+        user != null && (user.firstName.isNotEmpty || user.lastName.isNotEmpty)
+        ? '${user.firstName} ${user.lastName}'.trim()
+        : (user?.screenName.isNotEmpty == true
+              ? user!.screenName
+              : (widget.fullName.isNotEmpty ? widget.fullName : 'John Smith'));
+
+    final String portraitUrl = user?.assetPortrait.isNotEmpty == true
+        ? user!.assetPortrait
+        : "https://eme.world/finder/find/theme/images/user.svg";
+
     ref.watch(localeProvider);
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildDrawer(),
+      drawer: _buildDrawer(displayName, portraitUrl),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -109,7 +121,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Overall metrics overview card
-                            _buildOverviewCard(),
+                            _buildOverviewCard(displayName, portraitUrl),
                             const SizedBox(height: 32),
 
                             // Section Title
@@ -455,19 +467,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     );
   }
 
-  Widget _buildOverviewCard() {
+  Widget _buildOverviewCard(String displayName, String portraitUrl) {
     final l10n = AppLocalizations.of(context)!;
-    final user = AuthService.currentUser;
-    final String displayName =
-        user != null && (user.firstName.isNotEmpty || user.lastName.isNotEmpty)
-        ? '${user.firstName} ${user.lastName}'.trim()
-        : (user?.screenName.isNotEmpty == true
-              ? user!.screenName
-              : (widget.fullName.isNotEmpty ? widget.fullName : 'John Smith'));
-
-    final String portraitUrl = user?.assetPortrait.isNotEmpty == true
-        ? user!.assetPortrait
-        : "https://eme.world/mediadb/services/module/asset/generated/Entity%20Assets/profile/placeholder.jpg/image200x200.webp";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -504,7 +505,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     clipBehavior: Clip.hardEdge,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(40),
+                      shape: BoxShape.circle,
                     ),
                     child: Center(
                       child: FadeInImage.memoryNetwork(
@@ -883,8 +884,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     );
   }
 
-  Widget _buildDrawer() {
+  Widget _buildDrawer(String displayName, String portraitUrl) {
     final l10n = AppLocalizations.of(context)!;
+
     return Drawer(
       backgroundColor: const Color(0xFF0F1319),
       child: Container(
@@ -918,31 +920,21 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                         Container(
                           width: 48,
                           height: 48,
+                          clipBehavior: Clip.hardEdge,
                           decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
                             shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFF50057), Color(0xFF2196F3)],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFFF50057,
-                                ).withValues(alpha: 0.2),
-                                blurRadius: 12,
-                                spreadRadius: 2,
-                              ),
-                            ],
                           ),
                           child: Center(
-                            child: Text(
-                              widget.fullName.isNotEmpty
-                                  ? widget.fullName[0].toUpperCase()
-                                  : 'U',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                            child: FadeInImage.memoryNetwork(
+                              placeholder: kTransparentImage,
+                              image: portraitUrl,
+                              imageErrorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.person,
+                                    size: 28,
+                                    color: Colors.white54,
+                                  ),
                             ),
                           ),
                         ),
@@ -952,7 +944,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.fullName,
+                                displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
