@@ -120,31 +120,6 @@ class AssetMessageWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-
-                    // Fullscreen zoom indicator icon
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          width: 1.5,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.fullscreen_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
                   ],
                 ),
               ),
