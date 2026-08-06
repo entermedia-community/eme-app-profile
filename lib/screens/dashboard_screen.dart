@@ -72,160 +72,151 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
     ref.watch(localeProvider);
     return Scaffold(
-          key: _scaffoldKey,
-          drawer: _buildDrawer(),
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF0B0F13),
-                  Color(0xFF141923),
-                  Color(0xFF0F1319),
-                ],
-                stops: [0.0, 0.5, 1.0],
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. Sleek Modern Header
-                  _buildHeader(context, isDesktop, _activeWorkSpace),
+      key: _scaffoldKey,
+      drawer: _buildDrawer(),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0B0F13), Color(0xFF141923), Color(0xFF0F1319)],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Sleek Modern Header
+              _buildHeader(context, isDesktop, _activeWorkSpace),
 
-                  // 2. Main Content
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: _refreshTopics,
-                      color: const Color(0xFF38B6FF),
-                      backgroundColor: const Color(0xFF1E2638),
-                      child: SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: Center(
-                          child: Container(
-                            width: min(700, size.width),
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isDesktop ? 40 : 20,
-                              vertical: 24,
+              // 2. Main Content
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _refreshTopics,
+                  color: const Color(0xFF38B6FF),
+                  backgroundColor: const Color(0xFF1E2638),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Center(
+                      child: Container(
+                        width: min(700, size.width),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isDesktop ? 40 : 20,
+                          vertical: 24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Overall metrics overview card
+                            _buildOverviewCard(),
+                            const SizedBox(height: 32),
+
+                            // Section Title
+                            Text(
+                              l10n.topics,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF38B6FF),
+                                letterSpacing: 1.5,
+                              ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Overall metrics overview card
-                                _buildOverviewCard(),
-                                const SizedBox(height: 32),
+                            const SizedBox(height: 16),
 
-                                // Section Title
-                                Text(
-                                  l10n.topics,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF38B6FF),
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
+                            // Dynamic Topics List from API Service
+                            FutureBuilder<List<Topic>>(
+                              future: _topicsFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 40.0,
+                                    ),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Color(0xFF38B6FF),
+                                            ),
+                                      ),
+                                    ),
+                                  );
+                                }
 
-                                // Dynamic Topics List from API Service
-                                FutureBuilder<List<Topic>>(
-                                  future: _topicsFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 40.0,
+                                if (snapshot.hasError) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E2638),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        const Icon(
+                                          Icons.error_outline,
+                                          color: Color(0xFFF50057),
+                                          size: 36,
                                         ),
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  Color(0xFF38B6FF),
-                                                ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'Failed to load topics: ${snapshot.error}',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
                                           ),
                                         ),
-                                      );
-                                    }
+                                        const SizedBox(height: 12),
+                                        ElevatedButton.icon(
+                                          onPressed: _loadTopics,
+                                          icon: const Icon(Icons.refresh),
+                                          label: const Text('Retry'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
 
-                                    if (snapshot.hasError) {
-                                      return Container(
-                                        padding: const EdgeInsets.all(20),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF1E2638),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            const Icon(
-                                              Icons.error_outline,
-                                              color: Color(0xFFF50057),
-                                              size: 36,
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              'Failed to load topics: ${snapshot.error}',
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            ElevatedButton.icon(
-                                              onPressed: _loadTopics,
-                                              icon: const Icon(Icons.refresh),
-                                              label: const Text('Retry'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }
+                                final topics = snapshot.data ?? [];
+                                if (topics.isEmpty) {
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: 20.0,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'No topics available.',
+                                        style: TextStyle(color: Colors.white60),
+                                      ),
+                                    ),
+                                  );
+                                }
 
-                                    final topics = snapshot.data ?? [];
-                                    if (topics.isEmpty) {
-                                      return const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 20.0,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'No topics available.',
-                                            style: TextStyle(
-                                              color: Colors.white60,
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    }
-
-                                    return ListView.separated(
-                                      shrinkWrap: true,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: topics.length,
-                                      separatorBuilder: (context, index) =>
-                                          const SizedBox(height: 16),
-                                      itemBuilder: (context, index) {
-                                        return TopicCard(topic: topics[index]);
-                                      },
-                                    );
+                                return ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: topics.length,
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 16),
+                                  itemBuilder: (context, index) {
+                                    return TopicCard(topic: topics[index]);
                                   },
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        );
+        ),
+      ),
+    );
   }
 
   Widget _buildHeader(BuildContext context, bool isDesktop, String workspace) {
@@ -233,7 +224,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isDesktop ? 40 : 20,
-        vertical: 16,
+        vertical: 8,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF161C24).withValues(alpha: 0.4),
@@ -253,30 +244,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 },
               ),
               const SizedBox(width: 8),
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: 32,
-                  minHeight: 32,
-                  maxHeight: 40,
-                  maxWidth: 100,
-                ),
-                child: Image.asset(
-                  workspace.toLowerCase() == 'minsur'
-                      ? 'assets/minsur.png'
-                      : 'assets/${workspace.toLowerCase()}.png',
-                  errorBuilder: (context, error, stackTrace) => Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(width: 6),
-                      Text(
-                        workspace,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+              Container(
+                height: 40,
+                alignment: Alignment.centerLeft,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 32, maxWidth: 150),
+                  child: Image.asset(
+                    workspace.toLowerCase() == 'minsur'
+                        ? 'assets/minsur.png'
+                        : 'assets/${workspace.toLowerCase()}.png',
+                    errorBuilder: (context, error, stackTrace) => Text(
+                      workspace,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
-                    ],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ),
@@ -1150,8 +1136,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                           ),
                           onChanged: (String? newValue) {
                             if (newValue != null) {
-                              final langCode =
-                                  newValue == 'Español' ? 'es' : 'en';
+                              final langCode = newValue == 'Español'
+                                  ? 'es'
+                                  : 'en';
                               ref
                                   .read(localeProvider.notifier)
                                   .setLocale(Locale(langCode));
