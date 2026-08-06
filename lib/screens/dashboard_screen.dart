@@ -513,17 +513,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               color: Colors.white.withValues(alpha: 0.03),
                               shape: BoxShape.circle,
                             ),
-                            child: Center(
-                              child: FadeInImage.memoryNetwork(
-                                placeholder: kTransparentImage,
-                                image: portraitUrl,
+                            child: OverflowBox(
+                              alignment: Alignment.center,
+                              child: FittedBox(
                                 fit: BoxFit.cover,
-                                imageErrorBuilder:
-                                    (context, error, stackTrace) => const Icon(
-                                      Icons.person,
-                                      size: 28,
-                                      color: Colors.white54,
-                                    ),
+                                child: FadeInImage.memoryNetwork(
+                                  placeholder: kTransparentImage,
+                                  image: portraitUrl,
+                                  fit: BoxFit.cover,
+                                  imageErrorBuilder:
+                                      (context, error, stackTrace) =>
+                                          const Icon(
+                                            Icons.person,
+                                            size: 28,
+                                            color: Colors.white54,
+                                          ),
+                                ),
                               ),
                             ),
                           ),

@@ -150,29 +150,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(
-                              0xFF38B6FF,
-                            ).withValues(alpha: 0.5),
-                            width: 2,
+                        ),
+                        child: OverflowBox(
+                          alignment: Alignment.center,
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: _imageFile != null
+                                ? Image.file(_imageFile!, fit: BoxFit.cover)
+                                : (AuthService
+                                              .currentUser
+                                              ?.assetPortrait
+                                              .isNotEmpty ==
+                                          true
+                                      ? Image.network(
+                                          AuthService
+                                              .currentUser!
+                                              .assetPortrait,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : const Icon(
+                                          Icons.person,
+                                          size: 50,
+                                          color: Colors.white54,
+                                        )),
                           ),
                         ),
-                        child: _imageFile != null
-                            ? Image.file(_imageFile!, fit: BoxFit.cover)
-                            : (AuthService
-                                          .currentUser
-                                          ?.assetPortrait
-                                          .isNotEmpty ==
-                                      true
-                                  ? Image.network(
-                                      AuthService.currentUser!.assetPortrait,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : const Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.white54,
-                                    )),
                       ),
                       Positioned(
                         bottom: 0,

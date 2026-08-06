@@ -95,17 +95,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Colors.white.withValues(alpha: 0.03),
                             shape: BoxShape.circle,
                           ),
-                          child: Center(
-                            child: FadeInImage.memoryNetwork(
-                              placeholder: kTransparentImage,
-                              image: portraitUrl,
+                          child: OverflowBox(
+                            alignment: Alignment.center,
+                            child: FittedBox(
                               fit: BoxFit.cover,
-                              imageErrorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                    Icons.person,
-                                    size: 40,
-                                    color: Colors.white54,
-                                  ),
+                              child: FadeInImage.memoryNetwork(
+                                placeholder: kTransparentImage,
+                                image: portraitUrl,
+                                imageErrorBuilder:
+                                    (context, error, stackTrace) => const Icon(
+                                      Icons.person,
+                                      size: 40,
+                                      color: Colors.white54,
+                                    ),
+                              ),
                             ),
                           ),
                         ),
