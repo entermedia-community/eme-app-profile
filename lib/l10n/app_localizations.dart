@@ -454,6 +454,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other Issue'**
   String get reasonOther;
+
+  /// No description provided for @accountManagementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account & Data Management'**
+  String get accountManagementTitle;
+
+  /// No description provided for @accountManagementBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have full control over your data. You can erase your collected data or permanently delete your account at any time.'**
+  String get accountManagementBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

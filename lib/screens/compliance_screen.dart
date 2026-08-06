@@ -270,14 +270,14 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
             // Section 4: Data & Account Erasure Options
             _buildSectionCard(
-              title: 'Account & Data Management',
+              title: l10n.accountManagementTitle,
               icon: Icons.manage_accounts_outlined,
               iconColor: const Color(0xFFF50057),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'In accordance with Play Store & App Store policies, you have full right to erase your collected data or permanently delete your account.',
+                    l10n.accountManagementBody,
                     style: TextStyle(
                       fontSize: 13,
                       height: 1.4,

@@ -59,5 +59,7 @@
 	"reasonHallucination": "Alucinación / Información Inexacta",
 	"reasonInappropriate": "Contenido Inapropiado",
 	"reasonOffensive": "Lenguaje Ofensivo",
-	"reasonOther": "Otro Problema"
+	"reasonOther": "Otro Problema",
+	"accountManagementTitle": "Gestión de Cuenta y Datos",
+	"accountManagementBody": "Tienes control total sobre tus datos. Puedes borrar tus datos recopilados o eliminar permanentemente tu cuenta en cualquier momento."
 }

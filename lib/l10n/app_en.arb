@@ -101,5 +101,7 @@
 	"reasonHallucination": "Hallucination / Inaccurate Information",
 	"reasonInappropriate": "Inappropriate Content",
 	"reasonOffensive": "Offensive Language",
-	"reasonOther": "Other Issue"
+	"reasonOther": "Other Issue",
+	"accountManagementTitle": "Account & Data Management",
+	"accountManagementBody": "You have full control over your data. You can erase your collected data or permanently delete your account at any time."
 }

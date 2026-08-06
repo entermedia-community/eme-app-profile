@@ -199,4 +199,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reasonOther => 'Otro Problema';
+
+  @override
+  String get accountManagementTitle => 'Gestión de Cuenta y Datos';
+
+  @override
+  String get accountManagementBody => 'Tienes control total sobre tus datos. Puedes borrar tus datos recopilados o eliminar permanentemente tu cuenta en cualquier momento.';
 }
