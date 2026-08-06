@@ -98,7 +98,6 @@
   "reportAi": "Report AI Response",
   "reportAiSuccess": "Thank you! Your report has been submitted for review.",
   "aiDisclaimerTitle": "AI Assistant Disclosure",
-  "aiDisclaimerBody": "The AI is a learning assistant designed to explain concepts and help you understand human-authored, human-reviewed questions and answers. AI is not the driving force or evaluator in this chat.",
   "cancel": "Cancel",
   "confirm": "Confirm",
   "reasonHallucination": "Hallucination / Inaccurate Information",

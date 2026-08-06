@@ -55,7 +55,6 @@
 	"reportAi": "Reportar Respuesta de IA",
 	"reportAiSuccess": "¡Gracias! Su reporte ha sido enviado para revisión.",
 	"aiDisclaimerTitle": "Divulgación del Asistente de IA",
-	"aiDisclaimerBody": "La IA es un asistente de aprendizaje diseñado para explicar conceptos y ayudarle a entender preguntas y respuestas creadas y revisadas por humanos. La IA no es la fuerza motriz ni la evaluadora en este chat.",
 	"cancel": "Cancelar",
 	"confirm": "Confirmar",
 	"reasonHallucination": "Alucinación / Información Inexacta",

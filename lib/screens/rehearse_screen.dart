@@ -1623,39 +1623,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
           ),
         ),
 
-        // AI Role Disclosure Banner
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFF38B6FF).withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: const Color(0xFF38B6FF).withValues(alpha: 0.2),
-            ),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.info_outline,
-                size: 16,
-                color: Color(0xFF38B6FF),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  l10n.aiDisclaimerBody,
-                  style: TextStyle(
-                    fontSize: 11,
-                    height: 1.3,
-                    color: Colors.white.withValues(alpha: 0.85),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
         // Chat Conversation Log Area
         Expanded(
           child: ListView.builder(
@@ -1705,32 +1672,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
               color: Colors.white.withValues(alpha: 0.02),
               child: Stack(
                 children: [
-                  // Glowing background patterns
-                  Positioned(
-                    top: -size.height * 0.1,
-                    right: -size.width * 0.2,
-                    child: Container(
-                      width: size.width * 0.7,
-                      height: size.width * 0.7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFF27121).withValues(alpha: 0.08),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -size.height * 0.1,
-                    left: -size.width * 0.2,
-                    child: Container(
-                      width: size.width * 0.7,
-                      height: size.width * 0.7,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFF27121).withValues(alpha: 0.06),
-                      ),
-                    ),
-                  ),
-
                   // Main content layout
                   Center(
                     child: ConstrainedBox(
