@@ -99,6 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: FadeInImage.memoryNetwork(
                               placeholder: kTransparentImage,
                               image: portraitUrl,
+                              fit: BoxFit.cover,
                               imageErrorBuilder: (context, error, stackTrace) =>
                                   const Icon(
                                     Icons.person,
@@ -141,7 +142,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Skills',
+                'SKILLS',
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,

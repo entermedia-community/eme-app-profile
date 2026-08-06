@@ -517,6 +517,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                               child: FadeInImage.memoryNetwork(
                                 placeholder: kTransparentImage,
                                 image: portraitUrl,
+                                fit: BoxFit.cover,
                                 imageErrorBuilder:
                                     (context, error, stackTrace) => const Icon(
                                       Icons.person,
