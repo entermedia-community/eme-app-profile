@@ -285,7 +285,8 @@ class TopicService {
     required String tutorialId,
     required String channel,
   }) async {
-    final targetUrl = "$mediaDBRoot/services/module/entitytutorial/start.json";
+    final targetUrl =
+        "$mediaDBRoot/services/module/entitytutorial/continue.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -321,7 +322,8 @@ class TopicService {
     String? sectionId,
     String? componentId,
   }) async {
-    final targetUrl = "$mediaDBRoot/services/module/entitytutorial/start.json";
+    final targetUrl =
+        "$mediaDBRoot/services/module/entitytutorial/continue.json";
     final uri = Uri.parse(targetUrl);
 
     try {
@@ -332,7 +334,6 @@ class TopicService {
       String body =
           'functionname=chat_tutor_continue&currentscenario=chat_tutor&channel=$channel';
       body += '&context_tutorialid=$tutorialId';
-      if (channel != null) body += '&context_channelid=$channel';
       if (sectionId != null) body += '&context_sectionid=$sectionId';
       if (componentId != null) body += '&context_componentid=$componentId';
 
@@ -370,7 +371,8 @@ class TopicService {
     required String sectionId,
     required String componentId,
   }) async {
-    final targetUrl = "$mediaDBRoot/services/module/entitytutorial/start.json";
+    final targetUrl =
+        "$mediaDBRoot/services/module/entitytutorial/continue.json";
     final uri = Uri.parse(targetUrl);
     try {
       final Map<String, String> credentials =
@@ -379,7 +381,6 @@ class TopicService {
 
       String body =
           'currentscenario=chat_tutor&functionname=chat_tutor_answer&channel=$channel';
-      body += '&context_channelid=$channel';
       body += '&context_questionid=$questionId';
       body += '&context_selectedoption=$selectedOption';
       body += '&context_confidence=$confidence';
