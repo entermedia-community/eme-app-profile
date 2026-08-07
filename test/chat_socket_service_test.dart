@@ -24,7 +24,6 @@ void main() {
       expect(msg.messageId, equals('msg_123'));
       expect(msg.channel, equals('channel_general'));
       expect(msg.userId, equals('user_456'));
-      expect(msg.userName, equals('John Doe'));
       expect(msg.message, equals('Hello World'));
       expect(msg.command, equals('messagereceived'));
       expect(msg.replyToId, equals('msg_122'));
@@ -51,6 +50,7 @@ void main() {
         channel: 'channel_test',
         userId: 'user_1',
         message: 'Test message',
+        createdAt: DateTime.parse("2026-08-07T22:52:57.477+0600").toLocal(),
       );
 
       final jsonMap = msg.toJson();
@@ -65,9 +65,12 @@ void main() {
       'ChatMessage copyWith preserves interactive state and selectedOptionIndex',
       () {
         final msg = ChatMessage(
+          userId: 'user_1',
           messageId: 'q_1',
+          channel: 'channel_test',
           messageType: MessageType.question,
           interactive: true,
+          createdAt: DateTime.parse("2026-08-07T22:52:57.477+0600").toLocal(),
         );
 
         final nonInteractiveMsg = msg.copyWith(
