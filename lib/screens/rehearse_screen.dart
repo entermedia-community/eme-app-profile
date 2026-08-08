@@ -216,6 +216,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     createdAt: incomingMsg.createdAt,
                   ),
                 );
+                _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
               }
 
               if (incomingMsg.messageType!.isQuestion) {
