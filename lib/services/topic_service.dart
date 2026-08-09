@@ -111,44 +111,6 @@ class TopicService {
     }
   }
 
-  Future<TutorialDetail> fetchTutorialDetail(String tutorialId) async {
-    final targetUrl =
-        "$mediaDBRoot/services/module/entitytutorial/tutorial.json?entitytutorial=$tutorialId";
-    final uri = Uri.parse(targetUrl);
-
-    try {
-      final Map<String, String> credentials =
-          await AuthService.getCredentials();
-      final String token = credentials['entermediakey']!;
-      final response = await _client.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-tokentype': 'entermedia',
-          'X-token': token,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final decoded = json.decode(response.body);
-        if (decoded is Map<String, dynamic>) {
-          return TutorialDetail.fromJson(decoded);
-        } else {
-          throw FormatException('Unexpected response format from $targetUrl');
-        }
-      } else {
-        throw Exception(
-          'Failed to fetch tutorial details. Server returned HTTP ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      logPrint('TopicService error fetching tutorial detail from $targetUrl');
-
-      rethrow;
-    }
-  }
-
   Future<TutorChannel?> fetchTutorChannel(
     String tutorialId, {
     bool createNew = false,
@@ -225,41 +187,31 @@ class TopicService {
         final decoded = json.decode(response.body);
         if (decoded is Map<String, dynamic>) {
           final history = decoded['messages'] as dynamic;
+          logPrint("messages ${history.length}");
           final List answers = decoded['answers'] is List
               ? decoded['answers']
               : [];
+          logPrint("answers ${answers.length}");
           final List<ChatMessage> messages = [];
           if (history is List) {
             for (final item in history) {
               try {
                 final message = ChatMessage.fromJson(item);
-                if (message.messageType!.isQuestion) {
-                  final answer = answers.isEmpty
+                if (message.messageType.isQuestion) {
+                  final rawAnswer = answers.isEmpty
                       ? null
                       : answers.firstWhere(
-                          (a) =>
-                              a['questionid'] ==
-                              message.rawJson['question']['id'],
+                          (a) => a['questionid'] == message.question?.id,
+                          orElse: () => null,
                         );
-                  if (answer != null) {
-                    final letterASCII = answer['selectedoption']
-                        ?.toString()
-                        .codeUnitAt(7);
-                    if (letterASCII != null) {
-                      message.rawJson['selected_option_index'] =
-                          letterASCII - 97;
-                    }
-                    if (answer['confidence'] != null) {
-                      message.rawJson['confidence'] = answer['confidence'];
-                    }
+                  if (rawAnswer != null) {
+                    message.answer = Answer.fromJson(rawAnswer);
                     message.interactive = false;
-                  } else {
-                    messages.add(message);
-                    break;
                   }
                 }
                 messages.add(message);
               } catch (e) {
+                logPrint(e.toString());
                 logPrint(
                   'TopicService error fetching tutor history from $targetUrl',
                 );
@@ -293,10 +245,16 @@ class TopicService {
       final Map<String, String> credentials =
           await AuthService.getCredentials();
       final String token = credentials['entermediakey']!;
+
+      String body = 'context_tutorialid=$tutorialId';
+      body += '&functionname=chat_tutor_welcome';
+      body += '&currentscenario=chat_tutor';
+      body += '&channel=$channel';
+      body += '&context_skiploader=true';
+
       final response = await _client.post(
         uri,
-        body:
-            'context_tutorialid=$tutorialId&functionname=chat_tutor_welcome&currentscenario=chat_tutor&channel=$channel',
+        body: body,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json',
@@ -331,11 +289,13 @@ class TopicService {
           await AuthService.getCredentials();
       final String token = credentials['entermediakey']!;
 
-      String body =
-          'functionname=chat_tutor_continue&currentscenario=chat_tutor&channel=$channel';
-      body += '&context_tutorialid=$tutorialId';
+      String body = 'context_tutorialid=$tutorialId';
+      body += '&functionname=chat_tutor_continue';
+      body += '&currentscenario=chat_tutor';
+      body += '&channel=$channel';
       if (sectionId != null) body += '&context_sectionid=$sectionId';
       if (componentId != null) body += '&context_componentid=$componentId';
+      body += '&context_skiploader=true';
 
       logPrint("Continuing with: $body");
 
@@ -379,13 +339,15 @@ class TopicService {
           await AuthService.getCredentials();
       final String token = credentials['entermediakey']!;
 
-      String body =
-          'currentscenario=chat_tutor&functionname=chat_tutor_answer&channel=$channel';
+      String body = 'currentscenario=chat_tutor';
+      body += '&functionname=chat_tutor_answer';
+      body += '&channel=$channel';
       body += '&context_questionid=$questionId';
       body += '&context_selectedoption=$selectedOption';
       body += '&context_confidence=$confidence';
       body += '&context_sectionid=$sectionId';
       body += '&context_componentid=$componentId';
+      body += '&context_skiploader=true';
 
       final response = await _client.post(
         uri,

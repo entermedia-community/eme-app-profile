@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,10 @@ class FullScreenMediaViewer extends StatefulWidget {
     this.name,
     this.caption,
     this.mediaType,
-  }) : assert(url != null || mediaUrl != null, 'Either url or mediaUrl must be provided.');
+  }) : assert(
+         url != null || mediaUrl != null,
+         'Either url or mediaUrl must be provided.',
+       );
 
   /// Effective URL helper.
   String get effectiveUrl => (url ?? mediaUrl ?? '').trim();
@@ -74,6 +78,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isVideoError = false;
+  Timer? _hideControlsTimer;
 
   // Audio player & state
   AudioPlayer? _audioPlayer;
@@ -102,7 +107,8 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     if (widget.mediaType != null && widget.mediaType!.isNotEmpty) {
       final typeStr = widget.mediaType!.toLowerCase();
       if (typeStr.contains('image')) return DetectedMediaType.image;
-      if (typeStr.contains('audio') || typeStr.contains('sound')) return DetectedMediaType.audio;
+      if (typeStr.contains('audio') || typeStr.contains('sound'))
+        return DetectedMediaType.audio;
       if (typeStr.contains('video')) return DetectedMediaType.video;
       if (typeStr.contains('pdf')) return DetectedMediaType.pdf;
     }
@@ -161,10 +167,29 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     }
   }
 
+  void _resetHideControlsTimer() {
+    _hideControlsTimer?.cancel();
+    _hideControlsTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted &&
+          _showOverlay &&
+          _videoController != null &&
+          _videoController!.value.isPlaying) {
+        setState(() {
+          _showOverlay = false;
+        });
+      }
+    });
+  }
+
   Future<void> _initVideo() async {
     try {
       final uri = Uri.parse(widget.effectiveUrl);
-      _videoController = VideoPlayerController.networkUrl(uri);
+      _videoController = VideoPlayerController.networkUrl(
+        uri,
+        formatHint: widget.effectiveUrl.toLowerCase().contains('.m3u8')
+            ? VideoFormat.hls
+            : null,
+      );
       await _videoController!.initialize();
       _videoController!.setLooping(true);
       if (mounted) {
@@ -172,6 +197,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           _isVideoInitialized = true;
         });
         _videoController!.play();
+        _resetHideControlsTimer();
       }
     } catch (_) {
       if (mounted) {
@@ -263,6 +289,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
 
   @override
   void dispose() {
+    _hideControlsTimer?.cancel();
     _videoController?.dispose();
     _audioPlayer?.dispose();
     super.dispose();
@@ -272,6 +299,13 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     setState(() {
       _showOverlay = !_showOverlay;
     });
+    if (_showOverlay) {
+      if (_resolvedType == DetectedMediaType.video) {
+        _resetHideControlsTimer();
+      }
+    } else {
+      _hideControlsTimer?.cancel();
+    }
   }
 
   Future<void> _openInExternalBrowser() async {
@@ -308,9 +342,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           alignment: Alignment.center,
           children: [
             // Media Content Layer
-            Positioned.fill(
-              child: _buildMediaBody(),
-            ),
+            Positioned.fill(child: _buildMediaBody()),
 
             // Animated Header Bar
             Positioned(
@@ -320,7 +352,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               child: AnimatedOpacity(
                 opacity: _showOverlay ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 200),
-                child: _showOverlay ? _buildHeader(context) : const SizedBox.shrink(),
+                child: _showOverlay
+                    ? _buildHeader(context)
+                    : const SizedBox.shrink(),
               ),
             ),
 
@@ -370,7 +404,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             if (loadingProgress == null) return child;
             final progress = loadingProgress.expectedTotalBytes != null
                 ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+                      loadingProgress.expectedTotalBytes!
                 : null;
             return Center(
               child: CircularProgressIndicator(
@@ -383,7 +417,11 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.broken_image_outlined, size: 64, color: Colors.white54),
+                const Icon(
+                  Icons.broken_image_outlined,
+                  size: 64,
+                  color: Colors.white54,
+                ),
                 const SizedBox(height: 12),
                 const Text(
                   'Failed to load image',
@@ -456,8 +494,11 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               setState(() {
                 if (_videoController!.value.isPlaying) {
                   _videoController!.pause();
+                  _hideControlsTimer?.cancel();
+                  _showOverlay = true;
                 } else {
                   _videoController!.play();
+                  _resetHideControlsTimer();
                 }
               });
             },
@@ -465,7 +506,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
         // Video scrubber overlay
         if (_showOverlay)
           Positioned(
-            bottom: (widget.caption != null && widget.caption!.isNotEmpty) ? 80 : 24,
+            bottom: (widget.caption != null && widget.caption!.isNotEmpty)
+                ? 80
+                : 24,
             left: 20,
             right: 20,
             child: ValueListenableBuilder(
@@ -474,7 +517,10 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                 final duration = value.duration.inMilliseconds.toDouble();
                 final position = value.position.inMilliseconds.toDouble();
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(12),
@@ -483,28 +529,41 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     children: [
                       Text(
                         _formatDuration(value.position),
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
                       ),
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6,
+                            ),
                             trackHeight: 3,
                           ),
                           child: Slider(
-                            value: position.clamp(0.0, duration > 0 ? duration : 1.0),
+                            value: position.clamp(
+                              0.0,
+                              duration > 0 ? duration : 1.0,
+                            ),
                             max: duration > 0 ? duration : 1.0,
                             activeColor: Colors.white,
                             inactiveColor: Colors.white24,
                             onChanged: (val) {
-                              _videoController!.seekTo(Duration(milliseconds: val.toInt()));
+                              _videoController!.seekTo(
+                                Duration(milliseconds: val.toInt()),
+                              );
                             },
                           ),
                         ),
                       ),
                       Text(
                         _formatDuration(value.duration),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -553,7 +612,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                 color: Colors.black54,
                 blurRadius: 20,
                 offset: Offset(0, 10),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -598,14 +657,21 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                 // Audio Slider
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 7,
+                    ),
                     trackHeight: 4,
                   ),
                   child: Slider(
-                    value: _audioPosition.inSeconds
-                        .toDouble()
-                        .clamp(0.0, _audioDuration.inSeconds.toDouble() > 0 ? _audioDuration.inSeconds.toDouble() : 1.0),
-                    max: _audioDuration.inSeconds.toDouble() > 0 ? _audioDuration.inSeconds.toDouble() : 1.0,
+                    value: _audioPosition.inSeconds.toDouble().clamp(
+                      0.0,
+                      _audioDuration.inSeconds.toDouble() > 0
+                          ? _audioDuration.inSeconds.toDouble()
+                          : 1.0,
+                    ),
+                    max: _audioDuration.inSeconds.toDouble() > 0
+                        ? _audioDuration.inSeconds.toDouble()
+                        : 1.0,
                     activeColor: Colors.deepPurpleAccent,
                     inactiveColor: Colors.white24,
                     onChanged: (val) {
@@ -620,11 +686,17 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     children: [
                       Text(
                         _formatDuration(_audioPosition),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
                       Text(
                         _formatDuration(_audioDuration),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -639,15 +711,20 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                       iconSize: 36,
                       icon: const Icon(Icons.replay_10, color: Colors.white),
                       onPressed: () {
-                        final target = _audioPosition - const Duration(seconds: 10);
-                        _audioPlayer?.seek(target < Duration.zero ? Duration.zero : target);
+                        final target =
+                            _audioPosition - const Duration(seconds: 10);
+                        _audioPlayer?.seek(
+                          target < Duration.zero ? Duration.zero : target,
+                        );
                       },
                     ),
                     const SizedBox(width: 16),
                     IconButton(
                       iconSize: 64,
                       icon: Icon(
-                        _isAudioPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                        _isAudioPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_filled,
                         color: Colors.deepPurpleAccent,
                       ),
                       onPressed: () {
@@ -663,8 +740,11 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                       iconSize: 36,
                       icon: const Icon(Icons.forward_10, color: Colors.white),
                       onPressed: () {
-                        final target = _audioPosition + const Duration(seconds: 10);
-                        _audioPlayer?.seek(target > _audioDuration ? _audioDuration : target);
+                        final target =
+                            _audioPosition + const Duration(seconds: 10);
+                        _audioPlayer?.seek(
+                          target > _audioDuration ? _audioDuration : target,
+                        );
                       },
                     ),
                   ],
@@ -700,7 +780,11 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.picture_as_pdf_outlined, size: 64, color: Colors.white54),
+            const Icon(
+              Icons.picture_as_pdf_outlined,
+              size: 64,
+              color: Colors.white54,
+            ),
             const SizedBox(height: 12),
             const Text(
               'Failed to display PDF document',
@@ -749,7 +833,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
         // Floating Page Controls Overlay
         if (_showOverlay && _pdfTotalPages > 0)
           Positioned(
-            bottom: (widget.caption != null && widget.caption!.isNotEmpty) ? 80 : 24,
+            bottom: (widget.caption != null && widget.caption!.isNotEmpty)
+                ? 80
+                : 24,
             right: 20,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -835,10 +921,14 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           ),
           if (_resolvedType == DetectedMediaType.video)
             IconButton(
-              icon: const Icon(Icons.picture_in_picture_alt, color: Colors.white),
+              icon: const Icon(
+                Icons.picture_in_picture_alt,
+                color: Colors.white,
+              ),
               tooltip: 'Picture in Picture',
               onPressed: () {
-                final currentPos = _videoController?.value.position ?? Duration.zero;
+                final currentPos =
+                    _videoController?.value.position ?? Duration.zero;
                 final videoUrl = widget.effectiveUrl;
                 final caption = widget.caption;
                 final mediaType = widget.mediaType;
@@ -888,11 +978,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
       ),
       child: Text(
         widget.caption!,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          height: 1.4,
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.4),
         maxLines: 4,
         overflow: TextOverflow.ellipsis,
       ),

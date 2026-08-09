@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:video_player/video_player.dart';
+
 import '../models/chat_message.dart';
 import 'fullscreen_mediaviewer.dart';
 import 'pip_video_overlay.dart';
@@ -33,11 +36,27 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
   bool _isInitializing = false;
   bool _hasError = false;
   bool _showControls = true;
+  Timer? _hideControlsTimer;
 
   @override
   void dispose() {
+    _hideControlsTimer?.cancel();
     _controller?.dispose();
     super.dispose();
+  }
+
+  void _resetHideControlsTimer() {
+    _hideControlsTimer?.cancel();
+    _hideControlsTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted &&
+          _showControls &&
+          _controller != null &&
+          _controller!.value.isPlaying) {
+        setState(() {
+          _showControls = false;
+        });
+      }
+    });
   }
 
   bool _checkIsVideo(String url, String? mediaType) {
@@ -70,7 +89,12 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
 
     try {
       final uri = Uri.parse(videoUrl);
-      final controller = VideoPlayerController.networkUrl(uri);
+      final controller = VideoPlayerController.networkUrl(
+        uri,
+        formatHint: videoUrl.toLowerCase().contains('.m3u8')
+            ? VideoFormat.hls
+            : null,
+      );
       await controller.initialize();
       controller.setLooping(true);
 
@@ -87,8 +111,9 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
           _isInlinePlaying = true;
         });
         controller.play();
+        _resetHideControlsTimer();
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -109,8 +134,11 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
     setState(() {
       if (_controller!.value.isPlaying) {
         _controller!.pause();
+        _hideControlsTimer?.cancel();
+        _showControls = true;
       } else {
         _controller!.play();
+        _resetHideControlsTimer();
       }
     });
   }
@@ -149,11 +177,12 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveThumb = widget.assetThumbnail ?? widget.message.assetThumbnail;
-    final effectiveUrl = widget.assetUrl ?? widget.message.assetUrl;
-    final effectiveCaption = widget.caption ?? widget.message.assetCaption;
+    final effectiveThumb =
+        widget.assetThumbnail ?? widget.message.asset?.thumbnail;
+    final effectiveUrl = widget.assetUrl ?? widget.message.asset?.url;
+    final effectiveCaption = widget.caption ?? widget.message.textContent;
     final effectiveMediaType =
-        widget.mediaType ?? widget.message.rawJson['mediatype']?.toString();
+        widget.mediaType ?? widget.message.asset?.mediaType;
 
     final hasThumb = effectiveThumb != null && effectiveThumb.trim().isNotEmpty;
     final hasUrl = effectiveUrl != null && effectiveUrl.trim().isNotEmpty;
@@ -246,10 +275,7 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                     SizedBox(height: 6),
                     Text(
                       'Media Preview',
-                      style: TextStyle(
-                        color: Colors.white60,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
                   ],
                 ),
@@ -268,7 +294,9 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
     required String? mediaType,
   }) {
     // If video is active and playing inline
-    if (_isInlinePlaying && _controller != null && _controller!.value.isInitialized) {
+    if (_isInlinePlaying &&
+        _controller != null &&
+        _controller!.value.isInitialized) {
       final value = _controller!.value;
       final duration = value.duration.inMilliseconds.toDouble();
       final position = value.position.inMilliseconds.toDouble();
@@ -278,6 +306,11 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
           setState(() {
             _showControls = !_showControls;
           });
+          if (_showControls) {
+            _resetHideControlsTimer();
+          } else {
+            _hideControlsTimer?.cancel();
+          }
         },
         child: AspectRatio(
           aspectRatio: value.aspectRatio > 0 ? value.aspectRatio : 16 / 9,
@@ -320,7 +353,9 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
                               icon: Icon(
-                                value.isPlaying ? Icons.pause : Icons.play_arrow,
+                                value.isPlaying
+                                    ? Icons.pause
+                                    : Icons.play_arrow,
                                 color: Colors.white,
                               ),
                               onPressed: _togglePlayPause,
@@ -337,19 +372,23 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                               child: SliderTheme(
                                 data: SliderTheme.of(context).copyWith(
                                   thumbShape: const RoundSliderThumbShape(
-                                      enabledThumbRadius: 4),
+                                    enabledThumbRadius: 4,
+                                  ),
                                   trackHeight: 2,
                                   overlayShape: SliderComponentShape.noOverlay,
                                 ),
                                 child: Slider(
                                   value: position.clamp(
-                                      0.0, duration > 0 ? duration : 1.0),
+                                    0.0,
+                                    duration > 0 ? duration : 1.0,
+                                  ),
                                   max: duration > 0 ? duration : 1.0,
                                   activeColor: Colors.white,
                                   inactiveColor: Colors.white30,
                                   onChanged: (val) {
                                     _controller!.seekTo(
-                                        Duration(milliseconds: val.toInt()));
+                                      Duration(milliseconds: val.toInt()),
+                                    );
                                   },
                                 ),
                               ),
@@ -365,26 +404,35 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                             // Picture-in-Picture Button
                             IconButton(
                               iconSize: 20,
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
                               constraints: const BoxConstraints(),
                               icon: const Icon(
                                 Icons.picture_in_picture_alt,
                                 color: Colors.white,
                               ),
                               tooltip: 'Picture in Picture',
-                              onPressed: () => _openPiP(targetUrl, caption, mediaType),
+                              onPressed: () =>
+                                  _openPiP(targetUrl, caption, mediaType),
                             ),
                             // Fullscreen Button
                             IconButton(
                               iconSize: 20,
-                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
                               constraints: const BoxConstraints(),
                               icon: const Icon(
                                 Icons.fullscreen,
                                 color: Colors.white,
                               ),
                               tooltip: 'Full Screen',
-                              onPressed: () => _openFullscreen(targetUrl, caption, mediaType),
+                              onPressed: () => _openFullscreen(
+                                targetUrl,
+                                caption,
+                                mediaType,
+                              ),
                             ),
                           ],
                         ),
@@ -428,10 +476,7 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                         SizedBox(height: 6),
                         Text(
                           'Video Preview',
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white60, fontSize: 12),
                         ),
                       ],
                     ),
@@ -493,7 +538,11 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline, color: Colors.white70, size: 36),
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.white70,
+                  size: 36,
+                ),
                 const SizedBox(height: 4),
                 const Text(
                   'Failed to load video',
@@ -501,11 +550,18 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                 ),
                 const SizedBox(height: 4),
                 ElevatedButton.icon(
-                  onPressed: () => _openFullscreen(targetUrl, caption, mediaType),
+                  onPressed: () =>
+                      _openFullscreen(targetUrl, caption, mediaType),
                   icon: const Icon(Icons.open_in_new, size: 14),
-                  label: const Text('Open External', style: TextStyle(fontSize: 11)),
+                  label: const Text(
+                    'Open External',
+                    style: TextStyle(fontSize: 11),
+                  ),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                   ),
                 ),
               ],
@@ -519,7 +575,10 @@ class _AssetMessageWidgetState extends State<AssetMessageWidget> {
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.65),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.8), width: 1.5),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    width: 1.5,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.4),

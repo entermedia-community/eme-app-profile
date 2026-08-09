@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'fullscreen_mediaviewer.dart';
@@ -79,6 +80,7 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
   bool _hasError = false;
   bool _showControls = true;
   Offset _position = const Offset(20, 100);
+  Timer? _hideControlsTimer;
 
   @override
   void initState() {
@@ -102,14 +104,34 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
     }
   }
 
+  void _resetHideControlsTimer() {
+    _hideControlsTimer?.cancel();
+    _hideControlsTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted &&
+          _showControls &&
+          _controller != null &&
+          _controller!.value.isPlaying) {
+        setState(() {
+          _showControls = false;
+        });
+      }
+    });
+  }
+
   Future<void> _initVideo() async {
     try {
       final uri = Uri.parse(widget.videoUrl);
-      _controller = VideoPlayerController.networkUrl(uri);
+      _controller = VideoPlayerController.networkUrl(
+        uri,
+        formatHint: widget.videoUrl.toLowerCase().contains('.m3u8')
+            ? VideoFormat.hls
+            : null,
+      );
       await _controller!.initialize();
       _controller!.setLooping(true);
 
-      if (widget.startPosition != null && widget.startPosition! > Duration.zero) {
+      if (widget.startPosition != null &&
+          widget.startPosition! > Duration.zero) {
         await _controller!.seekTo(widget.startPosition!);
       }
 
@@ -118,6 +140,7 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
           _isInitialized = true;
         });
         _controller!.play();
+        _resetHideControlsTimer();
       }
     } catch (_) {
       if (mounted) {
@@ -129,6 +152,7 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
   }
 
   void stopAndDispose() {
+    _hideControlsTimer?.cancel();
     _controller?.pause();
     _controller?.dispose();
     _controller = null;
@@ -145,8 +169,11 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
     setState(() {
       if (_controller!.value.isPlaying) {
         _controller!.pause();
+        _hideControlsTimer?.cancel();
+        _showControls = true;
       } else {
         _controller!.play();
+        _resetHideControlsTimer();
       }
     });
   }
@@ -175,10 +202,14 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
       child: GestureDetector(
         onPanUpdate: (details) {
           setState(() {
-            final newX = (_position.dx + details.delta.dx)
-                .clamp(10.0, screenSize.width - pipWidth - 10.0);
-            final newY = (_position.dy + details.delta.dy)
-                .clamp(40.0, screenSize.height - pipHeight - 20.0);
+            final newX = (_position.dx + details.delta.dx).clamp(
+              10.0,
+              screenSize.width - pipWidth - 10.0,
+            );
+            final newY = (_position.dy + details.delta.dy).clamp(
+              40.0,
+              screenSize.height - pipHeight - 20.0,
+            );
             _position = Offset(newX, newY);
           });
         },
@@ -220,7 +251,11 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
                     )
                   else if (_hasError)
                     const Center(
-                      child: Icon(Icons.error_outline, color: Colors.redAccent, size: 28),
+                      child: Icon(
+                        Icons.error_outline,
+                        color: Colors.redAccent,
+                        size: 28,
+                      ),
                     )
                   else
                     const Center(
@@ -236,6 +271,11 @@ class _PipVideoOverlayWidgetState extends State<_PipVideoOverlayWidget> {
                       setState(() {
                         _showControls = !_showControls;
                       });
+                      if (_showControls) {
+                        _resetHideControlsTimer();
+                      } else {
+                        _hideControlsTimer?.cancel();
+                      }
                     },
                     behavior: HitTestBehavior.translucent,
                     child: AnimatedOpacity(

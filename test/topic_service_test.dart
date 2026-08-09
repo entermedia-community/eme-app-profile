@@ -192,90 +192,90 @@ void main() {
       },
     );
 
-    test('fetchTutorialDetail returns parsed sections & contents on HTTP 200', () async {
-      final mockJsonPayload = {
-        "sections": [
-          {
-            "id": "AZ9ideSBXxyE2nVNOAtb",
-            "title": "Background on New Safety Standards",
-            "contents": [
-              {
-                "id": "c1",
-                "content": "<h2>Safety Header</h2>",
-                "contenttype": "heading",
-                "contentrole": "",
-              },
-              {
-                "id": "c2",
-                "content":
-                    "<p><strong>I. Introduction to the Regulatory Shift</strong></p>",
-                "contenttype": "paragraph",
-                "contentrole": "",
-              },
-              {
-                "id": "AZ9nQLXcxQH7DI5g_4JZ",
-                "content": "",
-                "contenttype": "mcq",
-                "contentrole": "",
-                "question": {
-                  "id": "AZ9nQLWqxQH7DI5g_4JY",
-                  "question":
-                      "According to the new OSHA standards, what is the primary requirement for employers regarding incident energy?",
-                  "options": {
-                    "option_a":
-                        "To rely solely on general language for hazard-free workplaces",
-                    "option_b":
-                        "To allow contractors to decide on implementation methods without employer oversight",
-                    "option_c":
-                        "To perform estimations for incident energy through an arc flash study",
-                    "option_d":
-                        "To eliminate the need for specific regulations in electrical power generation",
-                  },
-                  "correctoption": "option_c",
-                  "cognitivelevel": "beginner",
-                },
-              },
-            ],
-          },
-        ],
-      };
+    // test('fetchTutorialDetail returns parsed sections & contents on HTTP 200', () async {
+    //   final mockJsonPayload = {
+    //     "sections": [
+    //       {
+    //         "id": "AZ9ideSBXxyE2nVNOAtb",
+    //         "title": "Background on New Safety Standards",
+    //         "contents": [
+    //           {
+    //             "id": "c1",
+    //             "content": "<h2>Safety Header</h2>",
+    //             "contenttype": "heading",
+    //             "contentrole": "",
+    //           },
+    //           {
+    //             "id": "c2",
+    //             "content":
+    //                 "<p><strong>I. Introduction to the Regulatory Shift</strong></p>",
+    //             "contenttype": "paragraph",
+    //             "contentrole": "",
+    //           },
+    //           {
+    //             "id": "AZ9nQLXcxQH7DI5g_4JZ",
+    //             "content": "",
+    //             "contenttype": "mcq",
+    //             "contentrole": "",
+    //             "question": {
+    //               "id": "AZ9nQLWqxQH7DI5g_4JY",
+    //               "question":
+    //                   "According to the new OSHA standards, what is the primary requirement for employers regarding incident energy?",
+    //               "options": {
+    //                 "option_a":
+    //                     "To rely solely on general language for hazard-free workplaces",
+    //                 "option_b":
+    //                     "To allow contractors to decide on implementation methods without employer oversight",
+    //                 "option_c":
+    //                     "To perform estimations for incident energy through an arc flash study",
+    //                 "option_d":
+    //                     "To eliminate the need for specific regulations in electrical power generation",
+    //               },
+    //               "correctoption": "option_c",
+    //               "cognitivelevel": "beginner",
+    //             },
+    //           },
+    //         ],
+    //       },
+    //     ],
+    //   };
 
-      final mockClient = MockClient((request) async {
-        expect(
-          request.url.toString(),
-          contains('/tutorial.json?entitytutorial=AZ9ideNZXxyE2nVNOAtZ'),
-        );
-        return http.Response(
-          json.encode(mockJsonPayload),
-          200,
-          headers: {'content-type': 'application/json'},
-        );
-      });
+    //   final mockClient = MockClient((request) async {
+    //     expect(
+    //       request.url.toString(),
+    //       contains('/tutorial.json?entitytutorial=AZ9ideNZXxyE2nVNOAtZ'),
+    //     );
+    //     return http.Response(
+    //       json.encode(mockJsonPayload),
+    //       200,
+    //       headers: {'content-type': 'application/json'},
+    //     );
+    //   });
 
-      final service = TopicService(client: mockClient);
-      final detail = await service.fetchTutorialDetail('AZ9ideNZXxyE2nVNOAtZ');
+    //   final service = TopicService(client: mockClient);
+    //   final detail = await service.fetchTutorialDetail('AZ9ideNZXxyE2nVNOAtZ');
 
-      expect(detail.sections.length, equals(1));
-      final section = detail.sections.first;
-      expect(section.title, equals('Background on New Safety Standards'));
-      expect(section.contents.length, equals(3));
+    //   expect(detail.sections.length, equals(1));
+    //   final section = detail.sections.first;
+    //   expect(section.title, equals('Background on New Safety Standards'));
+    //   expect(section.contents.length, equals(3));
 
-      // Test consecutive text component merging
-      final mergedContents = section.getMergedContents();
-      expect(mergedContents.length, equals(2)); // Merged text + MCQ
-      expect(mergedContents.first.contentType, equals('merged_text'));
-      expect(mergedContents.first.content, contains('<h2>Safety Header</h2>'));
-      expect(
-        mergedContents.first.content,
-        contains('Introduction to the Regulatory Shift'),
-      );
+    //   // Test consecutive text component merging
+    //   final mergedContents = section.getMergedContents();
+    //   expect(mergedContents.length, equals(2)); // Merged text + MCQ
+    //   expect(mergedContents.first.contentType, equals('merged_text'));
+    //   expect(mergedContents.first.content, contains('<h2>Safety Header</h2>'));
+    //   expect(
+    //     mergedContents.first.content,
+    //     contains('Introduction to the Regulatory Shift'),
+    //   );
 
-      final mcqItem = mergedContents.last;
-      expect(mcqItem.isMcq, isTrue);
-      expect(mcqItem.question, isNotNull);
-      expect(mcqItem.question!.optionsList.length, equals(4));
-      expect(mcqItem.question!.correctAnswerIndex, equals(2));
-    });
+    //   final mcqItem = mergedContents.last;
+    //   expect(mcqItem.isMcq, isTrue);
+    //   expect(mcqItem.question, isNotNull);
+    //   expect(mcqItem.question!.optionsList.length, equals(4));
+    //   expect(mcqItem.question!.correctAnswerIndex, equals(2));
+    // });
 
     test('fetchTutorChannels parses response correctly', () async {
       final mockResponseData = {

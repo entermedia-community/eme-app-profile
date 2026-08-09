@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/material.dart';
+
 import 'package:eme_world/models/topic.dart';
-import 'chat_message.dart';
+import 'package:flutter/material.dart';
 
 class TutorialProgress {
   final double beginnerProgress;
@@ -17,18 +16,9 @@ class TutorialProgress {
 
   factory TutorialProgress.fromJson(Map<String, dynamic> json) {
     return TutorialProgress(
-      beginnerProgress: max(
-        0,
-        _parseDouble(json['beginnerprogress']),
-      ),
-      competentProgress: max(
-        0,
-        _parseDouble(json['competentprogress']),
-      ),
-      expertProgress: max(
-        0,
-        _parseDouble(json['expertprogress']),
-      ),
+      beginnerProgress: max(0, _parseDouble(json['beginnerprogress'])),
+      competentProgress: max(0, _parseDouble(json['competentprogress'])),
+      expertProgress: max(0, _parseDouble(json['expertprogress'])),
     );
   }
 
@@ -203,7 +193,7 @@ class McqQuestion {
 
 class TutorialContent {
   final String id;
-  final String content;
+  final String componentContent;
   final String assetThumbnail;
   final String assetUrl;
   final String contentType;
@@ -212,7 +202,7 @@ class TutorialContent {
 
   TutorialContent({
     required this.id,
-    required this.content,
+    required this.componentContent,
     required this.assetUrl,
     required this.assetThumbnail,
     required this.contentType,
@@ -227,7 +217,7 @@ class TutorialContent {
   factory TutorialContent.fromJson(Map<String, dynamic> json) {
     return TutorialContent(
       id: json['id'] as String? ?? '',
-      content: json['content'] as String? ?? '',
+      componentContent: json['componentcontent'] as String? ?? '',
       assetUrl: json['asseturl'] as String? ?? '',
       assetThumbnail: json['assetthumbnail'] as String? ?? '',
       contentType:
@@ -281,7 +271,7 @@ class TutorialSection {
         merged.add(
           TutorialContent(
             id: ids.join('_'),
-            content: textBuffer!.toString(),
+            componentContent: textBuffer!.toString(),
             assetUrl: '',
             assetThumbnail: '',
             contentType: 'merged_text',
@@ -295,15 +285,15 @@ class TutorialSection {
 
     for (final item in contents) {
       if (item.isText) {
-        String content = item.content;
+        String textContent = item.componentContent;
         if (item.contentType == "heading") {
-          content = "<h1>$content</h1>";
+          textContent = "<h1>$textContent</h1>";
         }
         textBuffer ??= StringBuffer();
         if (textBuffer!.isNotEmpty) {
           textBuffer!.write('\n');
         }
-        textBuffer!.write(content);
+        textBuffer!.write(textContent);
         ids.add(item.id);
       } else {
         flushTextBuffer();
@@ -327,81 +317,6 @@ class TutorialDetail {
       sections: rawSections
           .map((item) => TutorialSection.fromJson(item as Map<String, dynamic>))
           .toList(),
-    );
-  }
-}
-
-class RehearseQuestion {
-  final String text;
-  final List<String> options;
-  final int correctAnswerIndex;
-  final String difficulty; // "Beginner", "Competent", "Expert"
-  final String? questionId;
-  final String? messageId;
-  final MessageType? messageType;
-
-  const RehearseQuestion({
-    required this.text,
-    required this.options,
-    required this.correctAnswerIndex,
-    required this.difficulty,
-    this.questionId,
-    this.messageId,
-    this.messageType,
-  });
-
-  factory RehearseQuestion.fromChatMessage(ChatMessage chatMsg) {
-    String text = chatMsg.message ?? '';
-    List<String> options = [];
-    int correctIndex = 0;
-    String difficulty = 'Beginner';
-    String? qId;
-
-    if (chatMsg.message != null && chatMsg.message!.isNotEmpty) {
-      try {
-        final qdecoded = jsonDecode(chatMsg.message!);
-        if (qdecoded is Map<String, dynamic>) {
-          final decoded = qdecoded['question'] as Map<String, dynamic>;
-          text =
-              decoded['question']?.toString() ??
-              decoded['text']?.toString() ??
-              decoded['title']?.toString() ??
-              text;
-          qId = (decoded['id'])?.toString();
-
-          final rawOpts = decoded['options'];
-          if (rawOpts is List) {
-            options = rawOpts.map((e) => e.toString()).toList();
-          } else if (rawOpts is Map) {
-            options = rawOpts.values.map((e) => e.toString()).toList();
-          }
-
-          final rawCorrect = decoded['correctoption'];
-          if (rawCorrect != null) {
-            final idx = options.indexWhere(
-              (opt) => opt.toLowerCase() == rawCorrect.toLowerCase(),
-            );
-            if (idx != -1) correctIndex = idx;
-          }
-
-          difficulty = (decoded['cognitivelevel'] ?? 'Beginner').toString();
-          if (difficulty.isNotEmpty) {
-            difficulty = difficulty[0].toUpperCase() + difficulty.substring(1);
-          }
-        }
-      } catch (_) {
-        // Plain text fallback
-      }
-    }
-
-    return RehearseQuestion(
-      text: text,
-      options: options,
-      correctAnswerIndex: correctIndex,
-      difficulty: difficulty,
-      questionId: qId ?? chatMsg.messageId,
-      messageId: chatMsg.messageId,
-      messageType: chatMsg.messageType,
     );
   }
 }

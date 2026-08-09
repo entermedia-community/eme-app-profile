@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui' as ui;
 
 import 'package:eme_world/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -22,12 +21,14 @@ import '../models/tutorial.dart';
 enum MessageStage {
   loading,
   error,
+  ready,
   selectOption,
   finished,
   explainAndFollowup;
 
   bool get isLoading => this == MessageStage.loading;
   bool get isError => this == MessageStage.error;
+  bool get isReady => this == MessageStage.ready;
   bool get isSelectOption => this == MessageStage.selectOption;
   bool get isFinished => this == MessageStage.finished;
   bool get isExplainAndFollowup => this == MessageStage.explainAndFollowup;
@@ -45,32 +46,18 @@ class RehearseScreen extends StatefulWidget {
 class _RehearseScreenState extends State<RehearseScreen> {
   bool _isLoading = true;
   TutorChannel? _tutorChannel;
-  List<RehearseQuestion> _questions = [];
   StreamSubscription<socket_msg.ChatMessage>? _socketSubscription;
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _followUpController = TextEditingController();
 
-  int _currentIndex = 0;
   bool _isFinished = false;
-
-  // Track user selections
-  // Map index -> selected option index
-  final Map<int, int?> _selectedAnswers = {};
-  // Map index -> confidence level string ("No Idea", "Not sure", "Mostly Sure", "Confident")
-  final Map<int, String?> _confidenceLevels = {};
-
-  final Map<String, String> _confidenceOptions = {
-    'noidea': 'No Idea',
-    'notsure': 'Not sure',
-    'mostlysure': 'Mostly Sure',
-    'confident': 'Confident',
-  };
 
   // Chat state
   final List<ChatMessage> _messages = [];
-  int? _tempSelectedAnswerIndex;
-  String? _tempConfidenceLevel;
+  ChatMessage? _lastMessage;
+  OptionsKey? _tempSelectedAnswerIndex;
+  Confidence? _tempConfidenceLevel;
   MessageStage _stage = MessageStage.loading;
 
   @override
@@ -86,7 +73,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
     try {
       _messages.clear();
-      _questions.clear();
+      _lastMessage = null;
 
       final channel = await TopicService().fetchTutorChannel(
         widget.tutorial.id,
@@ -102,49 +89,15 @@ class _RehearseScreenState extends State<RehearseScreen> {
       _tutorChannel = channel;
 
       if (_tutorChannel != null) {
-        final messageHistoryRaw = await TopicService().fetchTutorHistory(
+        final messageHistory = await TopicService().fetchTutorHistory(
           channelId: _tutorChannel!.id,
         );
 
-        final messageHistory = messageHistoryRaw.reversed;
-
-        String? lastFoundSectionId;
-        String? lastFoundComponentId;
         if (messageHistory.isNotEmpty) {
-          _messages.addAll(messageHistory);
-
-          for (final msg in messageHistory) {
-            if (msg.messageType!.isQuestion) {
-              final question = RehearseQuestion.fromChatMessage(msg);
-              _questions.add(question);
-            }
-          }
-
-          if (messageHistory.last.messageType!.isQuestion) {
-            final rawJson = Map<String, dynamic>.from(
-              messageHistory.last.rawJson,
-            );
-            if (rawJson['selected_option_index'] == null) {
-              _currentIndex = _questions.length - 1;
-              _tempSelectedAnswerIndex = null;
-              _tempConfidenceLevel = null;
-              setState(() {
-                _stage = MessageStage.selectOption;
-              });
-            }
-          }
-
-          for (final msg in messageHistory) {
-            if (msg.sectionId != null && msg.sectionId!.isNotEmpty) {
-              lastFoundSectionId = msg.sectionId;
-            }
-            if (msg.componentId != null && msg.componentId!.isNotEmpty) {
-              lastFoundComponentId = msg.componentId;
-            }
-            if (lastFoundSectionId != null && lastFoundComponentId != null) {
-              break;
-            }
-          }
+          setState(() {
+            _messages.addAll(messageHistory);
+            _lastMessage = _messages.last;
+          });
         }
 
         final userId = AuthService.userId ?? _tutorChannel!.user;
@@ -161,106 +114,70 @@ class _RehearseScreenState extends State<RehearseScreen> {
           if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
           if (!mounted) return;
 
-          if (incomingMsg.messageType!.isProgressUpdate) {
+          if (incomingMsg.messageType.isProgressUpdate) {
             setState(() {
               widget.tutorial.progress = TutorialProgress.fromJson(
-                incomingMsg.rawJson,
+                incomingMsg.progressUpdate?.toJson() ?? {},
               );
             });
             return;
           }
 
-          if (incomingMsg.message != null && incomingMsg.message!.isNotEmpty) {
-            setState(() {
-              final msgId = incomingMsg.messageId;
-              final existingIndex = _messages.indexWhere(
-                (m) => m.messageId == msgId,
-              );
+          setState(() {
+            _messages.add(incomingMsg);
+            _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+            _lastMessage = _messages.last;
 
-              if (existingIndex != -1) {
-                // final oldMsg = _messages[existingIndex];
-                // if (oldMsg.interactive == false) {
-                //   final updatedRaw = Map<String, dynamic>.from(
-                //     incomingMsg.rawJson,
-                //   );
-                //   if (oldMsg.rawJson.containsKey('selected_option_index')) {
-                //     updatedRaw['selected_option_index'] =
-                //         oldMsg.rawJson['selected_option_index'];
-                //   }
-                //   incomingMsg = incomingMsg.copyWith(
-                //     interactive: false,
-                //     rawJson: updatedRaw,
-                //   );
-                // }
-                _messages[existingIndex] = incomingMsg;
-              } else {
-                _messages.add(
-                  ChatMessage(
-                    messageId: incomingMsg.messageId,
-                    message: incomingMsg.message,
-                    messageType: incomingMsg.messageType ?? MessageType.text,
-                    userId: incomingMsg.userId,
-                    interactive: incomingMsg.interactive,
-                    channel: incomingMsg.channel,
-                    sectionId:
-                        incomingMsg.sectionId ??
-                        (_messages.isNotEmpty
-                            ? _messages.last.sectionId
-                            : null),
-                    componentId:
-                        incomingMsg.componentId ??
-                        (_messages.isNotEmpty
-                            ? _messages.last.componentId
-                            : null),
-                    rawJson: incomingMsg.rawJson,
-                    createdAt: incomingMsg.createdAt,
-                  ),
-                );
-                _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-              }
-
-              if (incomingMsg.messageType!.isQuestion) {
-                final question = RehearseQuestion.fromChatMessage(incomingMsg);
-                final qExistingIndex = _questions.indexWhere(
-                  (q) => q.messageId == msgId,
-                );
-
-                if (qExistingIndex != -1) {
-                  _questions[qExistingIndex] = question;
-                } else {
-                  _questions.add(question);
-                  _currentIndex = _questions.length - 1;
-                  _tempSelectedAnswerIndex = null;
-                  _tempConfidenceLevel = null;
-                  _stage = MessageStage.selectOption;
-                }
-              } else if (incomingMsg.messageType!.isEnd) {
-                setState(() {
-                  _stage = MessageStage.finished;
-                });
-                _isFinished = true;
-              } else {
-                setState(() {
-                  _stage = MessageStage.explainAndFollowup;
-                });
-              }
-            });
-            _scrollToBottom();
-          }
+            if (_lastMessage!.messageType.isQuestion) {
+              setState(() {
+                _tempSelectedAnswerIndex = null;
+                _tempConfidenceLevel = null;
+                _stage = MessageStage.selectOption;
+              });
+            } else if (_lastMessage!.messageType.isEnd) {
+              setState(() {
+                _stage = MessageStage.finished;
+              });
+              _isFinished = true;
+            } else {
+              setState(() {
+                _stage = MessageStage.explainAndFollowup;
+              });
+            }
+          });
+          _scrollToBottom();
         });
 
-        if (!_stage.isSelectOption) {
-          if (lastFoundSectionId != null && lastFoundComponentId != null) {
-            _messages.last.sectionId = lastFoundSectionId;
-            _messages.last.componentId = lastFoundComponentId;
-            setState(() {
-              _stage = MessageStage.explainAndFollowup;
-            });
-          } else {
-            await TopicService().startTutorial(
-              tutorialId: widget.tutorial.id,
-              channel: _tutorChannel!.id,
-            );
+        if (_messages.isEmpty) {
+          await TopicService().startTutorial(
+            tutorialId: widget.tutorial.id,
+            channel: _tutorChannel!.id,
+          );
+        } else {
+          if (_lastMessage != null) {
+            if (_lastMessage!.messageType.isWelcome) {
+              setState(() {
+                _stage = MessageStage.ready;
+              });
+            } else if (_lastMessage!.messageType.isQuestion) {
+              final answer = _lastMessage!.answer;
+              if (answer == null) {
+                _tempSelectedAnswerIndex = null;
+                _tempConfidenceLevel = null;
+                setState(() {
+                  _stage = MessageStage.selectOption;
+                });
+              }
+            } else if (_lastMessage!.messageType.isEnd) {
+              setState(() {
+                _stage = MessageStage.finished;
+              });
+              _isFinished = true;
+            } else {
+              setState(() {
+                _stage = MessageStage.explainAndFollowup;
+              });
+            }
           }
         }
       }
@@ -271,15 +188,10 @@ class _RehearseScreenState extends State<RehearseScreen> {
       _scrollToBottom();
     } catch (e) {
       setState(() {
-        _questions = [];
         _isLoading = false;
         _stage = MessageStage.error;
       });
     }
-  }
-
-  void _initializeChat() {
-    _messages.clear();
   }
 
   @override
@@ -301,28 +213,28 @@ class _RehearseScreenState extends State<RehearseScreen> {
     });
   }
 
-  Color _getConfidenceColor(String confidence) {
+  Color _getConfidenceColor(Confidence? confidence) {
     switch (confidence) {
-      case 'noidea':
+      case Confidence.noidea:
         return const Color(0xFFF50057); // Soft red
-      case 'notsure':
+      case Confidence.notsure:
         return const Color(0xFFFF9F43); // Orange
-      case 'mostlysure':
+      case Confidence.mostlysure:
         return const Color(0xFF38B6FF); // Light blue
-      case 'confident':
+      case Confidence.confident:
         return const Color(0xFF38EF7D); // Vibrant green
       default:
         return Colors.white54;
     }
   }
 
-  void _selectOption(int optIndex) {
+  void _selectOption(OptionsKey opt) {
     setState(() {
-      _tempSelectedAnswerIndex = optIndex;
+      _tempSelectedAnswerIndex = opt;
     });
   }
 
-  void _selectConfidence(String confidence) {
+  void _selectConfidence(Confidence confidence) {
     setState(() {
       _tempConfidenceLevel = confidence;
     });
@@ -341,39 +253,20 @@ class _RehearseScreenState extends State<RehearseScreen> {
       return;
     }
 
-    final activeQuestion =
-        _questions.isNotEmpty && _currentIndex < _questions.length
-        ? _questions[_currentIndex]
-        : null;
-
-    if (activeQuestion == null) {
-      setState(() {
-        _stage = MessageStage.error;
-      });
-      return;
-    }
-
     setState(() {
-      _selectedAnswers[_currentIndex] = _tempSelectedAnswerIndex;
       _stage = MessageStage.explainAndFollowup;
 
-      final targetId = activeQuestion.messageId ?? activeQuestion.questionId;
-      if (targetId != null && targetId.isNotEmpty) {
-        final msgIdx = _messages.indexWhere(
-          (m) =>
-              m.messageId == targetId ||
-              m.rawJson['id']?.toString() == targetId,
-        );
-        if (msgIdx != -1) {
-          final updatedRaw = Map<String, dynamic>.from(
-            _messages[msgIdx].rawJson,
-          );
-          updatedRaw['selected_option_index'] = _tempSelectedAnswerIndex;
-          updatedRaw['confidence'] = _tempConfidenceLevel!;
-          _messages[msgIdx] = _messages[msgIdx].copyWith(
-            interactive: false,
-            rawJson: updatedRaw,
-          );
+      final targetId = _lastMessage!.messageId;
+      final msgIdx = _messages.indexWhere((m) => m.messageId == targetId);
+      if (msgIdx != -1) {
+        final question = _messages[msgIdx].question;
+        if (question != null) {
+          final answer = question.answer;
+          if (answer != null) {
+            answer.setSelectedOption(_tempSelectedAnswerIndex!);
+            answer.setConfidence(_tempConfidenceLevel!);
+            _messages[msgIdx].interactive = false;
+          }
         }
       }
     });
@@ -383,10 +276,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
     });
 
     TopicService().submitAnswer(
-      questionId: activeQuestion.questionId!,
-      selectedOption:
-          "option_${String.fromCharCode(97 + _tempSelectedAnswerIndex!)}",
-      confidence: _tempConfidenceLevel!,
+      questionId: _lastMessage!.question!.id,
+      selectedOption: _tempSelectedAnswerIndex!.toStr(),
+      confidence: _tempConfidenceLevel!.name,
       channel: _messages.last.channel,
       sectionId: _messages.last.sectionId!,
       componentId: _messages.last.componentId!,
@@ -415,13 +307,11 @@ class _RehearseScreenState extends State<RehearseScreen> {
           messageId: userMsgId,
           userId: AuthService.userId ?? 'user',
           message: text,
-          messageType: MessageType.usercomment,
           channel: _messages.last.channel,
-          sectionId: _messages.last.sectionId,
-          componentId: _messages.last.componentId,
           createdAt: DateTime.now().toLocal(),
         ),
       );
+      _lastMessage = _messages.last;
     });
     _scrollToBottom();
   }
@@ -431,58 +321,15 @@ class _RehearseScreenState extends State<RehearseScreen> {
       _stage = MessageStage.loading;
     });
     logPrint(
-      "continue From SECTION: ${_messages.last.sectionId} and COMPONENT: ${_messages.last.componentId}",
+      "continue From SECTION: ${_lastMessage!.sectionId} and COMPONENT: ${_lastMessage!.componentId}",
     );
     await TopicService().continueTutorial(
       tutorialId: widget.tutorial.id,
-      channel: _messages.last.channel,
-      sectionId: _messages.last.sectionId,
-      componentId: _messages.last.componentId,
+      channel: _lastMessage!.channel,
+      sectionId: _lastMessage!.sectionId,
+      componentId: _lastMessage!.componentId,
     );
     _scrollToBottom();
-  }
-
-  double _calculateScorePercentage() {
-    int correctCount = 0;
-    for (int i = 0; i < _questions.length; i++) {
-      if (_selectedAnswers[i] == _questions[i].correctAnswerIndex) {
-        correctCount++;
-      }
-    }
-    return correctCount / _questions.length;
-  }
-
-  int _calculateCorrectCount() {
-    int correctCount = 0;
-    for (int i = 0; i < _questions.length; i++) {
-      if (_selectedAnswers[i] == _questions[i].correctAnswerIndex) {
-        correctCount++;
-      }
-    }
-    return correctCount;
-  }
-
-  double _calculateAverageConfidence() {
-    if (_confidenceLevels.isEmpty) return 0.0;
-    double totalWeight = 0;
-    int count = 0;
-    _confidenceLevels.forEach((key, val) {
-      if (val != null) {
-        count++;
-        if (val == 'No Idea') totalWeight += 0.25;
-        if (val == 'Not sure') totalWeight += 0.50;
-        if (val == 'Mostly Sure') totalWeight += 0.75;
-        if (val == 'Confident') totalWeight += 1.0;
-      }
-    });
-    return count > 0 ? (totalWeight / count) : 0.0;
-  }
-
-  String _getConfidenceTextFromScore(double score) {
-    if (score < 0.35) return 'Low Confidence';
-    if (score < 0.65) return 'Moderate Confidence';
-    if (score < 0.85) return 'High Confidence';
-    return 'Strong Confidence';
   }
 
   Widget _buildRichText(String text, TextStyle baseStyle) {
@@ -952,15 +799,9 @@ class _RehearseScreenState extends State<RehearseScreen> {
         return [_buildEndMessage(message)];
       case MessageType.question:
         return [_buildQuestionMessage(message, isLast)];
-      case MessageType.questioncontinue:
-        return [
-          _buildButtonMessage(
-            actionButtonLabel: "Continue",
-            onPressed: () => _tutorialContinue(),
-          ),
-        ];
       case MessageType.asset:
         return [_buildAssetMessage(message)];
+      case MessageType.welcome:
       case MessageType.text:
       default:
         return [_buildTextMessage(message)];
@@ -1061,18 +902,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
 
   Widget _buildQuestionMessage(ChatMessage message, bool isLast) {
     final l10n = AppLocalizations.of(context)!;
-    final question = RehearseQuestion.fromChatMessage(message);
-    final optionLetters = ['A', 'B', 'C', 'D'];
-    final bool isInteractive = message.interactive ?? true;
+    final bool isInteractive = message.interactive;
 
-    int? selectedOptIndex;
-    if (message.selectedOptionIndex != null) {
-      selectedOptIndex = message.selectedOptionIndex;
+    OptionsKey? selectedOpt;
+    if (message.answer?.selectedOption != null) {
+      selectedOpt = message.answer!.selectedOption;
     } else if (isLast && _tempSelectedAnswerIndex != null) {
-      selectedOptIndex = _tempSelectedAnswerIndex;
+      selectedOpt = _tempSelectedAnswerIndex;
     }
 
-    final color = _getConfidenceColor(message.confidence?.$1 ?? '');
+    final question = message.question!;
 
     return _buildMessageContainer(
       isAgent: true,
@@ -1082,7 +921,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
         children: [
           // Question text (RichText)
           _buildRichText(
-            question.text,
+            question.question,
             const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -1092,20 +931,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
           ),
           if (question.options.isNotEmpty) ...[
             const SizedBox(height: 12),
-            // Options (Plain text interactive MCQ)
             Column(
-              children: List.generate(question.options.length, (optIndex) {
-                final optionText = question.options[optIndex];
-                final letter = optIndex < optionLetters.length
-                    ? optionLetters[optIndex]
-                    : '${optIndex + 1}';
-                final isSelected = selectedOptIndex == optIndex;
+              children: question.options.keys.map((optionKey) {
+                final optionText = question.options[optionKey]!;
+                final isSelected = selectedOpt == optionKey;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 6.0),
                   child: InkWell(
                     onTap: isInteractive
                         ? () {
-                            _selectOption(optIndex);
+                            _selectOption(optionKey);
                             if (!_stage.isSelectOption) {
                               setState(() {
                                 _stage = MessageStage.selectOption;
@@ -1143,7 +978,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                                   : Colors.white.withValues(alpha: 0.1),
                             ),
                             child: Text(
-                              letter,
+                              optionKey.letter,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
@@ -1173,10 +1008,11 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     ),
                   ),
                 );
-              }),
+              }).toList(),
             ),
-            if (message.confidence != null) ...[
+            if (message.answer?.confidence != null) ...[
               const SizedBox(height: 12),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -1186,11 +1022,11 @@ class _RehearseScreenState extends State<RehearseScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    message.confidence!.$2,
+                    message.answer!.confidence!.label,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      color: color,
+                      color: _getConfidenceColor(message.answer?.confidence),
                     ),
                   ),
                 ],
@@ -1202,47 +1038,10 @@ class _RehearseScreenState extends State<RehearseScreen> {
     );
   }
 
-  Widget _buildButtonMessage({
-    required String actionButtonLabel,
-    required Function() onPressed,
-  }) {
-    return _buildMessageContainer(
-      isAgent: true,
-      isAiGenerated: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          Container(
-            height: 1,
-            width: double.infinity,
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF27121),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text(
-              actionButtonLabel,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomPanel(RehearseQuestion? question) {
+  Widget _buildBottomPanel(ChatMessage? message) {
+    if (message == null) {
+      return const SizedBox.shrink();
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -1298,6 +1097,47 @@ class _RehearseScreenState extends State<RehearseScreen> {
                     const SizedBox(width: 8),
                     Icon(Icons.refresh, size: 16, color: Colors.white),
                   ],
+                ),
+              ),
+            ] else if (_stage.isReady) ...[
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: const Color(0xFFF27121),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF27121).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _tutorialContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Start',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.play_circle, size: 16, color: Colors.white),
+                    ],
+                  ),
                 ),
               ),
             ] else if (_stage.isExplainAndFollowup) ...[
@@ -1421,14 +1261,14 @@ class _RehearseScreenState extends State<RehearseScreen> {
                 ),
               ),
               Row(
-                children: _confidenceOptions.entries.map((entry) {
-                  final color = _getConfidenceColor(entry.key);
-                  final isSelected = _tempConfidenceLevel == entry.key;
+                children: Confidence.values.map((confidence) {
+                  final color = _getConfidenceColor(confidence);
+                  final isSelected = _tempConfidenceLevel == confidence;
                   return Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4.0),
                       child: InkWell(
-                        onTap: () => _selectConfidence(entry.key),
+                        onTap: () => _selectConfidence(confidence),
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1448,7 +1288,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            entry.value,
+                            confidence.label,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -1557,10 +1397,6 @@ class _RehearseScreenState extends State<RehearseScreen> {
       );
     }
 
-    final activeQuestion = _questions.isNotEmpty
-        ? _questions[_currentIndex]
-        : null;
-
     return Column(
       children: [
         // Premium custom AppBar header
@@ -1652,7 +1488,7 @@ class _RehearseScreenState extends State<RehearseScreen> {
         ),
 
         // Bottom input/selection panel
-        _buildBottomPanel(activeQuestion),
+        _buildBottomPanel(_messages.isEmpty ? null : _messages.last),
       ],
     );
   }
@@ -1700,532 +1536,16 @@ class _RehearseScreenState extends State<RehearseScreen> {
   }
 
   Widget _buildResultsView() {
-    final scorePct = _calculateScorePercentage();
-    final correctCount = _calculateCorrectCount();
-    final avgConf = _calculateAverageConfidence();
-    final confText = _getConfidenceTextFromScore(avgConf);
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 20),
-            // Header Title
-            Center(
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFF38EF7D).withValues(alpha: 0.1),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: const Icon(
-                  Icons.stars_rounded,
-                  color: Color(0xFF38EF7D),
-                  size: 64,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Center(
-              child: Text(
-                'Rehearsal Completed!',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Center(
-              child: Text(
-                widget.tutorial.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.white38,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Score and Confidence Overview Cards
-            Row(
-              children: [
-                // Score Gauge Card
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF161C24).withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'ACCURACY',
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: CircularProgressIndicator(
-                                    value: scorePct,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.white.withValues(
-                                      alpha: 0.04,
-                                    ),
-                                    color: scorePct > 0.7
-                                        ? const Color(0xFF38EF7D)
-                                        : scorePct > 0.4
-                                        ? const Color(0xFFFF9F43)
-                                        : const Color(0xFFF50057),
-                                  ),
-                                ),
-                                Text(
-                                  '$correctCount / ${_questions.length}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '${(scorePct * 100).toInt()}% Correct',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: scorePct > 0.7
-                                    ? const Color(0xFF38EF7D)
-                                    : scorePct > 0.4
-                                    ? const Color(0xFFFF9F43)
-                                    : const Color(0xFFF50057),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                // Average Confidence Card
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: BackdropFilter(
-                      filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF161C24).withValues(alpha: 0.6),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                        ),
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            const Text(
-                              'CONFIDENCE',
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 10,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 80,
-                                  height: 80,
-                                  child: CircularProgressIndicator(
-                                    value: avgConf,
-                                    strokeWidth: 6,
-                                    backgroundColor: Colors.white.withValues(
-                                      alpha: 0.04,
-                                    ),
-                                    color: const Color(0xFF38B6FF),
-                                  ),
-                                ),
-                                Text(
-                                  '${(avgConf * 100).toInt()}%',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              confText,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF38B6FF),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // Detailed Breakdown header
-            const Text(
-              'QUESTION BREAKDOWN',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.white38,
-                letterSpacing: 1.0,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Questions list review
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _questions.length,
-              itemBuilder: (context, index) {
-                final question = _questions[index];
-                final userSelect = _selectedAnswers[index];
-                final isCorrect = userSelect == question.correctAnswerIndex;
-                final confidence = _confidenceLevels[index] ?? 'No Idea';
-                final confidenceColor = _getConfidenceColor(confidence);
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF161C24).withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Question Number & Status icon
-                            Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isCorrect
-                                    ? const Color(
-                                        0xFF38EF7D,
-                                      ).withValues(alpha: 0.15)
-                                    : const Color(
-                                        0xFFF50057,
-                                      ).withValues(alpha: 0.15),
-                              ),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                isCorrect
-                                    ? Icons.check_rounded
-                                    : Icons.close_rounded,
-                                color: isCorrect
-                                    ? const Color(0xFF38EF7D)
-                                    : const Color(0xFFF50057),
-                                size: 14,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Question ${index + 1}',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white38,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              question.difficulty == 'Beginner'
-                                              ? const Color(
-                                                  0xFF38EF7D,
-                                                ).withValues(alpha: 0.15)
-                                              : question.difficulty ==
-                                                    'Intermediate'
-                                              ? const Color(
-                                                  0xFFFF9F43,
-                                                ).withValues(alpha: 0.15)
-                                              : const Color(
-                                                  0xFFF50057,
-                                                ).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          question.difficulty.toUpperCase(),
-                                          style: TextStyle(
-                                            fontSize: 8,
-                                            fontWeight: FontWeight.bold,
-                                            color:
-                                                question.difficulty ==
-                                                    'Beginner'
-                                                ? const Color(0xFF38EF7D)
-                                                : question.difficulty ==
-                                                      'Intermediate'
-                                                ? const Color(0xFFFF9F43)
-                                                : const Color(0xFFF50057),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    question.text,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 24, color: Colors.white10),
-                        // Answer selections details
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Your Answer',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.white38,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    userSelect != null
-                                        ? question.options[userSelect]
-                                        : 'None',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: isCorrect
-                                          ? const Color(0xFF38EF7D)
-                                          : const Color(0xFFF50057),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (!isCorrect) ...[
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Correct Answer',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: Colors.white38,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      question.options[question
-                                          .correctAnswerIndex],
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF38EF7D),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                            const SizedBox(width: 8),
-                            // Confidence Indicator
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                const Text(
-                                  'Confidence',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.white38,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: confidenceColor.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: confidenceColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  child: Text(
-                                    confidence,
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: confidenceColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Back to Dashboard / Retry Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      setState(() {
-                        _selectedAnswers.clear();
-                        _confidenceLevels.clear();
-                        _currentIndex = 0;
-                        _isFinished = false;
-                        _messages.clear();
-                        _tempSelectedAnswerIndex = null;
-                        _tempConfidenceLevel = null;
-                        _stage = MessageStage.selectOption;
-                        _initializeChat();
-                      });
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white70,
-                      side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.08),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text(
-                      'Try Again',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: const Color(0xFFF27121),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text(
-                        'Finish Review',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 30),
-          ],
+    return Column(
+      children: [
+        Text("Quiz Completed! 🎉"),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Text("Go Back"),
         ),
-      ),
+      ],
     );
   }
 }
