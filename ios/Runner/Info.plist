@@ -20,7 +20,7 @@
 		</dict>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>Testu Cl</string>
+	<string>EME World</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
