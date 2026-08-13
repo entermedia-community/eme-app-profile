@@ -4,19 +4,14 @@ import 'package:flutter_eme_base/flutter_eme_base.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await WorkspaceService.init(customWorkspaces: [
-    const Workspace(
+  await BaseApp.initialize(
+    appSettingsPath: '',
+    initialWorkspace: const Workspace(
       id: 'development',
       name: 'Development',
       mediaDBRoot: 'http://localhost.com:8080/site/mediadb',
     ),
-    const Workspace(
-      id: 'eme',
-      name: 'EME',
-      mediaDBRoot: 'https://eme.world/site/mediadb',
-    ),
-  ]);
-  await AuthService.init();
+  );
   runApp(
     ProviderScope(
       child: BaseApp(
