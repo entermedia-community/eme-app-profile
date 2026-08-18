@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "world.eme.app"
+    namespace = "world.eme.main"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
