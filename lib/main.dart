@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_eme_base/utils/error_handler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_eme_base/flutter_eme_base.dart';
 
