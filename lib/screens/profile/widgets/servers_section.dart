@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../providers/navigation_provider.dart';
 import '../../../providers/server_provider.dart';
 import '../../../theme/app_colors.dart';
-import 'category_filter_bar.dart';
 import 'server_card.dart';
 
 class ServersSection extends ConsumerStatefulWidget {
@@ -15,6 +15,7 @@ class ServersSection extends ConsumerStatefulWidget {
 
 class _ServersSectionState extends ConsumerState<ServersSection> {
   final TextEditingController _searchController = TextEditingController();
+  String _localSearch = '';
 
   @override
   void dispose() {
@@ -25,72 +26,116 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
   @override
   Widget build(BuildContext context) {
     final serverState = ref.watch(serverProvider);
-    final filteredServers = serverState.filteredServers;
+    final joinedServers = serverState.joinedServers.where((s) {
+      if (_localSearch.isEmpty) return true;
+      final q = _localSearch.toLowerCase();
+      return s.title.toLowerCase().contains(q) ||
+          (s.subtitle?.toLowerCase().contains(q) ?? false) ||
+          s.description.toLowerCase().contains(q) ||
+          s.tags.any((t) => t.toLowerCase().contains(q));
+    }).toList();
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Title: "Collective Intelligence Servers"
-        Text(
-          'Collective Intelligence Servers',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-            letterSpacing: -0.4,
-          ),
+        // Section Header Row: "My Joined Servers" + Count Badge
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'My Joined Servers',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '${serverState.joinedServers.length}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? AppColors.primaryLight : AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            TextButton.icon(
+              onPressed: () {
+                ref.read(navigationProvider.notifier).setTab(3); // Go to EME World
+              },
+              icon: const Icon(Icons.explore_outlined, size: 16),
+              label: Text(
+                'Explore All',
+                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              ),
+            ),
+          ],
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
 
-        // Informational Subtitle paragraph from Mockup
+        // Subtitle explanation
         Text(
-          'Ready to turn your audience, platform, or idea into a profitable service? '
-          'Partner with us to access powerful tools, earn commission, and deliver real value—without worrying about the tech.',
+          'Servers and collective intelligence nodes you are currently a member of. Access shared tools, chats, and decentralized services.',
           style: GoogleFonts.inter(
             fontSize: 13,
             color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
-            height: 1.5,
-          ),
-        ),
-
-        const SizedBox(height: 18),
-
-        // Quick Search Bar
-        TextField(
-          controller: _searchController,
-          onChanged: (val) {
-            ref.read(serverProvider.notifier).setSearchQuery(val);
-          },
-          decoration: InputDecoration(
-            hintText: 'Search servers by name, tag, or mission...',
-            hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
-            prefixIcon: const Icon(Icons.search_rounded, size: 20),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 18),
-                    onPressed: () {
-                      _searchController.clear();
-                      ref.read(serverProvider.notifier).setSearchQuery('');
-                    },
-                  )
-                : null,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            height: 1.45,
           ),
         ),
 
         const SizedBox(height: 16),
 
-        // Category Filter Chips
-        const CategoryFilterBar(),
+        // Search within joined servers (if there are 2 or more)
+        if (serverState.joinedServers.length > 2) ...[
+          TextField(
+            controller: _searchController,
+            onChanged: (val) => setState(() => _localSearch = val),
+            decoration: InputDecoration(
+              hintText: 'Filter your joined servers...',
+              hintStyle: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textMuted),
+              prefixIcon: const Icon(Icons.search_rounded, size: 18),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 16),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _localSearch = '');
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
 
-        const SizedBox(height: 20),
-
-        // Servers Grid / List
-        if (filteredServers.isEmpty)
-          _buildEmptyState(context, isDark)
-        else
+        // Servers Grid / List or Empty State
+        if (joinedServers.isEmpty)
+          _buildEmptyState(context, isDark, serverState.joinedServers.isEmpty)
+        else ...[
           LayoutBuilder(
             builder: (context, constraints) {
               final isTablet = constraints.maxWidth > 600;
@@ -99,7 +144,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               return GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredServers.length,
+                itemCount: joinedServers.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 14,
@@ -107,65 +152,166 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                   childAspectRatio: isTablet ? 0.72 : 0.58,
                 ),
                 itemBuilder: (context, index) {
-                  return ServerCard(server: filteredServers[index]);
+                  return ServerCard(server: joinedServers[index]);
                 },
               );
             },
           ),
+
+          const SizedBox(height: 20),
+
+          // Discover More Servers Banner
+          _buildDiscoverBanner(context, isDark),
+        ],
       ],
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDark) {
+  Widget _buildEmptyState(BuildContext context, bool isDark, bool noServersAtAll) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
         ),
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 48,
-            color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              noServersAtAll ? Icons.dns_outlined : Icons.search_off_rounded,
+              size: 40,
+              color: AppColors.primary,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
-            'No servers found',
+            noServersAtAll ? 'No joined servers yet' : 'No matching servers',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Try adjusting your search query or selected category filter.',
+            noServersAtAll
+                ? 'Join collective intelligence servers and service providers from the EME World network to collaborate.'
+                : 'Try clearing your search query to see all your joined servers.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
               color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 16),
-          ElevatedButton(
+          const SizedBox(height: 18),
+          ElevatedButton.icon(
             onPressed: () {
-              _searchController.clear();
-              ref.read(serverProvider.notifier).setCategory('All');
-              ref.read(serverProvider.notifier).setSearchQuery('');
+              if (noServersAtAll) {
+                ref.read(navigationProvider.notifier).setTab(3); // Switch to EME World
+              } else {
+                _searchController.clear();
+                setState(() => _localSearch = '');
+              }
             },
+            icon: Icon(
+              noServersAtAll ? Icons.public_rounded : Icons.refresh_rounded,
+              size: 18,
+            ),
+            label: Text(
+              noServersAtAll ? 'Explore EME World' : 'Clear Filter',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Reset Filters'),
           ),
         ],
       ),
     );
   }
+
+  Widget _buildDiscoverBanner(BuildContext context, bool isDark) {
+    return InkWell(
+      onTap: () {
+        ref.read(navigationProvider.notifier).setTab(3); // Go to EME World
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                : [const Color(0xFFEFF6FF), const Color(0xFFF8FAFC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.travel_explore_rounded,
+                color: AppColors.primary,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Discover More in EME World',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Explore new servers, specialists, and decentralized services worldwide.',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

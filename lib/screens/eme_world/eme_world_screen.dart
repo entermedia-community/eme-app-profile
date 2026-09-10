@@ -1,13 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../providers/server_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/pill_badge.dart';
+import '../profile/widgets/category_filter_bar.dart';
+import '../profile/widgets/server_card.dart';
+import 'widgets/individual_card.dart';
 
-class EmeWorldScreen extends StatelessWidget {
+class EmeWorldScreen extends ConsumerStatefulWidget {
   const EmeWorldScreen({super.key});
 
   @override
+  ConsumerState<EmeWorldScreen> createState() => _EmeWorldScreenState();
+}
+
+class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final serverState = ref.watch(serverProvider);
+    final catalog = serverState.filteredCatalog;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
@@ -22,31 +42,30 @@ class EmeWorldScreen extends StatelessWidget {
             style: GoogleFonts.plusJakartaSans(
               fontSize: 22,
               fontWeight: FontWeight.w800,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+              letterSpacing: -0.4,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Decentralized collective intelligence and global collaboration network.',
+            'Global marketplace connecting collective intelligence servers & verified specialists offering decentralized services.',
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark
-                  ? AppColors.textDarkSecondary
-                  : AppColors.textSecondary,
+              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              height: 1.4,
             ),
           ),
 
           const SizedBox(height: 16),
 
-          // Network Metrics
+          // Network Telemetry Bar
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark
-                    ? AppColors.darkCardBorder
-                    : AppColors.lightCardBorder,
+                color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
               ),
               boxShadow: [
                 BoxShadow(
@@ -59,35 +78,118 @@ class EmeWorldScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildMetricItem('Countries', '12', AppColors.primary),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: isDark
-                      ? AppColors.darkCardBorder
-                      : AppColors.lightCardBorder,
-                ),
-                _buildMetricItem('Users', '1420', AppColors.greenAccent),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: isDark
-                      ? AppColors.darkCardBorder
-                      : AppColors.lightCardBorder,
-                ),
-                _buildMetricItem('Documents', '18.5k', const Color(0xFF8B5CF6)),
+                _buildMetricItem('Nodes', '${serverState.serverCount}', AppColors.primary),
+                _buildDivider(isDark),
+                _buildMetricItem('Specialists', '${serverState.individualCount}', AppColors.greenAccent),
+                _buildDivider(isDark),
+                _buildMetricItem('Countries', '12', const Color(0xFF8B5CF6)),
+                _buildDivider(isDark),
+                _buildMetricItem('Services', '40+', const Color(0xFFF59E0B)),
               ],
             ),
           ),
 
+          const SizedBox(height: 20),
+
+          // Search Input Bar
+          TextField(
+            controller: _searchController,
+            onChanged: (val) {
+              ref.read(serverProvider.notifier).setSearchQuery(val);
+            },
+            decoration: InputDecoration(
+              hintText: 'Search servers, specialists, services, or locations...',
+              hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        ref.read(serverProvider.notifier).setSearchQuery('');
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Type Segmented Filter (All, Servers, Specialists)
+          _buildTypeFilterSelector(serverState, isDark),
+
+          const SizedBox(height: 14),
+
+          // Category Chips Bar
+          const CategoryFilterBar(),
+
+          const SizedBox(height: 20),
+
+          // Featured Ecosystem Spotlight Carousel / Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Marketplace Directory',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                '${catalog.length} results',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Entity Catalog Grid
+          if (catalog.isEmpty)
+            _buildEmptyState(context, isDark)
+          else
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isTablet = constraints.maxWidth > 600;
+                final crossAxisCount = isTablet ? 3 : 2;
+
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: catalog.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: isTablet ? 0.72 : 0.58,
+                  ),
+                  itemBuilder: (context, index) {
+                    final item = catalog[index];
+                    if (item.isIndividual) {
+                      return IndividualCard(specialist: item);
+                    }
+                    return ServerCard(server: item);
+                  },
+                );
+              },
+            ),
+
           const SizedBox(height: 24),
 
-          // Trending Discussions / News
+          // Featured Ecosystem Updates Section
           Text(
             'Featured Ecosystem Updates',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -116,22 +218,85 @@ class EmeWorldScreen extends StatelessWidget {
                 'New biometric passport issuance module enabled for cross-border humanitarian missions with zero transaction fees.',
           ),
 
-          const SizedBox(height: 12),
-
-          _buildUpdateCard(
-            context,
-            isDark: isDark,
-            title: 'Circular Panchayat of India announces Rural Hackathon',
-            category: 'Social Services',
-            date: 'Sep 8, 2026',
-            reads: '980 reads',
-            description:
-                'Over \$50,000 in micro-grants available for local teams building decentralized agricultural telemetry and waste recycling loops.',
-          ),
-
           const SizedBox(height: 80),
         ],
       ),
+    );
+  }
+
+  Widget _buildTypeFilterSelector(ServerState serverState, bool isDark) {
+    final types = [
+      {'id': 'All', 'label': 'All Services', 'icon': Icons.apps_rounded, 'count': serverState.servers.length},
+      {'id': 'Servers', 'label': 'Servers', 'icon': Icons.dns_rounded, 'count': serverState.serverCount},
+      {'id': 'Specialists', 'label': 'Specialists', 'icon': Icons.person_search_rounded, 'count': serverState.individualCount},
+    ];
+
+    return Row(
+      children: types.map((t) {
+        final isSelected = serverState.selectedType == t['id'];
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: InkWell(
+              onTap: () {
+                ref.read(serverProvider.notifier).setTypeFilter(t['id'] as String);
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      t['icon'] as IconData,
+                      size: 15,
+                      color: isSelected
+                          ? Colors.white
+                          : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        '${t['label']}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -141,7 +306,7 @@ class EmeWorldScreen extends StatelessWidget {
         Text(
           value,
           style: GoogleFonts.plusJakartaSans(
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: FontWeight.w800,
             color: color,
           ),
@@ -156,6 +321,68 @@ class EmeWorldScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: 32,
+      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No services or specialists found',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Try adjusting your search query, type filter, or selected category.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              _searchController.clear();
+              ref.read(serverProvider.notifier).setCategory('All');
+              ref.read(serverProvider.notifier).setTypeFilter('All');
+              ref.read(serverProvider.notifier).setSearchQuery('');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reset All Filters'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -207,9 +434,7 @@ class EmeWorldScreen extends StatelessWidget {
             description,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark
-                  ? AppColors.textDarkSecondary
-                  : const Color(0xFF64748B),
+              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
               height: 1.4,
             ),
           ),
@@ -218,3 +443,4 @@ class EmeWorldScreen extends StatelessWidget {
     );
   }
 }
+

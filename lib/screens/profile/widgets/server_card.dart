@@ -488,11 +488,64 @@ class ServerCard extends ConsumerWidget {
                 const SizedBox(height: 8),
               ],
               const SizedBox(height: 8),
+              if (server.location != null || server.servicePricing != null) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (server.location != null)
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on_outlined, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            server.location!,
+                            style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    if (server.servicePricing != null)
+                      Text(
+                        server.servicePricing!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.primaryLight : AppColors.primary,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
               Text(
                 server.description,
                 style: GoogleFonts.inter(fontSize: 14, height: 1.5),
               ),
-              const SizedBox(height: 16),
+              if (server.servicesOffered.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Text(
+                  'Services & Capabilities:',
+                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: server.servicesOffered.map((srv) {
+                    return PillBadge(
+                      label: srv,
+                      backgroundColor: server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                      textColor: isDark ? server.secondaryColor : server.primaryColor,
+                      fontSize: 11.5,
+                    );
+                  }).toList(),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Text(
+                'Tags:',
+                style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
