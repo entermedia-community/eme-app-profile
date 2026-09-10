@@ -18,7 +18,7 @@ class EmeWorldScreen extends StatelessWidget {
         children: [
           // Header
           Text(
-            'EME World Ecosystem',
+            'EME Worldwide',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -29,7 +29,9 @@ class EmeWorldScreen extends StatelessWidget {
             'Decentralized collective intelligence and global collaboration network.',
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : AppColors.textSecondary,
             ),
           ),
 
@@ -42,7 +44,9 @@ class EmeWorldScreen extends StatelessWidget {
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
               ),
               boxShadow: [
                 BoxShadow(
@@ -55,19 +59,23 @@ class EmeWorldScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildMetricItem('Active Nodes', '1,420', AppColors.primary),
+                _buildMetricItem('Countries', '12', AppColors.primary),
                 Container(
                   width: 1,
                   height: 36,
-                  color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                  color: isDark
+                      ? AppColors.darkCardBorder
+                      : AppColors.lightCardBorder,
                 ),
-                _buildMetricItem('Servers', '84', AppColors.greenAccent),
+                _buildMetricItem('Users', '1420', AppColors.greenAccent),
                 Container(
                   width: 1,
                   height: 36,
-                  color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                  color: isDark
+                      ? AppColors.darkCardBorder
+                      : AppColors.lightCardBorder,
                 ),
-                _buildMetricItem('Contributors', '18.5k', const Color(0xFF8B5CF6)),
+                _buildMetricItem('Documents', '18.5k', const Color(0xFF8B5CF6)),
               ],
             ),
           ),
@@ -199,7 +207,9 @@ class EmeWorldScreen extends StatelessWidget {
             description,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : const Color(0xFF64748B),
               height: 1.4,
             ),
           ),
