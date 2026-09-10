@@ -74,7 +74,7 @@ class _FilesScreenState extends State<FilesScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'EME Drive & Files',
+                'Your Digital Legacy',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
@@ -124,7 +124,10 @@ class _FilesScreenState extends State<FilesScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
@@ -147,7 +150,9 @@ class _FilesScreenState extends State<FilesScreen> {
                     value: 0.284,
                     minHeight: 8,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -166,7 +171,7 @@ class _FilesScreenState extends State<FilesScreen> {
 
           // Quick Folders
           Text(
-            'Quick Folders',
+            'Collections',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -228,10 +233,14 @@ class _FilesScreenState extends State<FilesScreen> {
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  color: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.lightSurface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
                   ),
                 ),
                 child: Row(
@@ -263,7 +272,9 @@ class _FilesScreenState extends State<FilesScreen> {
                             '${file.size} • ${file.updatedAt}',
                             style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -299,7 +310,9 @@ class _FilesScreenState extends State<FilesScreen> {
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
         child: Column(

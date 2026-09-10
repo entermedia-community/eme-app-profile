@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_model.dart';
 import '../../theme/app_colors.dart';
+import 'chat_detail_screen.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -60,7 +61,8 @@ class _ChatsScreenState extends State<ChatsScreen> {
       id: 'chat_5',
       userName: 'Sarah Chen',
       userRole: 'AI Researcher',
-      lastMessage: 'Inference latency reduced by 40% with the new quantization.',
+      lastMessage:
+          'Inference latency reduced by 40% with the new quantization.',
       time: 'Sep 8',
       unreadCount: 0,
       avatarColor: Color(0xFFEC4899),
@@ -98,7 +100,11 @@ class _ChatsScreenState extends State<ChatsScreen> {
                     ),
                   ),
                   IconButton.filledTonal(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_chats.isNotEmpty) {
+                        Navigator.of(context).push(ChatDetailScreen.route(_chats.first));
+                      }
+                    },
                     icon: const Icon(Icons.edit_square, size: 20),
                   ),
                 ],
@@ -109,7 +115,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 decoration: const InputDecoration(
                   hintText: 'Search conversations...',
                   prefixIcon: Icon(Icons.search_rounded),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ],
@@ -127,74 +136,89 @@ class _ChatsScreenState extends State<ChatsScreen> {
               final chat = _chats[index];
               return Padding(
                 padding: const EdgeInsets.only(right: 14),
-                child: Column(
-                  children: [
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 26,
-                          backgroundColor: chat.avatarColor.withValues(alpha: 0.18),
-                          child: Text(
-                            chat.avatarInitials ?? chat.userName.substring(0, 2),
-                            style: GoogleFonts.plusJakartaSans(
-                              fontWeight: FontWeight.w800,
-                              color: chat.avatarColor,
-                              fontSize: 14,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.of(context).push(ChatDetailScreen.route(chat));
+                  },
+                  borderRadius: BorderRadius.circular(30),
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 26,
+                            backgroundColor: chat.avatarColor.withValues(
+                              alpha: 0.18,
                             ),
-                          ),
-                        ),
-                        if (chat.isOnline)
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: 14,
-                              height: 14,
-                              decoration: BoxDecoration(
-                                color: AppColors.greenAccent,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDark ? AppColors.darkSurface : Colors.white,
-                                  width: 2.5,
-                                ),
+                            child: Text(
+                              chat.avatarInitials ??
+                                  chat.userName.substring(0, 2),
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w800,
+                                color: chat.avatarColor,
+                                fontSize: 14,
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      width: 58,
-                      child: Text(
-                        chat.userName.split(' ').first,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          if (chat.isOnline)
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: AppColors.greenAccent,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isDark
+                                        ? AppColors.darkSurface
+                                        : Colors.white,
+                                    width: 2.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: 58,
+                        child: Text(
+                          chat.userName.split(' ').first,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
           ),
         ),
 
-        const Divider(height: 1),
+        const Divider(height: 1, color: Colors.white24),
 
         // Chat List
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: filtered.length,
-            separatorBuilder: (context, index) => const Divider(indent: 76, height: 1),
+            separatorBuilder: (context, index) =>
+                const Divider(indent: 76, height: 1, color: Colors.white10),
             itemBuilder: (context, index) {
               final chat = filtered[index];
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 leading: CircleAvatar(
                   radius: 26,
                   backgroundColor: chat.avatarColor.withValues(alpha: 0.15),
@@ -215,7 +239,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
-                          fontWeight: chat.unreadCount > 0 ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: chat.unreadCount > 0
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           fontSize: 15,
                         ),
                       ),
@@ -226,8 +252,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         fontSize: 11,
                         color: chat.unreadCount > 0
                             ? AppColors.primary
-                            : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
-                        fontWeight: chat.unreadCount > 0 ? FontWeight.w700 : FontWeight.w400,
+                            : (isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textMuted),
+                        fontWeight: chat.unreadCount > 0
+                            ? FontWeight.w700
+                            : FontWeight.w400,
                       ),
                     ),
                   ],
@@ -246,15 +276,19 @@ class _ChatsScreenState extends State<ChatsScreen> {
                             color: isDark
                                 ? AppColors.textDarkSecondary
                                 : AppColors.textSecondary,
-                            fontWeight:
-                                chat.unreadCount > 0 ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: chat.unreadCount > 0
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                           ),
                         ),
                       ),
                       if (chat.unreadCount > 0)
                         Container(
                           margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
                           decoration: const BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
@@ -272,124 +306,13 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   ),
                 ),
                 onTap: () {
-                  _openChatDetails(context, chat);
+                  Navigator.of(context).push(ChatDetailScreen.route(chat));
                 },
               );
             },
           ),
         ),
       ],
-    );
-  }
-
-  void _openChatDetails(BuildContext context, ChatModel chat) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Container(
-          height: MediaQuery.of(ctx).size.height * 0.75,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: chat.avatarColor.withValues(alpha: 0.2),
-                    child: Text(
-                      chat.avatarInitials ?? 'C',
-                      style: TextStyle(color: chat.avatarColor, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          chat.userName,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          chat.userRole,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.mark_chat_unread_outlined, size: 48, color: chat.avatarColor),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Direct messaging channel',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Last message: "${chat.lastMessage}"',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Type a reply...',
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.send_rounded),
-                    style: IconButton.styleFrom(backgroundColor: AppColors.primary),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
