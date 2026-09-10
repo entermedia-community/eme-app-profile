@@ -1,0 +1,395 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../models/chat_model.dart';
+import '../../theme/app_colors.dart';
+
+class ChatsScreen extends StatefulWidget {
+  const ChatsScreen({super.key});
+
+  @override
+  State<ChatsScreen> createState() => _ChatsScreenState();
+}
+
+class _ChatsScreenState extends State<ChatsScreen> {
+  final List<ChatModel> _chats = const [
+    ChatModel(
+      id: 'chat_1',
+      userName: 'Atitlan Core Team',
+      userRole: 'Community Server',
+      lastMessage: 'Next micro-grant sprint starts this Friday at 10 AM UTC.',
+      time: '12:45 PM',
+      unreadCount: 2,
+      avatarColor: Color(0xFF059669),
+      isOnline: true,
+      avatarInitials: 'AC',
+    ),
+    ChatModel(
+      id: 'chat_2',
+      userName: 'Elena Rostova',
+      userRole: 'Impact Bank Lead',
+      lastMessage: 'Passport validation pipeline is ready for deployment.',
+      time: '11:20 AM',
+      unreadCount: 1,
+      avatarColor: Color(0xFF0284C7),
+      isOnline: true,
+      avatarInitials: 'ER',
+    ),
+    ChatModel(
+      id: 'chat_3',
+      userName: 'Punaryoji Vikas',
+      userRole: 'Rural Bioeconomy',
+      lastMessage: 'Check out the new telemetry metrics from Panchayat node.',
+      time: 'Yesterday',
+      unreadCount: 0,
+      avatarColor: Color(0xFF64748B),
+      isOnline: false,
+      avatarInitials: 'PV',
+    ),
+    ChatModel(
+      id: 'chat_4',
+      userName: 'David Miller',
+      userRole: 'Fullstack Dev',
+      lastMessage: 'Merged the Riverpod state refactoring branch.',
+      time: 'Sep 9',
+      unreadCount: 0,
+      avatarColor: Color(0xFF8B5CF6),
+      isOnline: false,
+      avatarInitials: 'DM',
+    ),
+    ChatModel(
+      id: 'chat_5',
+      userName: 'Sarah Chen',
+      userRole: 'AI Researcher',
+      lastMessage: 'Inference latency reduced by 40% with the new quantization.',
+      time: 'Sep 8',
+      unreadCount: 0,
+      avatarColor: Color(0xFFEC4899),
+      isOnline: true,
+      avatarInitials: 'SC',
+    ),
+  ];
+
+  String _searchQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final filtered = _chats.where((c) {
+      return c.userName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          c.lastMessage.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
+
+    return Column(
+      children: [
+        // Top Header & Search
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Messages & Chats',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  IconButton.filledTonal(
+                    onPressed: () {},
+                    icon: const Icon(Icons.edit_square, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                decoration: const InputDecoration(
+                  hintText: 'Search conversations...',
+                  prefixIcon: Icon(Icons.search_rounded),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Online members horizontal scroll
+        SizedBox(
+          height: 90,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _chats.length,
+            itemBuilder: (context, index) {
+              final chat = _chats[index];
+              return Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 26,
+                          backgroundColor: chat.avatarColor.withValues(alpha: 0.18),
+                          child: Text(
+                            chat.avatarInitials ?? chat.userName.substring(0, 2),
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w800,
+                              color: chat.avatarColor,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        if (chat.isOnline)
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 14,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                color: AppColors.greenAccent,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isDark ? AppColors.darkSurface : Colors.white,
+                                  width: 2.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      width: 58,
+                      child: Text(
+                        chat.userName.split(' ').first,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+
+        const Divider(height: 1),
+
+        // Chat List
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: filtered.length,
+            separatorBuilder: (context, index) => const Divider(indent: 76, height: 1),
+            itemBuilder: (context, index) {
+              final chat = filtered[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                leading: CircleAvatar(
+                  radius: 26,
+                  backgroundColor: chat.avatarColor.withValues(alpha: 0.15),
+                  child: Text(
+                    chat.avatarInitials ?? chat.userName.substring(0, 2),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w700,
+                      color: chat.avatarColor,
+                    ),
+                  ),
+                ),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        chat.userName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: chat.unreadCount > 0 ? FontWeight.w700 : FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      chat.time,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: chat.unreadCount > 0
+                            ? AppColors.primary
+                            : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                        fontWeight: chat.unreadCount > 0 ? FontWeight.w700 : FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          chat.lastMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary,
+                            fontWeight:
+                                chat.unreadCount > 0 ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (chat.unreadCount > 0)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${chat.unreadCount}',
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                onTap: () {
+                  _openChatDetails(context, chat);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _openChatDetails(BuildContext context, ChatModel chat) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return Container(
+          height: MediaQuery.of(ctx).size.height * 0.75,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: chat.avatarColor.withValues(alpha: 0.2),
+                    child: Text(
+                      chat.avatarInitials ?? 'C',
+                      style: TextStyle(color: chat.avatarColor, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          chat.userName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          chat.userRole,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.mark_chat_unread_outlined, size: 48, color: chat.avatarColor),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Direct messaging channel',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Last message: "${chat.lastMessage}"',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Type a reply...',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.send_rounded),
+                    style: IconButton.styleFrom(backgroundColor: AppColors.primary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

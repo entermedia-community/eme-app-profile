@@ -10,9 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_eme_base:
-    path: ../flutter_eme_base
   flutter_riverpod: ^2.6.1
+  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:
