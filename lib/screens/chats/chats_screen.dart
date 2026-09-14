@@ -78,12 +78,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   String _searchQuery = '';
 
   int _getServerUnreadCount(ServerModel server) {
-    const unreadMap = {
-      'srv_001': 4,
-      'srv_002': 1,
-      'srv_004': 7,
-      'srv_006': 3,
-    };
+    const unreadMap = {'srv_001': 4, 'srv_002': 1, 'srv_004': 7, 'srv_006': 3};
     return unreadMap[server.id] ?? 0;
   }
 
@@ -178,9 +173,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.textDarkMuted
-                      : AppColors.textMuted,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
                 ),
               ),
             ],
@@ -199,7 +192,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               final unreadCount = _getServerUnreadCount(server);
 
               return Padding(
-                padding: const EdgeInsets.only(right: 14),
+                padding: const EdgeInsets.only(right: 14, top: 4),
                 child: InkWell(
                   onTap: () {
                     Navigator.of(context).push(
