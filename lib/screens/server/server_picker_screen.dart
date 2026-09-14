@@ -143,15 +143,6 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Telemetry Banner Card
-            _buildTelemetryBanner(
-              isDark: isDark,
-              joinedCount: joinedCount,
-              totalCount: totalServerCount,
-            ),
-
-            const SizedBox(height: 16),
-
             // Search Bar
             TextField(
               controller: _searchController,

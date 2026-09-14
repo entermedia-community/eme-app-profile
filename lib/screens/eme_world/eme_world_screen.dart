@@ -105,7 +105,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               ref.read(serverProvider.notifier).setSearchQuery(val);
             },
             decoration: InputDecoration(
-              hintText: 'Search specialists by name, skill, service, or location...',
+              hintText:
+                  'Search specialists by name, skill, service, or location...',
               hintStyle: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.textMuted,
