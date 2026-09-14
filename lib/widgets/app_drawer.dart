@@ -53,16 +53,40 @@ class AppDrawer extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: Text(
-                        profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
+                    child: profile.avatarUrl != null
+                        ? ClipOval(
+                            child: Image.network(
+                              profile.avatarUrl!,
+                              width: 54,
+                              height: 54,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                child: Text(
+                                  profile.name.isNotEmpty
+                                      ? profile.name.substring(0, 1)
+                                      : 'C',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              profile.name.isNotEmpty
+                                  ? profile.name.substring(0, 1)
+                                  : 'C',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

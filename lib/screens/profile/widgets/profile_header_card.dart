@@ -62,19 +62,32 @@ class ProfileHeaderCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: profile.avatarUrl != null
-                      ? ClipOval(
-                          child: Image.network(
-                            profile.avatarUrl!,
-                            width: 88,
-                            height: 88,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                _buildAvatarFallback(profile),
+                child: ClipOval(
+                  child: Image.network(
+                    _getAvatarUrl(profile),
+                    width: 88,
+                    height: 88,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildAvatarFallback(profile),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            color: AppColors.primary,
                           ),
-                        )
-                      : _buildAvatarFallback(profile),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
 
@@ -236,6 +249,20 @@ class ProfileHeaderCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  String _getAvatarUrl(ProfileModel profile) {
+    if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
+      return profile.avatarUrl!;
+    }
+    final hash = profile.id.hashCode.abs() + profile.name.hashCode.abs();
+    final idx = (hash % 70) + 1;
+    final isWomen = profile.name.toLowerCase().contains('maya') ||
+        profile.name.toLowerCase().contains('sofia') ||
+        profile.name.toLowerCase().contains('elena') ||
+        profile.name.toLowerCase().contains('woman');
+    final gender = isWomen ? 'women' : 'men';
+    return 'https://randomuser.me/api/portraits/$gender/$idx.jpg';
   }
 
   Widget _buildAvatarFallback(ProfileModel profile) {

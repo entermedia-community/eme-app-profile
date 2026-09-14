@@ -51,25 +51,7 @@ class IndividualCard extends ConsumerWidget {
                         // Avatar
                         Stack(
                           children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: specialist.primaryColor.withValues(alpha: isDark ? 0.25 : 0.12),
-                                border: Border.all(
-                                  color: specialist.primaryColor.withValues(alpha: 0.4),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  specialist.iconData,
-                                  size: 22,
-                                  color: specialist.primaryColor,
-                                ),
-                              ),
-                            ),
+                            _buildAvatar(isDark, size: 44),
                             Positioned(
                               right: 0,
                               bottom: 0,
@@ -335,19 +317,7 @@ class IndividualCard extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: specialist.primaryColor.withValues(alpha: 0.15),
-                        ),
-                        child: Icon(
-                          specialist.iconData,
-                          size: 24,
-                          color: specialist.primaryColor,
-                        ),
-                      ),
+                      _buildAvatar(isDark, size: 48),
                       const SizedBox(width: 12),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -497,6 +467,71 @@ class IndividualCard extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+
+  String _getAvatarUrl() {
+    if (specialist.avatarUrl != null && specialist.avatarUrl!.isNotEmpty) {
+      return specialist.avatarUrl!;
+    }
+    final idDigits = specialist.id.replaceAll(RegExp(r'[^0-9]'), '');
+    final int indexNum =
+        int.tryParse(idDigits) ?? (specialist.title.hashCode.abs() % 70 + 1);
+    final int idx = (indexNum % 70) + 1;
+    final isWomen = specialist.title.toLowerCase().contains('maya') ||
+        specialist.title.toLowerCase().contains('sofia') ||
+        specialist.title.toLowerCase().contains('elena') ||
+        (idx % 2 == 1);
+    final gender = isWomen ? 'women' : 'men';
+    return 'https://randomuser.me/api/portraits/$gender/$idx.jpg';
+  }
+
+  Widget _buildAvatar(bool isDark, {required double size}) {
+    final avatarUrl = _getAvatarUrl();
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: specialist.primaryColor.withValues(alpha: isDark ? 0.25 : 0.12),
+        border: Border.all(
+          color: specialist.primaryColor.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          avatarUrl,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => Center(
+            child: Icon(
+              specialist.iconData,
+              size: size * 0.5,
+              color: specialist.primaryColor,
+            ),
+          ),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: SizedBox(
+                width: size * 0.35,
+                height: size * 0.35,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                  color: specialist.primaryColor,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

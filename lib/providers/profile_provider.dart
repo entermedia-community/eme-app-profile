@@ -3,18 +3,19 @@ import '../models/profile_model.dart';
 
 class ProfileNotifier extends StateNotifier<ProfileModel> {
   ProfileNotifier()
-      : super(
-          const ProfileModel(
-            id: 'usr_001',
-            name: 'Christopher.B',
-            role: 'CEO',
-            bio: 'Cool guy',
-            tags: ['Programmer', 'Dude'],
-            portfolioLabel: 'PORTFOLIO',
-            totalServers: 8,
-            totalConnections: 248,
-          ),
-        );
+    : super(
+        const ProfileModel(
+          id: 'usr_001',
+          name: 'Christopher.B',
+          role: 'CEO',
+          bio: 'Cool guy',
+          tags: ['Programmer', 'Dude'],
+          avatarUrl: 'https://randomuser.me/api/portraits/men/79.jpg',
+          portfolioLabel: 'PORTFOLIO',
+          totalServers: 8,
+          totalConnections: 248,
+        ),
+      );
 
   void updateProfile({
     String? name,
@@ -22,12 +23,7 @@ class ProfileNotifier extends StateNotifier<ProfileModel> {
     String? bio,
     List<String>? tags,
   }) {
-    state = state.copyWith(
-      name: name,
-      role: role,
-      bio: bio,
-      tags: tags,
-    );
+    state = state.copyWith(name: name, role: role, bio: bio, tags: tags);
   }
 
   void addTag(String tag) {
@@ -36,12 +32,12 @@ class ProfileNotifier extends StateNotifier<ProfileModel> {
   }
 
   void removeTag(String tag) {
-    state = state.copyWith(
-      tags: state.tags.where((t) => t != tag).toList(),
-    );
+    state = state.copyWith(tags: state.tags.where((t) => t != tag).toList());
   }
 }
 
-final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>((ref) {
+final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>((
+  ref,
+) {
   return ProfileNotifier();
 });

@@ -34,9 +34,6 @@ void main() {
     expect(find.text('Files'), findsOneWidget);
     expect(find.text('EME World'), findsWidgets);
 
-    // Verify Floating Action Button exists on Profile tab
-    expect(find.byType(FloatingActionButton), findsOneWidget);
-
     // Tap on Chats tab
     await tester.tap(find.text('Chats').last);
     await tester.pumpAndSettle();
@@ -54,31 +51,26 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('EME Worldwide'), findsOneWidget);
-    expect(find.text('EME Profile Directory'), findsOneWidget);
+    expect(find.text('EME Profiles Directory'), findsOneWidget);
     // Verify only individual cards exist in EME World
     expect(find.byType(IndividualCard), findsWidgets);
     expect(find.text('Dr. Maya Lin'), findsOneWidget);
     expect(find.text('Marcus Chen'), findsOneWidget);
   });
 
-  testWidgets('FAB on Profile tab navigates to ServerPickerScreen', (
+  testWidgets('Menu button opens Navigation Drawer', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
     await tester.pumpAndSettle();
 
-    // Tap the FAB on Profile screen
-    await tester.tap(find.byType(FloatingActionButton));
+    // Tap the menu icon in AppBar
+    await tester.tap(find.byIcon(Icons.menu_rounded));
     await tester.pumpAndSettle();
 
-    // Verify ServerPickerScreen is pushed
-    expect(find.byType(ServerPickerScreen), findsOneWidget);
-    expect(find.text('Pick a Server'), findsOneWidget);
-    expect(find.text('All Servers'), findsWidgets);
-    expect(find.text('Available'), findsWidgets);
-    expect(find.text('Joined'), findsWidgets);
-    expect(find.text('Atitlan Exchange'), findsOneWidget);
-    expect(find.text('Neural Matrix Collective'), findsOneWidget);
+    // Verify Drawer is open
+    expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('EME World v1.0.0'), findsOneWidget);
   });
 
   testWidgets('Explore All button in Profile navigates to ServerPickerScreen', (
