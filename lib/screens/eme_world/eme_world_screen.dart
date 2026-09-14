@@ -46,7 +46,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Global network connecting verified specialists, researchers, and independent service providers offering decentralized services.',
+            'Global network connecting verified EME profiles, researchers, and independent service providers offering decentralized services.',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: isDark
@@ -105,7 +105,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             },
             decoration: InputDecoration(
               hintText:
-                  'Search specialists by name, skill, service, or location...',
+                  'Search EME Profile by name, skill, service, or location...',
               hintStyle: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.textMuted,
@@ -149,7 +149,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 ),
               ),
               Text(
-                '${individuals.length} specialists',
+                '${individuals.length} EME Profiles',
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
