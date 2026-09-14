@@ -5,6 +5,7 @@ import '../../../models/server_model.dart';
 import '../../../providers/server_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pill_badge.dart';
+import '../../server/server_detail_screen.dart';
 
 class ServerCard extends ConsumerWidget {
   final ServerModel server;
@@ -35,7 +36,7 @@ class ServerCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _showServerDetails(context, ref),
+          onTap: () => _openServerScreen(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -440,163 +441,8 @@ class ServerCard extends ConsumerWidget {
     );
   }
 
-  void _showServerDetails(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      server.title,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              if (server.subtitle != null) ...[
-                Text(
-                  server.subtitle!,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: server.primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-              ],
-              const SizedBox(height: 8),
-              if (server.location != null || server.servicePricing != null) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (server.location != null)
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            server.location!,
-                            style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
-                          ),
-                        ],
-                      ),
-                    if (server.servicePricing != null)
-                      Text(
-                        server.servicePricing!,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.primaryLight : AppColors.primary,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-              ],
-              Text(
-                server.description,
-                style: GoogleFonts.inter(fontSize: 14, height: 1.5),
-              ),
-              if (server.servicesOffered.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                Text(
-                  'Services & Capabilities:',
-                  style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: server.servicesOffered.map((srv) {
-                    return PillBadge(
-                      label: srv,
-                      backgroundColor: server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
-                      textColor: isDark ? server.secondaryColor : server.primaryColor,
-                      fontSize: 11.5,
-                    );
-                  }).toList(),
-                ),
-              ],
-              const SizedBox(height: 14),
-              Text(
-                'Tags:',
-                style: GoogleFonts.plusJakartaSans(fontSize: 13, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: server.tags.map((tag) {
-                  return PillBadge.forCategory(tag, isDark: isDark);
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Close'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ref.read(serverProvider.notifier).toggleJoin(server.id);
-                        Navigator.pop(ctx);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: server.isJoined
-                            ? const Color(0xFFEF4444)
-                            : AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        server.isJoined ? 'Leave Server' : 'Join Server',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _openServerScreen(BuildContext context) {
+    Navigator.of(context).push(ServerDetailScreen.route(server));
   }
 }
+
