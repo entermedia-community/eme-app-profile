@@ -51,7 +51,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             'Global marketplace connecting collective intelligence servers & verified specialists offering decentralized services.',
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -65,7 +67,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
               ),
               boxShadow: [
                 BoxShadow(
@@ -78,13 +82,17 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildMetricItem('Nodes', '${serverState.serverCount}', AppColors.primary),
+                _buildMetricItem(
+                  'Teams',
+                  '${serverState.serverCount}',
+                  AppColors.primary,
+                ),
                 _buildDivider(isDark),
-                _buildMetricItem('Specialists', '${serverState.individualCount}', AppColors.greenAccent),
+                _buildMetricItem('Users', '60', AppColors.greenAccent),
                 _buildDivider(isDark),
                 _buildMetricItem('Countries', '12', const Color(0xFF8B5CF6)),
                 _buildDivider(isDark),
-                _buildMetricItem('Services', '40+', const Color(0xFFF59E0B)),
+                _buildMetricItem('Documents', '50K+', const Color(0xFFF59E0B)),
               ],
             ),
           ),
@@ -98,8 +106,11 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               ref.read(serverProvider.notifier).setSearchQuery(val);
             },
             decoration: InputDecoration(
-              hintText: 'Search servers, specialists, services, or locations...',
-              hintStyle: GoogleFonts.inter(fontSize: 13, color: AppColors.textMuted),
+              hintText: 'Search teams, specialists, services, or locations...',
+              hintStyle: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.textMuted,
+              ),
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -110,7 +121,10 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
 
@@ -135,7 +149,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
               Text(
@@ -226,9 +242,24 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
 
   Widget _buildTypeFilterSelector(ServerState serverState, bool isDark) {
     final types = [
-      {'id': 'All', 'label': 'All Services', 'icon': Icons.apps_rounded, 'count': serverState.servers.length},
-      {'id': 'Servers', 'label': 'Servers', 'icon': Icons.dns_rounded, 'count': serverState.serverCount},
-      {'id': 'Specialists', 'label': 'Specialists', 'icon': Icons.person_search_rounded, 'count': serverState.individualCount},
+      {
+        'id': 'All',
+        'label': 'All Services',
+        'icon': Icons.apps_rounded,
+        'count': serverState.servers.length,
+      },
+      {
+        'id': 'Servers',
+        'label': 'Servers',
+        'icon': Icons.dns_rounded,
+        'count': serverState.serverCount,
+      },
+      {
+        'id': 'Specialists',
+        'label': 'Specialists',
+        'icon': Icons.person_search_rounded,
+        'count': serverState.individualCount,
+      },
     ];
 
     return Row(
@@ -239,7 +270,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 3),
             child: InkWell(
               onTap: () {
-                ref.read(serverProvider.notifier).setTypeFilter(t['id'] as String);
+                ref
+                    .read(serverProvider.notifier)
+                    .setTypeFilter(t['id'] as String);
               },
               borderRadius: BorderRadius.circular(12),
               child: AnimatedContainer(
@@ -248,12 +281,16 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.primary
-                      : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                      : (isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9)),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected
                         ? AppColors.primary
-                        : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+                        : (isDark
+                              ? AppColors.darkCardBorder
+                              : AppColors.lightCardBorder),
                   ),
                   boxShadow: isSelected
                       ? [
@@ -273,7 +310,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                       size: 15,
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+                          : (isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary),
                     ),
                     const SizedBox(width: 4),
                     Flexible(
@@ -283,10 +322,14 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           fontSize: 11.5,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           color: isSelected
                               ? Colors.white
-                              : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+                              : (isDark
+                                    ? AppColors.textDarkPrimary
+                                    : AppColors.textPrimary),
                         ),
                       ),
                     ),
@@ -364,7 +407,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
@@ -434,7 +479,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             description,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : const Color(0xFF64748B),
               height: 1.4,
             ),
           ),
@@ -443,4 +490,3 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
     );
   }
 }
-

@@ -1,4 +1,4 @@
-package world.eme.app
+package world.eme.main
 
 import io.flutter.embedding.android.FlutterActivity
 

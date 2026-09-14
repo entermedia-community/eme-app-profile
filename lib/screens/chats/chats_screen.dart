@@ -102,7 +102,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   IconButton.filledTonal(
                     onPressed: () {
                       if (_chats.isNotEmpty) {
-                        Navigator.of(context).push(ChatDetailScreen.route(_chats.first));
+                        Navigator.of(
+                          context,
+                        ).push(ChatDetailScreen.route(_chats.first));
                       }
                     },
                     icon: const Icon(Icons.edit_square, size: 20),
@@ -203,7 +205,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
           ),
         ),
 
-        const Divider(height: 1, color: Colors.white24),
+        const Divider(height: 1, color: Colors.white10),
 
         // Chat List
         Expanded(
