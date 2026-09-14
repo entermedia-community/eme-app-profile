@@ -24,9 +24,9 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
   }
 
   void _navigateToPicker(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ServerPickerScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ServerPickerScreen()));
   }
 
   @override
@@ -57,15 +57,22 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
                     letterSpacing: -0.4,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.12),
+                    color: AppColors.primary.withValues(
+                      alpha: isDark ? 0.25 : 0.12,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: AppColors.primary.withValues(alpha: 0.3),
@@ -77,7 +84,9 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.primaryLight : AppColors.primary,
+                      color: isDark
+                          ? AppColors.primaryLight
+                          : AppColors.primary,
                     ),
                   ),
                 ),
@@ -88,11 +97,17 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               icon: const Icon(Icons.explore_outlined, size: 16),
               label: Text(
                 'Explore All',
-                style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
               ),
             ),
           ],
@@ -105,7 +120,9 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
           'Servers and collective intelligence nodes you are currently a member of. Access shared tools, chats, and decentralized services.',
           style: GoogleFonts.inter(
             fontSize: 13,
-            color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
+            color: isDark
+                ? AppColors.textDarkSecondary
+                : const Color(0xFF64748B),
             height: 1.45,
           ),
         ),
@@ -119,7 +136,10 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
             onChanged: (val) => setState(() => _localSearch = val),
             decoration: InputDecoration(
               hintText: 'Filter your joined servers...',
-              hintStyle: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textMuted),
+              hintStyle: GoogleFonts.inter(
+                fontSize: 12.5,
+                color: AppColors.textMuted,
+              ),
               prefixIcon: const Icon(Icons.search_rounded, size: 18),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
@@ -130,7 +150,10 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -153,7 +176,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
-                  childAspectRatio: isTablet ? 0.72 : 0.58,
+                  childAspectRatio: 0.72,
                 ),
                 itemBuilder: (context, index) {
                   return ServerCard(server: joinedServers[index]);
@@ -163,15 +186,16 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
           ),
 
           const SizedBox(height: 20),
-
-          // Discover More Servers Banner
-          _buildDiscoverBanner(context, isDark),
         ],
       ],
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, bool isDark, bool noServersAtAll) {
+  Widget _buildEmptyState(
+    BuildContext context,
+    bool isDark,
+    bool noServersAtAll,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
@@ -213,7 +237,9 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -228,7 +254,9 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               }
             },
             icon: Icon(
-              noServersAtAll ? Icons.travel_explore_rounded : Icons.refresh_rounded,
+              noServersAtAll
+                  ? Icons.travel_explore_rounded
+                  : Icons.refresh_rounded,
               size: 18,
             ),
             label: Text(
@@ -239,81 +267,13 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _buildDiscoverBanner(BuildContext context, bool isDark) {
-    return InkWell(
-      onTap: () => _navigateToPicker(context),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                : [const Color(0xFFEFF6FF), const Color(0xFFF8FAFC)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.2),
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.travel_explore_rounded,
-                color: AppColors.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Discover & Pick More Servers',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Explore collective intelligence servers, compute nodes, and decentralized tools.',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: AppColors.primary,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
-

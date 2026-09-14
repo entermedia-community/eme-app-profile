@@ -19,7 +19,7 @@ class ServerCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
           width: 1,
@@ -62,7 +62,9 @@ class ServerCard extends ConsumerWidget {
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
                               height: 1.2,
                             ),
                           ),
@@ -138,7 +140,9 @@ class ServerCard extends ConsumerWidget {
                             // Join / Open Button
                             InkWell(
                               onTap: () {
-                                ref.read(serverProvider.notifier).toggleJoin(server.id);
+                                ref
+                                    .read(serverProvider.notifier)
+                                    .toggleJoin(server.id);
                               },
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
@@ -149,16 +153,20 @@ class ServerCard extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: server.isJoined
                                       ? (isDark
-                                          ? const Color(0xFF064E3B)
-                                          : const Color(0xFFDCFCE7))
-                                      : AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+                                            ? const Color(0xFF064E3B)
+                                            : const Color(0xFFDCFCE7))
+                                      : AppColors.primary.withValues(
+                                          alpha: isDark ? 0.2 : 0.1,
+                                        ),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: server.isJoined
                                         ? (isDark
-                                            ? const Color(0xFF059669)
-                                            : const Color(0xFF86EFAC))
-                                        : AppColors.primary.withValues(alpha: 0.3),
+                                              ? const Color(0xFF059669)
+                                              : const Color(0xFF86EFAC))
+                                        : AppColors.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
                                   ),
                                 ),
                                 child: Row(
@@ -171,11 +179,11 @@ class ServerCard extends ConsumerWidget {
                                       size: 12,
                                       color: server.isJoined
                                           ? (isDark
-                                              ? const Color(0xFF86EFAC)
-                                              : const Color(0xFF166534))
+                                                ? const Color(0xFF86EFAC)
+                                                : const Color(0xFF166534))
                                           : (isDark
-                                              ? AppColors.primaryLight
-                                              : AppColors.primary),
+                                                ? AppColors.primaryLight
+                                                : AppColors.primary),
                                     ),
                                     const SizedBox(width: 3),
                                     Text(
@@ -185,11 +193,11 @@ class ServerCard extends ConsumerWidget {
                                         fontWeight: FontWeight.w700,
                                         color: server.isJoined
                                             ? (isDark
-                                                ? const Color(0xFF86EFAC)
-                                                : const Color(0xFF166534))
+                                                  ? const Color(0xFF86EFAC)
+                                                  : const Color(0xFF166534))
                                             : (isDark
-                                                ? AppColors.primaryLight
-                                                : AppColors.primary),
+                                                  ? AppColors.primaryLight
+                                                  : AppColors.primary),
                                       ),
                                     ),
                                   ],
@@ -218,7 +226,9 @@ class ServerCard extends ConsumerWidget {
           color: isDark ? const Color(0xFF064E3B) : const Color(0xFFF0FDF4),
           border: Border(
             bottom: BorderSide(
-              color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+              color: isDark
+                  ? AppColors.darkCardBorder
+                  : AppColors.lightCardBorder,
             ),
           ),
         ),
@@ -264,7 +274,8 @@ class ServerCard extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text(
-                    server.subtitle?.toUpperCase() ?? 'STARTUPS FOR SOCIAL IMPACT',
+                    server.subtitle?.toUpperCase() ??
+                        'STARTUPS FOR SOCIAL IMPACT',
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -272,7 +283,9 @@ class ServerCard extends ConsumerWidget {
                       fontSize: 8,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
-                      color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF065F46),
+                      color: isDark
+                          ? const Color(0xFF86EFAC)
+                          : const Color(0xFF065F46),
                     ),
                   ),
                 ),
@@ -288,7 +301,9 @@ class ServerCard extends ConsumerWidget {
           color: isDark ? const Color(0xFF082F49) : const Color(0xFFF0F9FF),
           border: Border(
             bottom: BorderSide(
-              color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+              color: isDark
+                  ? AppColors.darkCardBorder
+                  : AppColors.lightCardBorder,
             ),
           ),
         ),
@@ -303,15 +318,25 @@ class ServerCard extends ConsumerWidget {
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF0284C7), width: 2),
+                      border: Border.all(
+                        color: const Color(0xFF0284C7),
+                        width: 2,
+                      ),
                     ),
                   ),
-                  Container(width: 6, height: 2, color: const Color(0xFF0284C7)),
+                  Container(
+                    width: 6,
+                    height: 2,
+                    color: const Color(0xFF0284C7),
+                  ),
                   Container(
                     width: 12,
                     height: 12,
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFFF59E0B), width: 2),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B),
+                        width: 2,
+                      ),
                     ),
                   ),
                 ],
@@ -346,7 +371,9 @@ class ServerCard extends ConsumerWidget {
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFF334155),
           border: Border(
             bottom: BorderSide(
-              color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+              color: isDark
+                  ? AppColors.darkCardBorder
+                  : AppColors.lightCardBorder,
             ),
           ),
         ),
@@ -394,7 +421,9 @@ class ServerCard extends ConsumerWidget {
         color: server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.08),
         border: Border(
           bottom: BorderSide(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
       ),
@@ -445,4 +474,3 @@ class ServerCard extends ConsumerWidget {
     Navigator.of(context).push(ServerDetailScreen.route(server));
   }
 }
-

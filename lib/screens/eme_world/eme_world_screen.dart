@@ -180,7 +180,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 14,
                     mainAxisSpacing: 14,
-                    childAspectRatio: isTablet ? 0.72 : 0.58,
+                    childAspectRatio: 0.72,
                   ),
                   itemBuilder: (context, index) {
                     final item = profiles[index];

@@ -17,7 +17,7 @@ class EmeProfileCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
           width: 1,
@@ -543,7 +543,8 @@ class EmeProfileCard extends ConsumerWidget {
     final int indexNum =
         int.tryParse(idDigits) ?? (profile.name.hashCode.abs() % 70 + 1);
     final int idx = (indexNum % 70) + 1;
-    final isWomen = profile.name.toLowerCase().contains('maya') ||
+    final isWomen =
+        profile.name.toLowerCase().contains('maya') ||
         profile.name.toLowerCase().contains('sofia') ||
         profile.name.toLowerCase().contains('elena') ||
         (idx % 2 == 1);
@@ -588,7 +589,7 @@ class EmeProfileCard extends ConsumerWidget {
                   strokeWidth: 2,
                   value: loadingProgress.expectedTotalBytes != null
                       ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
+                            loadingProgress.expectedTotalBytes!
                       : null,
                   color: profile.primaryColor,
                 ),

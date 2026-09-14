@@ -243,7 +243,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
                       crossAxisCount: crossAxisCount,
                       crossAxisSpacing: 14,
                       mainAxisSpacing: 14,
-                      childAspectRatio: isTablet ? 0.72 : 0.58,
+                      childAspectRatio: 0.72,
                     ),
                     itemBuilder: (context, index) {
                       return ServerCard(server: servers[index]);
