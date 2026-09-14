@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/server_provider.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/pill_badge.dart';
 import '../profile/widgets/category_filter_bar.dart';
 import 'widgets/individual_card.dart';
 
