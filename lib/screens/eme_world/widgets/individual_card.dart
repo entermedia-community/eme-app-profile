@@ -172,12 +172,17 @@ class IndividualCard extends ConsumerWidget {
                           ),
 
                         if (specialist.servicePricing != null)
-                          Text(
-                            specialist.servicePricing!,
-                            style: GoogleFonts.inter(
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF475569),
+                          Flexible(
+                            child: Text(
+                              specialist.servicePricing!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? AppColors.textDarkSecondary : const Color(0xFF475569),
+                              ),
                             ),
                           ),
                       ],

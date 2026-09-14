@@ -1,0 +1,570 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../models/server_model.dart';
+import '../../providers/server_provider.dart';
+import '../../providers/theme_provider.dart';
+import '../../theme/app_colors.dart';
+import '../profile/widgets/add_server_sheet.dart';
+import '../profile/widgets/server_card.dart';
+
+class ServerPickerScreen extends ConsumerStatefulWidget {
+  const ServerPickerScreen({super.key});
+
+  @override
+  ConsumerState<ServerPickerScreen> createState() => _ServerPickerScreenState();
+}
+
+class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _selectedCategory = 'All';
+  String _selectedScope = 'all'; // 'all', 'available', 'joined'
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _openAddServerSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => const AddServerSheet(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final serverState = ref.watch(serverProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
+
+    // Filter servers based on search, category, and scope
+    final servers = serverState.servers.where((item) {
+      if (item.providerType != ProviderType.server) return false;
+
+      // Scope filter
+      if (_selectedScope == 'available' && item.isJoined) return false;
+      if (_selectedScope == 'joined' && !item.isJoined) return false;
+
+      // Category filter
+      if (_selectedCategory != 'All' &&
+          item.category != _selectedCategory &&
+          !item.tags.contains(_selectedCategory)) {
+        return false;
+      }
+
+      // Search filter
+      if (_searchQuery.isNotEmpty) {
+        final q = _searchQuery.toLowerCase();
+        final titleMatch = item.title.toLowerCase().contains(q);
+        final subtitleMatch = item.subtitle?.toLowerCase().contains(q) ?? false;
+        final descMatch = item.description.toLowerCase().contains(q);
+        final tagMatch = item.tags.any((t) => t.toLowerCase().contains(q));
+        final srvMatch = item.servicesOffered.any(
+          (s) => s.toLowerCase().contains(q),
+        );
+        final locMatch = item.location?.toLowerCase().contains(q) ?? false;
+        if (!titleMatch &&
+            !subtitleMatch &&
+            !descMatch &&
+            !tagMatch &&
+            !srvMatch &&
+            !locMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    final joinedCount = serverState.joinedServers.length;
+    final totalServerCount = serverState.serverCount;
+
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          tooltip: 'Back',
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        titleSpacing: 0,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pick a Server',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
+              ),
+            ),
+            Text(
+              'Discover & join collective intelligence nodes',
+              style: GoogleFonts.inter(
+                fontSize: 11.5,
+                color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
+            tooltip: 'Add Custom Server',
+            color: AppColors.primary,
+            onPressed: () => _openAddServerSheet(context),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      floatingActionButton: ElevatedButton.icon(
+        onPressed: () => _openAddServerSheet(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.greenAccent,
+          foregroundColor: Colors.white,
+        ),
+        icon: const Icon(Icons.add, size: 22),
+        label: Text(
+          'New',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+        ),
+        // tooltip: 'Create and add a new server',
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Telemetry Banner Card
+            _buildTelemetryBanner(
+              isDark: isDark,
+              joinedCount: joinedCount,
+              totalCount: totalServerCount,
+            ),
+
+            const SizedBox(height: 16),
+
+            // Search Bar
+            TextField(
+              controller: _searchController,
+              onChanged: (val) {
+                setState(() => _searchQuery = val);
+              },
+              decoration: InputDecoration(
+                hintText: 'Search servers by title, tags, or topic...',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.textMuted,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Scope Filter Selector: All | Available | Joined
+            _buildScopeSelector(isDark, joinedCount, totalServerCount),
+
+            const SizedBox(height: 12),
+
+            // Category Horizontal List
+            _buildCategorySelector(isDark),
+
+            const SizedBox(height: 18),
+
+            // Results count Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _selectedScope == 'joined'
+                      ? 'Joined Servers'
+                      : (_selectedScope == 'available'
+                            ? 'Available to Join'
+                            : 'All Servers'),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(
+                      alpha: isDark ? 0.25 : 0.1,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${servers.length} servers',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: isDark
+                          ? AppColors.primaryLight
+                          : AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Servers Grid
+            if (servers.isEmpty)
+              _buildEmptyState(isDark)
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTablet = constraints.maxWidth > 600;
+                  final crossAxisCount = isTablet ? 3 : 2;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: servers.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: isTablet ? 0.72 : 0.58,
+                    ),
+                    itemBuilder: (context, index) {
+                      return ServerCard(server: servers[index]);
+                    },
+                  );
+                },
+              ),
+
+            const SizedBox(height: 80),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTelemetryBanner({
+    required bool isDark,
+    required int joinedCount,
+    required int totalCount,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+              : [const Color(0xFFEFF6FF), const Color(0xFFF8FAFC)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatColumn('Total Servers', '$totalCount', AppColors.primary),
+          _buildDivider(isDark),
+          _buildStatColumn('Joined', '$joinedCount', AppColors.greenAccent),
+          _buildDivider(isDark),
+          _buildStatColumn(
+            'Available',
+            '${totalCount - joinedCount}',
+            const Color(0xFF8B5CF6),
+          ),
+          _buildDivider(isDark),
+          _buildStatColumn('Active Mesh', '100%', const Color(0xFFF59E0B)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatColumn(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 10.5,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: 28,
+      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+    );
+  }
+
+  Widget _buildScopeSelector(bool isDark, int joinedCount, int totalCount) {
+    final scopes = [
+      {'id': 'all', 'label': 'All Servers', 'count': totalCount},
+      {
+        'id': 'available',
+        'label': 'Available',
+        'count': totalCount - joinedCount,
+      },
+      {'id': 'joined', 'label': 'Joined', 'count': joinedCount},
+    ];
+
+    return Row(
+      children: scopes.map((s) {
+        final isSelected = _selectedScope == s['id'];
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
+            child: InkWell(
+              onTap: () {
+                setState(() => _selectedScope = s['id'] as String);
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark
+                              ? AppColors.darkCardBorder
+                              : AppColors.lightCardBorder),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${s['label']}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark
+                                  ? AppColors.textDarkSecondary
+                                  : AppColors.textSecondary),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.25)
+                            : (isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : Colors.black.withValues(alpha: 0.06)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${s['count']}',
+                        style: GoogleFonts.inter(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textMuted),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildCategorySelector(bool isDark) {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: kServerCategories.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final cat = kServerCategories[index];
+          final isSelected = cat == _selectedCategory;
+
+          return InkWell(
+            onTap: () {
+              setState(() => _selectedCategory = cat);
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (isDark ? AppColors.primary : const Color(0xFF64748B))
+                    : (isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF1F5F9)),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected
+                      ? Colors.transparent
+                      : (isDark
+                            ? AppColors.darkCardBorder
+                            : AppColors.lightCardBorder),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  cat,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : (isDark
+                              ? AppColors.textDarkSecondary
+                              : const Color(0xFF64748B)),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 44,
+            color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No matching servers found',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Try clearing your search filters or add a new custom server.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _searchQuery = '';
+                    _selectedCategory = 'All';
+                    _selectedScope = 'all';
+                  });
+                },
+                child: const Text('Reset Filters'),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton.icon(
+                onPressed: () => _openAddServerSheet(context),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Add Server'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

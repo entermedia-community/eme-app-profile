@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../providers/navigation_provider.dart';
 import '../../../providers/server_provider.dart';
 import '../../../theme/app_colors.dart';
+import '../../server/server_picker_screen.dart';
 import 'server_card.dart';
 
 class ServersSection extends ConsumerStatefulWidget {
@@ -21,6 +21,12 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _navigateToPicker(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ServerPickerScreen()),
+    );
   }
 
   @override
@@ -78,9 +84,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               ],
             ),
             TextButton.icon(
-              onPressed: () {
-                ref.read(navigationProvider.notifier).setTab(3); // Go to EME World
-              },
+              onPressed: () => _navigateToPicker(context),
               icon: const Icon(Icons.explore_outlined, size: 16),
               label: Text(
                 'Explore All',
@@ -204,7 +208,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
           const SizedBox(height: 6),
           Text(
             noServersAtAll
-                ? 'Join collective intelligence servers and service providers from the EME World network to collaborate.'
+                ? 'Join collective intelligence servers and service providers from the network to collaborate.'
                 : 'Try clearing your search query to see all your joined servers.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
@@ -217,18 +221,18 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
           ElevatedButton.icon(
             onPressed: () {
               if (noServersAtAll) {
-                ref.read(navigationProvider.notifier).setTab(3); // Switch to EME World
+                _navigateToPicker(context);
               } else {
                 _searchController.clear();
                 setState(() => _localSearch = '');
               }
             },
             icon: Icon(
-              noServersAtAll ? Icons.public_rounded : Icons.refresh_rounded,
+              noServersAtAll ? Icons.travel_explore_rounded : Icons.refresh_rounded,
               size: 18,
             ),
             label: Text(
-              noServersAtAll ? 'Explore EME World' : 'Clear Filter',
+              noServersAtAll ? 'Pick a Server' : 'Clear Filter',
               style: GoogleFonts.inter(fontWeight: FontWeight.w700),
             ),
             style: ElevatedButton.styleFrom(
@@ -245,9 +249,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
 
   Widget _buildDiscoverBanner(BuildContext context, bool isDark) {
     return InkWell(
-      onTap: () {
-        ref.read(navigationProvider.notifier).setTab(3); // Go to EME World
-      },
+      onTap: () => _navigateToPicker(context),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -284,7 +286,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Discover More in EME World',
+                    'Discover & Pick More Servers',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -293,7 +295,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Explore new servers, specialists, and decentralized services worldwide.',
+                    'Explore collective intelligence servers, compute nodes, and decentralized tools.',
                     style: GoogleFonts.inter(
                       fontSize: 11.5,
                       color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,

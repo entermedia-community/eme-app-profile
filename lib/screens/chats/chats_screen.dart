@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_model.dart';
+import '../../models/server_model.dart';
+import '../../providers/server_provider.dart';
 import '../../theme/app_colors.dart';
+import '../server/server_detail_screen.dart';
 import 'chat_detail_screen.dart';
 
-class ChatsScreen extends StatefulWidget {
+class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
 
   @override
-  State<ChatsScreen> createState() => _ChatsScreenState();
+  ConsumerState<ChatsScreen> createState() => _ChatsScreenState();
 }
 
-class _ChatsScreenState extends State<ChatsScreen> {
+class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   final List<ChatModel> _chats = const [
     ChatModel(
       id: 'chat_1',
@@ -73,9 +77,24 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   String _searchQuery = '';
 
+  int _getServerUnreadCount(ServerModel server) {
+    const unreadMap = {
+      'srv_001': 4,
+      'srv_002': 1,
+      'srv_004': 7,
+      'srv_006': 3,
+    };
+    return unreadMap[server.id] ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final serverState = ref.watch(serverProvider);
+    final servers = serverState.servers
+        .where((s) => s.providerType == ProviderType.server)
+        .toList();
+
     final filtered = _chats.where((c) {
       return c.userName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           c.lastMessage.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -127,56 +146,142 @@ class _ChatsScreenState extends State<ChatsScreen> {
           ),
         ),
 
-        // Online members horizontal scroll
+        // Section label for Servers Chat
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.dns_rounded,
+                    size: 14,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    'SERVERS CHAT',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                '${servers.length} nodes',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? AppColors.textDarkMuted
+                      : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Servers Chat horizontal scroll
         SizedBox(
-          height: 90,
+          height: 96,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _chats.length,
+            itemCount: servers.length,
             itemBuilder: (context, index) {
-              final chat = _chats[index];
+              final server = servers[index];
+              final unreadCount = _getServerUnreadCount(server);
+
               return Padding(
                 padding: const EdgeInsets.only(right: 14),
                 child: InkWell(
                   onTap: () {
-                    Navigator.of(context).push(ChatDetailScreen.route(chat));
+                    Navigator.of(context).push(
+                      ServerDetailScreen.route(
+                        server,
+                        initialModuleKey: 'chat',
+                      ),
+                    );
                   },
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(16),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Stack(
+                        clipBehavior: Clip.none,
                         children: [
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: chat.avatarColor.withValues(
-                              alpha: 0.18,
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              color: server.primaryColor.withValues(
+                                alpha: isDark ? 0.22 : 0.12,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: server.primaryColor.withValues(
+                                  alpha: 0.35,
+                                ),
+                                width: 1.5,
+                              ),
                             ),
-                            child: Text(
-                              chat.avatarInitials ??
-                                  chat.userName.substring(0, 2),
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.w800,
-                                color: chat.avatarColor,
-                                fontSize: 14,
+                            child: Center(
+                              child: Icon(
+                                server.iconData,
+                                size: 24,
+                                color: server.primaryColor,
                               ),
                             ),
                           ),
-                          if (chat.isOnline)
+                          if (unreadCount > 0)
                             Positioned(
-                              right: 0,
-                              bottom: 0,
+                              right: -4,
+                              top: -4,
                               child: Container(
-                                width: 14,
-                                height: 14,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 2,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.greenAccent,
-                                  shape: BoxShape.circle,
+                                  color: const Color(0xFFEF4444),
+                                  borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: isDark
                                         ? AppColors.darkSurface
                                         : Colors.white,
-                                    width: 2.5,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFFEF4444,
+                                      ).withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    unreadCount > 9 ? '9+' : '$unreadCount',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      height: 1,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -185,9 +290,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                       ),
                       const SizedBox(height: 6),
                       SizedBox(
-                        width: 58,
+                        width: 62,
                         child: Text(
-                          chat.userName.split(' ').first,
+                          server.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,

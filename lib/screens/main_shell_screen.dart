@@ -10,7 +10,7 @@ import 'chats/chats_screen.dart';
 import 'eme_world/eme_world_screen.dart';
 import 'files/files_screen.dart';
 import 'profile/profile_screen.dart';
-import 'profile/widgets/add_server_sheet.dart';
+import 'server/server_picker_screen.dart';
 
 class MainShellScreen extends ConsumerWidget {
   const MainShellScreen({super.key});
@@ -21,7 +21,12 @@ class MainShellScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
 
-    final titles = ['EME Profile', 'Chats & Messages', 'Drive & Files', 'EME World'];
+    final titles = [
+      'EME Profile',
+      'Chats & Messages',
+      'Drive & Files',
+      'EME World',
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +57,9 @@ class MainShellScreen extends ConsumerWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
               ),
             ),
           ],
@@ -115,12 +122,14 @@ class MainShellScreen extends ConsumerWidget {
         ],
       ),
       floatingActionButton: currentTab == 0
-          ? FloatingActionButton(
-              onPressed: () => _openAddServerSheet(context),
-              backgroundColor: AppColors.greenAccent,
-              foregroundColor: Colors.white,
-              tooltip: 'Add more servers',
-              child: const Icon(Icons.add, size: 30),
+          ? ElevatedButton.icon(
+              onPressed: () => _openServerPicker(context),
+              icon: const Icon(Icons.add, size: 22),
+              label: const Text('Servers'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.greenAccent,
+                foregroundColor: Colors.white,
+              ),
             )
           : null,
       bottomNavigationBar: CustomBottomNav(
@@ -132,12 +141,9 @@ class MainShellScreen extends ConsumerWidget {
     );
   }
 
-  void _openAddServerSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => const AddServerSheet(),
-    );
+  void _openServerPicker(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ServerPickerScreen()));
   }
 }

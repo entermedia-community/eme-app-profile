@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/main.dart';
+import 'package:eme_world/screens/server/server_picker_screen.dart';
+import 'package:eme_world/screens/eme_world/widgets/individual_card.dart';
 
 void main() {
   testWidgets('Renders Profile screen and navigates bottom bar tabs', (WidgetTester tester) async {
@@ -20,8 +22,8 @@ void main() {
     expect(find.text('Open Chat'), findsOneWidget);
     expect(find.text('Edit Profile'), findsOneWidget);
 
-    // Verify Collective Intelligence Servers Section
-    expect(find.text('Collective Intelligence Servers'), findsOneWidget);
+    // Verify My Joined Servers Section
+    expect(find.text('My Joined Servers'), findsOneWidget);
     expect(find.text('Atitlan Exchange'), findsOneWidget);
 
     // Verify Bottom Navigation items
@@ -43,12 +45,48 @@ void main() {
     await tester.tap(find.text('Files'));
     await tester.pumpAndSettle();
 
-    expect(find.text('EME Drive & Files'), findsOneWidget);
+    expect(find.text('Your Digital Legacy'), findsOneWidget);
 
     // Tap on EME World tab
     await tester.tap(find.text('EME World').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('EME World Ecosystem'), findsOneWidget);
+    expect(find.text('EME Worldwide'), findsOneWidget);
+    expect(find.text('Specialists Directory'), findsOneWidget);
+    // Verify only individual cards exist in EME World
+    expect(find.byType(IndividualCard), findsWidgets);
+    expect(find.text('Dr. Maya Lin'), findsOneWidget);
+    expect(find.text('Marcus Chen'), findsOneWidget);
+  });
+
+  testWidgets('FAB on Profile tab navigates to ServerPickerScreen', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
+    await tester.pumpAndSettle();
+
+    // Tap the FAB on Profile screen
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    // Verify ServerPickerScreen is pushed
+    expect(find.byType(ServerPickerScreen), findsOneWidget);
+    expect(find.text('Pick a Server'), findsOneWidget);
+    expect(find.text('All Servers'), findsWidgets);
+    expect(find.text('Available'), findsWidgets);
+    expect(find.text('Joined'), findsWidgets);
+    expect(find.text('Atitlan Exchange'), findsOneWidget);
+    expect(find.text('Neural Matrix Collective'), findsOneWidget);
+  });
+
+  testWidgets('Explore All button in Profile navigates to ServerPickerScreen', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
+    await tester.pumpAndSettle();
+
+    // Tap Explore All button
+    await tester.tap(find.text('Explore All'));
+    await tester.pumpAndSettle();
+
+    // Verify ServerPickerScreen is pushed
+    expect(find.byType(ServerPickerScreen), findsOneWidget);
+    expect(find.text('Pick a Server'), findsOneWidget);
   });
 }

@@ -39,6 +39,72 @@ class ServerState {
 
   int get individualCount => servers.where((s) => s.providerType == ProviderType.individual).length;
 
+  /// Individuals / Specialists filtered for EME World
+  List<ServerModel> get filteredIndividuals {
+    return servers.where((item) {
+      if (item.providerType != ProviderType.individual) return false;
+
+      // Category Filter
+      final matchesCategory = selectedCategory == 'All' ||
+          item.category == selectedCategory ||
+          item.tags.contains(selectedCategory);
+
+      if (!matchesCategory) return false;
+
+      // Search Query Filter
+      if (searchQuery.isEmpty) return true;
+
+      final query = searchQuery.toLowerCase();
+      final titleMatch = item.title.toLowerCase().contains(query);
+      final subtitleMatch = item.subtitle?.toLowerCase().contains(query) ?? false;
+      final specialistMatch = item.specialistTitle?.toLowerCase().contains(query) ?? false;
+      final descMatch = item.description.toLowerCase().contains(query);
+      final tagMatch = item.tags.any((tag) => tag.toLowerCase().contains(query));
+      final serviceMatch = item.servicesOffered.any((srv) => srv.toLowerCase().contains(query));
+      final locationMatch = item.location?.toLowerCase().contains(query) ?? false;
+
+      return titleMatch ||
+          subtitleMatch ||
+          specialistMatch ||
+          descMatch ||
+          tagMatch ||
+          serviceMatch ||
+          locationMatch;
+    }).toList();
+  }
+
+  /// Servers filtered for Server Picker & Catalog
+  List<ServerModel> get filteredServers {
+    return servers.where((item) {
+      if (item.providerType != ProviderType.server) return false;
+
+      // Category Filter
+      final matchesCategory = selectedCategory == 'All' ||
+          item.category == selectedCategory ||
+          item.tags.contains(selectedCategory);
+
+      if (!matchesCategory) return false;
+
+      // Search Query Filter
+      if (searchQuery.isEmpty) return true;
+
+      final query = searchQuery.toLowerCase();
+      final titleMatch = item.title.toLowerCase().contains(query);
+      final subtitleMatch = item.subtitle?.toLowerCase().contains(query) ?? false;
+      final descMatch = item.description.toLowerCase().contains(query);
+      final tagMatch = item.tags.any((tag) => tag.toLowerCase().contains(query));
+      final serviceMatch = item.servicesOffered.any((srv) => srv.toLowerCase().contains(query));
+      final locationMatch = item.location?.toLowerCase().contains(query) ?? false;
+
+      return titleMatch ||
+          subtitleMatch ||
+          descMatch ||
+          tagMatch ||
+          serviceMatch ||
+          locationMatch;
+    }).toList();
+  }
+
   /// Global catalog filtered for EME World Marketplace
   List<ServerModel> get filteredCatalog {
     return servers.where((item) {
@@ -79,9 +145,6 @@ class ServerState {
           locationMatch;
     }).toList();
   }
-
-  /// Backward-compatible getter for screens still using filteredServers
-  List<ServerModel> get filteredServers => filteredCatalog;
 
   ServerState copyWith({
     List<ServerModel>? servers,

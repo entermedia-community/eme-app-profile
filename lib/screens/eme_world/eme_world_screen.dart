@@ -5,7 +5,6 @@ import '../../providers/server_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/pill_badge.dart';
 import '../profile/widgets/category_filter_bar.dart';
-import '../profile/widgets/server_card.dart';
 import 'widgets/individual_card.dart';
 
 class EmeWorldScreen extends ConsumerStatefulWidget {
@@ -27,7 +26,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
   @override
   Widget build(BuildContext context) {
     final serverState = ref.watch(serverProvider);
-    final catalog = serverState.filteredCatalog;
+    final individuals = serverState.filteredIndividuals;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
@@ -48,7 +47,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Global marketplace connecting collective intelligence servers & verified specialists offering decentralized services.',
+            'Global network connecting verified specialists, researchers, and independent service providers offering decentralized services.',
             style: GoogleFonts.inter(
               fontSize: 13,
               color: isDark
@@ -83,16 +82,16 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildMetricItem(
-                  'Teams',
-                  '${serverState.serverCount}',
+                  'Specialists',
+                  '${serverState.individualCount}',
                   AppColors.primary,
                 ),
                 _buildDivider(isDark),
-                _buildMetricItem('Users', '60', AppColors.greenAccent),
+                _buildMetricItem('Verified', '100%', AppColors.greenAccent),
                 _buildDivider(isDark),
                 _buildMetricItem('Countries', '12', const Color(0xFF8B5CF6)),
                 _buildDivider(isDark),
-                _buildMetricItem('Documents', '50K+', const Color(0xFFF59E0B)),
+                _buildMetricItem('Services', '18+', const Color(0xFFF59E0B)),
               ],
             ),
           ),
@@ -106,7 +105,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               ref.read(serverProvider.notifier).setSearchQuery(val);
             },
             decoration: InputDecoration(
-              hintText: 'Search teams, specialists, services, or locations...',
+              hintText: 'Search specialists by name, skill, service, or location...',
               hintStyle: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.textMuted,
@@ -130,22 +129,17 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
 
           const SizedBox(height: 14),
 
-          // Type Segmented Filter (All, Servers, Specialists)
-          _buildTypeFilterSelector(serverState, isDark),
-
-          const SizedBox(height: 14),
-
           // Category Chips Bar
           const CategoryFilterBar(),
 
           const SizedBox(height: 20),
 
-          // Featured Ecosystem Spotlight Carousel / Header
+          // Directory Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Marketplace Directory',
+                'Specialists Directory',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -155,7 +149,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 ),
               ),
               Text(
-                '${catalog.length} results',
+                '${individuals.length} specialists',
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -167,8 +161,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
 
           const SizedBox(height: 12),
 
-          // Entity Catalog Grid
-          if (catalog.isEmpty)
+          // Individuals Grid
+          if (individuals.isEmpty)
             _buildEmptyState(context, isDark)
           else
             LayoutBuilder(
@@ -179,7 +173,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: catalog.length,
+                  itemCount: individuals.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 14,
@@ -187,11 +181,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                     childAspectRatio: isTablet ? 0.72 : 0.58,
                   ),
                   itemBuilder: (context, index) {
-                    final item = catalog[index];
-                    if (item.isIndividual) {
-                      return IndividualCard(specialist: item);
-                    }
-                    return ServerCard(server: item);
+                    final item = individuals[index];
+                    return IndividualCard(specialist: item);
                   },
                 );
               },
@@ -237,109 +228,6 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           const SizedBox(height: 80),
         ],
       ),
-    );
-  }
-
-  Widget _buildTypeFilterSelector(ServerState serverState, bool isDark) {
-    final types = [
-      {
-        'id': 'All',
-        'label': 'All Services',
-        'icon': Icons.apps_rounded,
-        'count': serverState.servers.length,
-      },
-      {
-        'id': 'Servers',
-        'label': 'Servers',
-        'icon': Icons.dns_rounded,
-        'count': serverState.serverCount,
-      },
-      {
-        'id': 'Specialists',
-        'label': 'Specialists',
-        'icon': Icons.person_search_rounded,
-        'count': serverState.individualCount,
-      },
-    ];
-
-    return Row(
-      children: types.map((t) {
-        final isSelected = serverState.selectedType == t['id'];
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3),
-            child: InkWell(
-              onTap: () {
-                ref
-                    .read(serverProvider.notifier)
-                    .setTypeFilter(t['id'] as String);
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 6),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF1F5F9)),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : (isDark
-                              ? AppColors.darkCardBorder
-                              : AppColors.lightCardBorder),
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.25),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      t['icon'] as IconData,
-                      size: 15,
-                      color: isSelected
-                          ? Colors.white
-                          : (isDark
-                                ? AppColors.textDarkSecondary
-                                : AppColors.textSecondary),
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        '${t['label']}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? Colors.white
-                              : (isDark
-                                    ? AppColors.textDarkPrimary
-                                    : AppColors.textPrimary),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 
@@ -389,13 +277,13 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
       child: Column(
         children: [
           Icon(
-            Icons.search_off_rounded,
+            Icons.person_search_rounded,
             size: 48,
             color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
           ),
           const SizedBox(height: 12),
           Text(
-            'No services or specialists found',
+            'No specialists found',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -403,7 +291,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Try adjusting your search query, type filter, or selected category.',
+            'Try adjusting your search query or selected category.',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               fontSize: 13,
@@ -417,7 +305,6 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             onPressed: () {
               _searchController.clear();
               ref.read(serverProvider.notifier).setCategory('All');
-              ref.read(serverProvider.notifier).setTypeFilter('All');
               ref.read(serverProvider.notifier).setSearchQuery('');
             },
             style: ElevatedButton.styleFrom(
