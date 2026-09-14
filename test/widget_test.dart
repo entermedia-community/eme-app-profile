@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/main.dart';
 import 'package:eme_world/screens/server/server_picker_screen.dart';
-import 'package:eme_world/screens/eme_world/widgets/individual_card.dart';
+import 'package:eme_world/screens/eme_world/widgets/eme_profile_card.dart';
 
 void main() {
   testWidgets('Renders Profile screen and navigates bottom bar tabs', (
@@ -52,8 +52,8 @@ void main() {
 
     expect(find.text('EME Worldwide'), findsOneWidget);
     expect(find.text('EME Profiles Directory'), findsOneWidget);
-    // Verify only individual cards exist in EME World
-    expect(find.byType(IndividualCard), findsWidgets);
+    // Verify only EME profile cards exist in EME World
+    expect(find.byType(EmeProfileCard), findsWidgets);
     expect(find.text('Dr. Maya Lin'), findsOneWidget);
     expect(find.text('Marcus Chen'), findsOneWidget);
   });

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/server_model.dart';
 import '../../providers/server_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
@@ -44,8 +43,6 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
 
     // Filter servers based on search, category, and scope
     final servers = serverState.servers.where((item) {
-      if (item.providerType != ProviderType.server) return false;
-
       // Scope filter
       if (_selectedScope == 'available' && item.isJoined) return false;
       if (_selectedScope == 'joined' && !item.isJoined) return false;

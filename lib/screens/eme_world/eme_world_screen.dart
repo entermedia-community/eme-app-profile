@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../providers/server_provider.dart';
+import '../../providers/eme_profile_provider.dart';
 import '../../theme/app_colors.dart';
-import '../profile/widgets/category_filter_bar.dart';
-import 'widgets/individual_card.dart';
+import 'widgets/eme_profile_card.dart';
+import 'widgets/eme_profile_category_filter_bar.dart';
 
 class EmeWorldScreen extends ConsumerStatefulWidget {
   const EmeWorldScreen({super.key});
@@ -24,8 +24,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final serverState = ref.watch(serverProvider);
-    final individuals = serverState.filteredIndividuals;
+    final profileState = ref.watch(emeProfileProvider);
+    final profiles = profileState.filteredProfiles;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
@@ -82,7 +82,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               children: [
                 _buildMetricItem(
                   'EME Profile',
-                  '${serverState.individualCount}',
+                  '${profileState.totalCount}',
                   AppColors.primary,
                 ),
                 _buildDivider(isDark),
@@ -101,7 +101,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           TextField(
             controller: _searchController,
             onChanged: (val) {
-              ref.read(serverProvider.notifier).setSearchQuery(val);
+              ref.read(emeProfileProvider.notifier).setSearchQuery(val);
             },
             decoration: InputDecoration(
               hintText:
@@ -116,7 +116,9 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                       icon: const Icon(Icons.clear_rounded, size: 18),
                       onPressed: () {
                         _searchController.clear();
-                        ref.read(serverProvider.notifier).setSearchQuery('');
+                        ref
+                            .read(emeProfileProvider.notifier)
+                            .setSearchQuery('');
                       },
                     )
                   : null,
@@ -130,7 +132,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           const SizedBox(height: 14),
 
           // Category Chips Bar
-          const CategoryFilterBar(),
+          const EmeProfileCategoryFilterBar(),
 
           const SizedBox(height: 20),
 
@@ -149,7 +151,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 ),
               ),
               Text(
-                '${individuals.length} EME Profiles',
+                '${profiles.length} EME Profiles',
                 style: GoogleFonts.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -161,8 +163,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
 
           const SizedBox(height: 12),
 
-          // Individuals Grid
-          if (individuals.isEmpty)
+          // Profiles Grid
+          if (profiles.isEmpty)
             _buildEmptyState(context, isDark)
           else
             LayoutBuilder(
@@ -173,7 +175,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 return GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: individuals.length,
+                  itemCount: profiles.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
                     crossAxisSpacing: 14,
@@ -181,8 +183,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                     childAspectRatio: isTablet ? 0.72 : 0.58,
                   ),
                   itemBuilder: (context, index) {
-                    final item = individuals[index];
-                    return IndividualCard(specialist: item);
+                    final item = profiles[index];
+                    return EmeProfileCard(profile: item);
                   },
                 );
               },
@@ -278,8 +280,8 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           ElevatedButton(
             onPressed: () {
               _searchController.clear();
-              ref.read(serverProvider.notifier).setCategory('All');
-              ref.read(serverProvider.notifier).setSearchQuery('');
+              ref.read(emeProfileProvider.notifier).setCategory('All');
+              ref.read(emeProfileProvider.notifier).setSearchQuery('');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

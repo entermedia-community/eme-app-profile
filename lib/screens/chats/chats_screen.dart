@@ -91,9 +91,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final serverState = ref.watch(serverProvider);
-    final servers = serverState.servers
-        .where((s) => s.providerType == ProviderType.server)
-        .toList();
+    final servers = serverState.servers;
 
     final filtered = _chats.where((c) {
       return c.userName.toLowerCase().contains(_searchQuery.toLowerCase()) ||

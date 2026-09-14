@@ -1,89 +1,85 @@
 import 'package:flutter/material.dart';
 
-class ServerModel {
+class EmeProfileModel {
   final String id;
-  final String title;
+  final String name;
+  final String? specialistTitle;
   final String? subtitle;
   final String description;
   final String category;
   final List<String> tags;
   final IconData iconData;
+  final String? avatarUrl;
   final Color primaryColor;
   final Color secondaryColor;
   final int memberCount;
-  final bool isJoined;
-  final String? bannerSvgOrType;
   final double? rating;
   final int? reviewsCount;
   final String? servicePricing;
   final String? location;
   final bool isVerified;
   final List<String> servicesOffered;
-  final String? avatarUrl;
 
-  const ServerModel({
+  const EmeProfileModel({
     required this.id,
-    required this.title,
+    required this.name,
+    this.specialistTitle,
     this.subtitle,
     required this.description,
     required this.category,
     required this.tags,
     required this.iconData,
+    this.avatarUrl,
     this.primaryColor = const Color(0xFF2563EB),
     this.secondaryColor = const Color(0xFFEFF6FF),
-    this.memberCount = 120,
-    this.isJoined = false,
-    this.bannerSvgOrType,
+    this.memberCount = 50,
     this.rating,
     this.reviewsCount,
     this.servicePricing,
     this.location,
     this.isVerified = true,
     this.servicesOffered = const [],
-    this.avatarUrl,
   });
 
-  ServerModel copyWith({
+  EmeProfileModel copyWith({
     String? id,
-    String? title,
+    String? name,
+    String? specialistTitle,
     String? subtitle,
     String? description,
     String? category,
     List<String>? tags,
     IconData? iconData,
+    String? avatarUrl,
     Color? primaryColor,
     Color? secondaryColor,
     int? memberCount,
-    bool? isJoined,
-    String? bannerSvgOrType,
     double? rating,
     int? reviewsCount,
     String? servicePricing,
     String? location,
     bool? isVerified,
     List<String>? servicesOffered,
-    String? avatarUrl,
   }) {
-    return ServerModel(
+    return EmeProfileModel(
       id: id ?? this.id,
-      title: title ?? this.title,
+      name: name ?? this.name,
+      specialistTitle: specialistTitle ?? this.specialistTitle,
       subtitle: subtitle ?? this.subtitle,
       description: description ?? this.description,
       category: category ?? this.category,
       tags: tags ?? this.tags,
       iconData: iconData ?? this.iconData,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       primaryColor: primaryColor ?? this.primaryColor,
       secondaryColor: secondaryColor ?? this.secondaryColor,
       memberCount: memberCount ?? this.memberCount,
-      isJoined: isJoined ?? this.isJoined,
-      bannerSvgOrType: bannerSvgOrType ?? this.bannerSvgOrType,
       rating: rating ?? this.rating,
       reviewsCount: reviewsCount ?? this.reviewsCount,
       servicePricing: servicePricing ?? this.servicePricing,
       location: location ?? this.location,
       isVerified: isVerified ?? this.isVerified,
       servicesOffered: servicesOffered ?? this.servicesOffered,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 }
