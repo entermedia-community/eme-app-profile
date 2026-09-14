@@ -29,7 +29,9 @@ class AppDrawer extends ConsumerWidget {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
                   ),
                 ),
               ),
@@ -40,7 +42,9 @@ class AppDrawer extends ConsumerWidget {
                     height: 54,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isDark ? const Color(0xFF334155) : const Color(0xFFEFF6FF),
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFEFF6FF),
                       border: Border.all(
                         color: AppColors.primary.withValues(alpha: 0.3),
                         width: 2,
@@ -62,17 +66,17 @@ class AppDrawer extends ConsumerWidget {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Center(
-                                child: Text(
-                                  profile.name.isNotEmpty
-                                      ? profile.name.substring(0, 1)
-                                      : 'C',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
+                                    child: Text(
+                                      profile.name.isNotEmpty
+                                          ? profile.name.substring(0, 1)
+                                          : 'C',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
                             ),
                           )
                         : Center(
@@ -98,16 +102,23 @@ class AppDrawer extends ConsumerWidget {
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                            color: isDark
+                                ? AppColors.textDarkPrimary
+                                : AppColors.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 1,
+                              ),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.15),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.15,
+                                ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -183,7 +194,7 @@ class AppDrawer extends ConsumerWidget {
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Divider(height: 1),
+                    child: Divider(height: 1, color: AppColors.lightCardBorder),
                   ),
                   _DrawerItem(
                     title: 'Settings',
@@ -204,7 +215,9 @@ class AppDrawer extends ConsumerWidget {
               decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
                   ),
                 ),
               ),
@@ -215,13 +228,19 @@ class AppDrawer extends ConsumerWidget {
                     'EME World v1.0.0',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                   IconButton(
                     icon: Icon(
-                      isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                      color: isDark ? const Color(0xFFFBBF24) : AppColors.textSecondary,
+                      isDark
+                          ? Icons.light_mode_rounded
+                          : Icons.dark_mode_rounded,
+                      color: isDark
+                          ? const Color(0xFFFBBF24)
+                          : AppColors.textSecondary,
                     ),
                     tooltip: isDark ? 'Switch to Light' : 'Switch to Dark',
                     onPressed: () {
@@ -304,16 +323,18 @@ class _DrawerItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: ListTile(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         selected: isSelected,
-        selectedTileColor: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+        selectedTileColor: AppColors.primary.withValues(
+          alpha: isDark ? 0.2 : 0.1,
+        ),
         leading: Icon(
           icon,
           color: isSelected
               ? (isDark ? AppColors.primaryLight : AppColors.primary)
-              : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+              : (isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary),
         ),
         title: Text(
           title,
