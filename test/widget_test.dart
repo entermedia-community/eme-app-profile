@@ -6,7 +6,9 @@ import 'package:eme_world/screens/server/server_picker_screen.dart';
 import 'package:eme_world/screens/eme_world/widgets/individual_card.dart';
 
 void main() {
-  testWidgets('Renders Profile screen and navigates bottom bar tabs', (WidgetTester tester) async {
+  testWidgets('Renders Profile screen and navigates bottom bar tabs', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
     await tester.pumpAndSettle();
 
@@ -52,14 +54,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('EME Worldwide'), findsOneWidget);
-    expect(find.text('Specialists Directory'), findsOneWidget);
+    expect(find.text('EME Profile Directory'), findsOneWidget);
     // Verify only individual cards exist in EME World
     expect(find.byType(IndividualCard), findsWidgets);
     expect(find.text('Dr. Maya Lin'), findsOneWidget);
     expect(find.text('Marcus Chen'), findsOneWidget);
   });
 
-  testWidgets('FAB on Profile tab navigates to ServerPickerScreen', (WidgetTester tester) async {
+  testWidgets('FAB on Profile tab navigates to ServerPickerScreen', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
     await tester.pumpAndSettle();
 
@@ -77,7 +81,9 @@ void main() {
     expect(find.text('Neural Matrix Collective'), findsOneWidget);
   });
 
-  testWidgets('Explore All button in Profile navigates to ServerPickerScreen', (WidgetTester tester) async {
+  testWidgets('Explore All button in Profile navigates to ServerPickerScreen', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
     await tester.pumpAndSettle();
 

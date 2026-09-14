@@ -81,7 +81,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildMetricItem(
-                  'Specialists',
+                  'EME Profile',
                   '${serverState.individualCount}',
                   AppColors.primary,
                 ),
@@ -139,7 +139,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Specialists Directory',
+                'EME Profiles Directory',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -257,7 +257,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'No specialists found',
+            'No EME profile found',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w700,
