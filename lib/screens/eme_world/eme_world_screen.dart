@@ -200,32 +200,6 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
-
-          _buildUpdateCard(
-            context,
-            isDark: isDark,
-            title: 'Atitlan Lake Bio-credit verification goes live',
-            category: 'Eco Tourism',
-            date: '3 hours ago',
-            reads: '420 reads',
-            description:
-                'Community nodes around Lake Atitlan have successfully validated the first batch of water-quality bio-credits on the decentralized registry.',
-          ),
-
-          const SizedBox(height: 12),
-
-          _buildUpdateCard(
-            context,
-            isDark: isDark,
-            title: 'Impact Bank rolls out mobile wallet integration',
-            category: 'Finance',
-            date: 'Yesterday',
-            reads: '1.2k reads',
-            description:
-                'New biometric passport issuance module enabled for cross-border humanitarian missions with zero transaction fees.',
-          ),
-
           const SizedBox(height: 80),
         ],
       ),
@@ -313,65 +287,6 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
               foregroundColor: Colors.white,
             ),
             child: const Text('Reset All Filters'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUpdateCard(
-    BuildContext context, {
-    required bool isDark,
-    required String title,
-    required String category,
-    required String date,
-    required String reads,
-    required String description,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              PillBadge.forCategory(category, isDark: isDark),
-              Text(
-                '$date • $reads',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            description,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark
-                  ? AppColors.textDarkSecondary
-                  : const Color(0xFF64748B),
-              height: 1.4,
-            ),
           ),
         ],
       ),
