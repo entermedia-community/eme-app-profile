@@ -89,6 +89,10 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       secondaryColor: AppColors.primaryBg,
       memberCount: 1,
       isJoined: true,
+      lastNotification: 'Server initialized and connected to network',
+      lastNotificationTime: 'Just now',
+      status: 'Active',
+      statusColor: AppColors.greenAccent,
     );
 
     ref.read(serverProvider.notifier).addServer(newServer);

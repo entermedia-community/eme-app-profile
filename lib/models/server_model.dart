@@ -20,6 +20,10 @@ class ServerModel {
   final bool isVerified;
   final List<String> servicesOffered;
   final String? avatarUrl;
+  final String? lastNotification;
+  final String? lastNotificationTime;
+  final String? status;
+  final Color? statusColor;
 
   const ServerModel({
     required this.id,
@@ -41,6 +45,10 @@ class ServerModel {
     this.isVerified = true,
     this.servicesOffered = const [],
     this.avatarUrl,
+    this.lastNotification,
+    this.lastNotificationTime,
+    this.status,
+    this.statusColor,
   });
 
   ServerModel copyWith({
@@ -63,6 +71,10 @@ class ServerModel {
     bool? isVerified,
     List<String>? servicesOffered,
     String? avatarUrl,
+    String? lastNotification,
+    String? lastNotificationTime,
+    String? status,
+    Color? statusColor,
   }) {
     return ServerModel(
       id: id ?? this.id,
@@ -84,6 +96,10 @@ class ServerModel {
       isVerified: isVerified ?? this.isVerified,
       servicesOffered: servicesOffered ?? this.servicesOffered,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      lastNotification: lastNotification ?? this.lastNotification,
+      lastNotificationTime: lastNotificationTime ?? this.lastNotificationTime,
+      status: status ?? this.status,
+      statusColor: statusColor ?? this.statusColor,
     );
   }
 }
