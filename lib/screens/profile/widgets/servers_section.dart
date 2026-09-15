@@ -158,7 +158,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
-                  childAspectRatio: isTablet ? 1.15 : 0.95,
+                  childAspectRatio: 1,
                 ),
                 itemBuilder: (context, index) {
                   return ServerCard(server: joinedServers[index]);
