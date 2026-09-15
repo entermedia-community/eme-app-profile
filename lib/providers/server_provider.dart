@@ -120,7 +120,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               lastNotification:
                   'Liquidity pool rebalanced & DAO settlement active',
               lastNotificationTime: '2m ago',
-              status: 'Operational',
               statusColor: Color(0xFF10B981),
             ),
             ServerModel(
@@ -146,7 +145,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Identity mesh verified (v2.4) • Zero alerts',
               lastNotificationTime: '15m ago',
-              status: 'Healthy',
               statusColor: Color(0xFF0284C7),
             ),
 
@@ -177,7 +175,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               lastNotification:
                   'High compute load • 12 inference workers active',
               lastNotificationTime: 'Just now',
-              status: 'High Load',
               statusColor: Color(0xFFF59E0B),
             ),
             ServerModel(
@@ -203,7 +200,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Carbon sink audit verified for Amazonia zone',
               lastNotificationTime: '3h ago',
-              status: 'Verified',
               statusColor: Color(0xFF10B981),
             ),
             ServerModel(
@@ -229,7 +225,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Oracle smart contract release v1.8 deployed',
               lastNotificationTime: '5h ago',
-              status: 'Updated',
               statusColor: Color(0xFFEA580C),
             ),
             ServerModel(
@@ -255,7 +250,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Zero-knowledge clinical batch finalized',
               lastNotificationTime: 'Yesterday',
-              status: 'Synced',
               statusColor: Color(0xFFE11D48),
             ),
             ServerModel(
@@ -281,7 +275,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Cinema camera kit returned & inspected',
               lastNotificationTime: '45m ago',
-              status: 'Gear Available',
               statusColor: Color(0xFF0D9488),
             ),
             ServerModel(
@@ -307,7 +300,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: '14 electric shuttles active in lake loop',
               lastNotificationTime: '10m ago',
-              status: '14 Drivers Live',
               statusColor: Color(0xFF0284C7),
             ),
             ServerModel(
@@ -333,7 +325,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
               ],
               lastNotification: 'Fresh harvest batch roasted and packaged',
               lastNotificationTime: '20m ago',
-              status: 'Fresh Batch In Stock',
               statusColor: Color(0xFFD97706),
             ),
           ],

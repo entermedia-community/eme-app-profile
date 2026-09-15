@@ -63,7 +63,6 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       isJoined: true,
       lastNotification: 'Server connected to network',
       lastNotificationTime: 'Just now',
-      status: 'Active',
       statusColor: AppColors.greenAccent,
     );
 

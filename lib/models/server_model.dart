@@ -22,7 +22,6 @@ class ServerModel {
   final String? avatarUrl;
   final String? lastNotification;
   final String? lastNotificationTime;
-  final String? status;
   final Color? statusColor;
 
   const ServerModel({
@@ -47,7 +46,6 @@ class ServerModel {
     this.avatarUrl,
     this.lastNotification,
     this.lastNotificationTime,
-    this.status,
     this.statusColor,
   });
 
@@ -98,7 +96,6 @@ class ServerModel {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       lastNotification: lastNotification ?? this.lastNotification,
       lastNotificationTime: lastNotificationTime ?? this.lastNotificationTime,
-      status: status ?? this.status,
       statusColor: statusColor ?? this.statusColor,
     );
   }

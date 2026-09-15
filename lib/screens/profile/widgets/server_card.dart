@@ -74,65 +74,24 @@ class ServerCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-
+                    const SizedBox(width: 8),
                     // Status Indicator Pill (Personalized, only on joined servers)
-                    if (server.isJoined && server.status != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(
-                            alpha: isDark ? 0.2 : 0.1,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: statusColor.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              server.status!,
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: statusColor,
-                              ),
-                            ),
-                          ],
+                    Expanded(
+                      child: Text(
+                        server.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.textDarkPrimary
+                              : AppColors.textPrimary,
+                          height: 1.2,
                         ),
                       ),
+                    ),
                   ],
-                ),
-
-                const SizedBox(height: 10),
-
-                // Server Name
-                Text(
-                  server.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                    height: 1.2,
-                  ),
                 ),
 
                 const SizedBox(height: 10),

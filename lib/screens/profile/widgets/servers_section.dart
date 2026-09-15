@@ -46,71 +46,6 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Header Row: "My Joined Servers" + Count Badge
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'My Joined Servers',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(
-                      alpha: isDark ? 0.25 : 0.12,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    '${serverState.joinedServers.length}',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? AppColors.primaryLight
-                          : AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 6),
-
-        // Subtitle explanation
-        Text(
-          'Servers and collective intelligence nodes you are currently a member of. Access shared tools, chats, and decentralized services.',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: isDark
-                ? AppColors.textDarkSecondary
-                : const Color(0xFF64748B),
-            height: 1.45,
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
         // Search within joined servers (if there are 2 or more)
         if (serverState.joinedServers.length > 2) ...[
           TextField(
@@ -122,6 +57,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                 fontSize: 12.5,
                 color: AppColors.textMuted,
               ),
+              fillColor: Colors.white,
               prefixIcon: const Icon(Icons.search_rounded, size: 18),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
