@@ -92,24 +92,6 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
                 ),
               ],
             ),
-            TextButton.icon(
-              onPressed: () => _navigateToPicker(context),
-              icon: const Icon(Icons.explore_outlined, size: 16),
-              label: Text(
-                'Explore All',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-              ),
-            ),
           ],
         ),
 

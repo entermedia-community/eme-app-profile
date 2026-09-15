@@ -21,12 +21,7 @@ class MainShellScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
 
-    final titles = [
-      'EME Profile',
-      'Chats & Messages',
-      'Drive & Files',
-      'EME World',
-    ];
+    final titles = ['EME Profile', 'Chats', 'FIles', 'EME World'];
 
     return Scaffold(
       appBar: AppBar(

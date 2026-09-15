@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/main.dart';
-import 'package:eme_world/screens/server/server_picker_screen.dart';
 import 'package:eme_world/screens/eme_world/widgets/eme_profile_card.dart';
 
 void main() {
@@ -71,20 +70,5 @@ void main() {
     // Verify Drawer is open
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('EME World v1.0.0'), findsOneWidget);
-  });
-
-  testWidgets('Explore All button in Profile navigates to ServerPickerScreen', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
-    await tester.pumpAndSettle();
-
-    // Tap Explore All button
-    await tester.tap(find.text('Explore All'));
-    await tester.pumpAndSettle();
-
-    // Verify ServerPickerScreen is pushed
-    expect(find.byType(ServerPickerScreen), findsOneWidget);
-    expect(find.text('Pick a Server'), findsOneWidget);
   });
 }

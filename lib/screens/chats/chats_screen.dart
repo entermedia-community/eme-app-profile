@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_model.dart';
-import '../../models/server_model.dart';
-import '../../providers/server_provider.dart';
 import '../../theme/app_colors.dart';
-import '../server/server_detail_screen.dart';
 import 'chat_detail_screen.dart';
 
 class ChatsScreen extends ConsumerStatefulWidget {
@@ -77,16 +74,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
 
   String _searchQuery = '';
 
-  int _getServerUnreadCount(ServerModel server) {
-    const unreadMap = {'srv_001': 4, 'srv_002': 1, 'srv_004': 7, 'srv_006': 3};
-    return unreadMap[server.id] ?? 0;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final serverState = ref.watch(serverProvider);
-    final servers = serverState.servers;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     final filtered = _chats.where((c) {
       return c.userName.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -98,210 +91,20 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         // Top Header & Search
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Messages & Chats',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  IconButton.filledTonal(
-                    onPressed: () {
-                      if (_chats.isNotEmpty) {
-                        Navigator.of(
-                          context,
-                        ).push(ChatDetailScreen.route(_chats.first));
-                      }
-                    },
-                    icon: const Icon(Icons.edit_square, size: 20),
-                  ),
-                ],
+          child: TextField(
+            onChanged: (val) => setState(() => _searchQuery = val),
+            decoration: const InputDecoration(
+              hintText: 'Search conversations...',
+              prefixIcon: Icon(Icons.search_rounded),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                onChanged: (val) => setState(() => _searchQuery = val),
-                decoration: const InputDecoration(
-                  hintText: 'Search conversations...',
-                  prefixIcon: Icon(Icons.search_rounded),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
 
-        // Section label for Servers Chat
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.dns_rounded,
-                    size: 14,
-                    color: isDark
-                        ? AppColors.textDarkMuted
-                        : AppColors.textMuted,
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    'SERVERS CHAT',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                      color: isDark
-                          ? AppColors.textDarkMuted
-                          : AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              Text(
-                '${servers.length} nodes',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Servers Chat horizontal scroll
-        SizedBox(
-          height: 96,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: servers.length,
-            itemBuilder: (context, index) {
-              final server = servers[index];
-              final unreadCount = _getServerUnreadCount(server);
-
-              return Padding(
-                padding: const EdgeInsets.only(right: 14, top: 4),
-                child: InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      ServerDetailScreen.route(
-                        server,
-                        initialModuleKey: 'chat',
-                      ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Container(
-                            width: 54,
-                            height: 54,
-                            decoration: BoxDecoration(
-                              color: server.primaryColor.withValues(
-                                alpha: isDark ? 0.22 : 0.12,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: server.primaryColor.withValues(
-                                  alpha: 0.35,
-                                ),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                server.iconData,
-                                size: 24,
-                                color: server.primaryColor,
-                              ),
-                            ),
-                          ),
-                          if (unreadCount > 0)
-                            Positioned(
-                              right: -4,
-                              top: -4,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                  vertical: 2,
-                                ),
-                                constraints: const BoxConstraints(
-                                  minWidth: 18,
-                                  minHeight: 18,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFEF4444),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isDark
-                                        ? AppColors.darkSurface
-                                        : Colors.white,
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(
-                                        0xFFEF4444,
-                                      ).withValues(alpha: 0.4),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    unreadCount > 9 ? '9+' : '$unreadCount',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
-                                      height: 1,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: 62,
-                        child: Text(
-                          server.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-
-        const Divider(height: 1, color: Colors.white10),
+        Divider(height: 1, color: borderColor),
 
         // Chat List
         Expanded(
@@ -309,7 +112,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: filtered.length,
             separatorBuilder: (context, index) =>
-                const Divider(indent: 76, height: 1, color: Colors.white10),
+                Divider(indent: 76, height: 1, color: borderColor),
             itemBuilder: (context, index) {
               final chat = filtered[index];
               return ListTile(

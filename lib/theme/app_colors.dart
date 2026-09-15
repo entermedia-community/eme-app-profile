@@ -11,10 +11,14 @@ class AppColors {
 
   // Accent & Action colors (matching mockup)
   static const Color greenAccent = Color(0xFF22C55E); // FAB Green
-  static const Color greenButtonBg = Color(0xFF86EFAC); // Light green for "Open Chat"
+  static const Color greenButtonBg = Color(
+    0xFF86EFAC,
+  ); // Light green for "Open Chat"
   static const Color greenButtonDarkBg = Color(0xFF166534);
   static const Color greenButtonText = Color(0xFF14532D);
-  static const Color blueButtonBg = Color(0xFF3B82F6); // Blue for "Edit Profile"
+  static const Color blueButtonBg = Color(
+    0xFF3B82F6,
+  ); // Blue for "Edit Profile"
   static const Color blueButtonText = Colors.white;
 
   // Backgrounds & Surfaces (Light)
@@ -26,7 +30,7 @@ class AppColors {
   // Backgrounds & Surfaces (Dark)
   static const Color darkBg = Color(0xFF0F172A);
   static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkCardBorder = Color(0xFF334155);
+  static const Color darkCardBorder = Color(0xFF1E293B);
   static const Color darkCardShadow = Color(0x33000000);
 
   // Text colors
@@ -41,7 +45,7 @@ class AppColors {
   // Category & Badge colors
   static const Color tagBg = Color(0xFFE2E8F0);
   static const Color tagText = Color(0xFF475569);
-  
+
   static const Color badgeSocialBg = Color(0xFFDBEAFE);
   static const Color badgeSocialText = Color(0xFF1E40AF);
 
