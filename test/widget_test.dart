@@ -37,7 +37,7 @@ void main() {
     await tester.tap(find.text('Chats').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Messages & Chats'), findsOneWidget);
+    expect(find.text('Search conversations...'), findsOneWidget);
 
     // Tap on Files tab
     await tester.tap(find.text('Files'));

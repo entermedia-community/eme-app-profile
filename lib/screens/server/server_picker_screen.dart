@@ -78,9 +78,6 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
       return true;
     }).toList();
 
-    final joinedCount = serverState.joinedServers.length;
-    final totalServerCount = serverState.serverCount;
-
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -121,19 +118,6 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: ElevatedButton.icon(
-        onPressed: () => _openAddServerSheet(context),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.greenAccent,
-          foregroundColor: Colors.white,
-        ),
-        icon: const Icon(Icons.add, size: 22),
-        label: Text(
-          'New',
-          style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-        ),
-        // tooltip: 'Create and add a new server',
-      ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -169,60 +153,10 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
               ),
             ),
 
-            const SizedBox(height: 14),
-
-            // Scope Filter Selector: All | Available | Joined
-            _buildScopeSelector(isDark, joinedCount, totalServerCount),
-
             const SizedBox(height: 12),
 
             // Category Horizontal List
             _buildCategorySelector(isDark),
-
-            const SizedBox(height: 18),
-
-            // Results count Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _selectedScope == 'joined'
-                      ? 'Joined Servers'
-                      : (_selectedScope == 'available'
-                            ? 'Available to Join'
-                            : 'All Servers'),
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(
-                      alpha: isDark ? 0.25 : 0.1,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    '${servers.length} servers',
-                    style: GoogleFonts.inter(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.primaryLight
-                          : AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
 
             const SizedBox(height: 12),
 
@@ -256,100 +190,6 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildScopeSelector(bool isDark, int joinedCount, int totalCount) {
-    final scopes = [
-      {'id': 'all', 'label': 'All Servers', 'count': totalCount},
-      {
-        'id': 'available',
-        'label': 'Available',
-        'count': totalCount - joinedCount,
-      },
-      {'id': 'joined', 'label': 'Joined', 'count': joinedCount},
-    ];
-
-    return Row(
-      children: scopes.map((s) {
-        final isSelected = _selectedScope == s['id'];
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3),
-            child: InkWell(
-              onTap: () {
-                setState(() => _selectedScope = s['id'] as String);
-              },
-              borderRadius: BorderRadius.circular(10),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF1F5F9)),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : (isDark
-                              ? AppColors.darkCardBorder
-                              : AppColors.lightCardBorder),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '${s['label']}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : (isDark
-                                  ? AppColors.textDarkSecondary
-                                  : AppColors.textSecondary),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Colors.white.withValues(alpha: 0.25)
-                            : (isDark
-                                  ? Colors.white.withValues(alpha: 0.08)
-                                  : Colors.black.withValues(alpha: 0.06)),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${s['count']}',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? Colors.white
-                              : (isDark
-                                    ? AppColors.textDarkMuted
-                                    : AppColors.textMuted),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 

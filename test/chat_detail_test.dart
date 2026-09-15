@@ -14,7 +14,7 @@ void main() {
     await tester.tap(find.text('Chats').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('Messages & Chats'), findsOneWidget);
+    expect(find.text('Search conversations...'), findsOneWidget);
     expect(find.text('Atitlan Core Team'), findsWidgets);
 
     // Tap on the first chat item
@@ -79,6 +79,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ChatDetailScreen), findsNothing);
-    expect(find.text('Messages & Chats'), findsOneWidget);
+    expect(find.text('Search conversations...'), findsOneWidget);
   });
 }

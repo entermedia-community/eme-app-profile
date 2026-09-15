@@ -141,10 +141,7 @@ class ServerCard extends ConsumerWidget {
                 Expanded(
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 7,
-                    ),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF131D31)
