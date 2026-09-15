@@ -112,7 +112,9 @@ class ServerOverviewTab extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF0F172A)
+                              : Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -170,16 +172,45 @@ class ServerOverviewTab extends ConsumerWidget {
 
           // Metadata bar under banner
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (server.location != null)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 13,
+                            color: isDark
+                                ? AppColors.textDarkMuted
+                                : AppColors.textMuted,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            server.location!,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: isDark
+                                  ? AppColors.textDarkSecondary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
+                        color: AppColors.primary.withValues(
+                          alpha: isDark ? 0.2 : 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -187,7 +218,9 @@ class ServerOverviewTab extends ConsumerWidget {
                           Icon(
                             Icons.category_outlined,
                             size: 13,
-                            color: isDark ? AppColors.primaryLight : AppColors.primary,
+                            color: isDark
+                                ? AppColors.primaryLight
+                                : AppColors.primary,
                           ),
                           const SizedBox(width: 5),
                           Text(
@@ -195,31 +228,14 @@ class ServerOverviewTab extends ConsumerWidget {
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.primaryLight : AppColors.primary,
+                              color: isDark
+                                  ? AppColors.primaryLight
+                                  : AppColors.primary,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    if (server.location != null)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 13,
-                            color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            server.location!,
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
                   ],
                 ),
                 // Join / Member Status Button
@@ -228,21 +244,35 @@ class ServerOverviewTab extends ConsumerWidget {
                     ref.read(serverProvider.notifier).toggleJoin(server.id);
                   },
                   icon: Icon(
-                    server.isJoined ? Icons.check_circle_rounded : Icons.add_circle_outline_rounded,
+                    server.isJoined
+                        ? Icons.check_circle_rounded
+                        : Icons.add_circle_outline_rounded,
                     size: 16,
                   ),
-                  label: Text(server.isJoined ? 'Joined' : 'Join Node'),
+                  label: Text(server.isJoined ? 'Joined' : 'Join'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: server.isJoined
-                        ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFDCFCE7))
+                        ? (isDark
+                              ? const Color(0xFF064E3B)
+                              : const Color(0xFFDCFCE7))
                         : server.primaryColor,
                     foregroundColor: server.isJoined
-                        ? (isDark ? const Color(0xFF86EFAC) : const Color(0xFF166534))
+                        ? (isDark
+                              ? const Color(0xFF86EFAC)
+                              : const Color(0xFF166534))
                         : Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    textStyle: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ],
@@ -302,7 +332,13 @@ class ServerOverviewTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color, bool isDark) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
     return Column(
       children: [
         Icon(icon, size: 18, color: color),
@@ -424,7 +460,9 @@ class ServerOverviewTab extends ConsumerWidget {
           color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
         child: Row(
@@ -447,7 +485,9 @@ class ServerOverviewTab extends ConsumerWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   Text(
@@ -456,7 +496,9 @@ class ServerOverviewTab extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
                       fontSize: 10,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -500,7 +542,9 @@ class ServerOverviewTab extends ConsumerWidget {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -510,7 +554,9 @@ class ServerOverviewTab extends ConsumerWidget {
             server.description,
             style: GoogleFonts.inter(
               fontSize: 13,
-              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF475569),
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : const Color(0xFF475569),
               height: 1.5,
             ),
           ),
@@ -549,7 +595,9 @@ class ServerOverviewTab extends ConsumerWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -579,7 +627,9 @@ class ServerOverviewTab extends ConsumerWidget {
             children: server.servicesOffered.map((srv) {
               return PillBadge(
                 label: srv,
-                backgroundColor: server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                backgroundColor: server.primaryColor.withValues(
+                  alpha: isDark ? 0.2 : 0.1,
+                ),
                 textColor: isDark ? server.secondaryColor : server.primaryColor,
                 fontSize: 11.5,
               );

@@ -127,6 +127,96 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.dataset_rounded,
         ),
       ];
+    } else if (cat.contains('rental') || widget.server.title.contains('Rental') || widget.server.title.contains('PeerSpace')) {
+      return [
+        const _ProductItem(
+          title: 'Sony FX3 Cinema Camera Kit',
+          category: 'Equipment',
+          description:
+              'Full 4K cinema package with 24-70mm G-Master lens, wireless audio mics, and memory cards.',
+          price: '\$65 / Day',
+          tag: 'Verified Gear',
+          icon: Icons.videocam_rounded,
+        ),
+        const _ProductItem(
+          title: 'Co-Working Creative Studio Desk',
+          category: 'Spaces',
+          description:
+              'Quiet acoustic studio pod with gigabit fiber, 4K monitors, and espresso bar access.',
+          price: '\$18 / Day',
+          tag: 'Smart Lock Access',
+          icon: Icons.desk_rounded,
+        ),
+        const _ProductItem(
+          title: 'Off-Grid Solar Power Generator (2000W)',
+          category: 'Power & Tools',
+          description:
+              'Portable LiFePO4 battery station with foldable solar panels for field expeditions.',
+          price: '\$35 / Day',
+          tag: 'High Capacity',
+          icon: Icons.solar_power_rounded,
+        ),
+      ];
+    } else if (cat.contains('mobility') || cat.contains('ride') || widget.server.title.contains('Transit')) {
+      return [
+        const _ProductItem(
+          title: 'On-Demand Lake Basin EV Ride',
+          category: 'On-Demand',
+          description:
+              'Direct peer-to-peer zero-emission ride hailing with instant tokenized driver settlement.',
+          price: '\$0.85 / km',
+          tag: 'Instant Pickup',
+          icon: Icons.electric_car_rounded,
+        ),
+        const _ProductItem(
+          title: 'Daily Intercity Electric Shuttle Pass',
+          category: 'Shuttle Pass',
+          description:
+              'Guaranteed commuter seat between Panajachel and Antigua with onboard WiFi.',
+          price: '\$12 / Trip',
+          tag: 'Scheduled Route',
+          icon: Icons.airport_shuttle_rounded,
+        ),
+        const _ProductItem(
+          title: 'Shared Eco-Cargo Van Haul',
+          category: 'Cargo',
+          description:
+              'Luggage and agricultural product freight transport across municipal partner hubs.',
+          price: '\$25 / Batch',
+          tag: 'Heavy Freight',
+          icon: Icons.local_shipping_rounded,
+        ),
+      ];
+    } else if (cat.contains('market') || cat.contains('artisan') || widget.server.title.contains('Artisan')) {
+      return [
+        const _ProductItem(
+          title: 'Single-Origin Volcanic Shade Coffee (1kg)',
+          category: 'Organic Coffee',
+          description:
+              'Micro-lot specialty arabica harvested at 1600m altitude by local San Juan cooperativa.',
+          price: '\$18.50',
+          tag: 'Direct Trade',
+          icon: Icons.coffee_rounded,
+        ),
+        const _ProductItem(
+          title: 'Handwoven Natural-Dye Textile Throw',
+          category: 'Artisan Textiles',
+          description:
+              'Backstrap-loom woven heirloom blanket dyed with bark and avocado pit pigments.',
+          price: '\$75.00',
+          tag: 'Authentic Craft',
+          icon: Icons.style_rounded,
+        ),
+        const _ProductItem(
+          title: 'Native Medicinal Herb & Tea Assortment',
+          category: 'Herbal Goods',
+          description:
+              'Organic chamomile, pericon, and lemongrass harvest kit in biodegradable tins.',
+          price: '\$14.00',
+          tag: 'Organic Certified',
+          icon: Icons.local_florist_rounded,
+        ),
+      ];
     } else {
       return [
         _ProductItem(

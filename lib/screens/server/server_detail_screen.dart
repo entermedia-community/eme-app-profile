@@ -25,21 +25,25 @@ class ServerDetailScreen extends ConsumerStatefulWidget {
   });
 
   /// Custom route animation for server transition
-  static Route<void> route(ServerModel server, {String initialModuleKey = 'overview'}) {
+  static Route<void> route(
+    ServerModel server, {
+    String initialModuleKey = 'overview',
+  }) {
     return PageRouteBuilder<void>(
-      pageBuilder: (context, animation, secondaryAnimation) => ServerDetailScreen(
-        server: server,
-        initialModuleKey: initialModuleKey,
-      ),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ServerDetailScreen(
+            server: server,
+            initialModuleKey: initialModuleKey,
+          ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 280),
     );
@@ -96,7 +100,9 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
             Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: currentServer.primaryColor.withValues(alpha: isDark ? 0.25 : 0.12),
+                color: currentServer.primaryColor.withValues(
+                  alpha: isDark ? 0.25 : 0.12,
+                ),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: currentServer.primaryColor.withValues(alpha: 0.3),
@@ -121,7 +127,9 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   Row(
@@ -139,7 +147,9 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                         '${currentServer.memberCount} members • ${currentServer.category}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
                         ),
                       ),
                     ],
@@ -166,14 +176,18 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded, size: 22),
             tooltip: 'Server Options',
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             onSelected: (value) {
               if (value == 'join') {
                 ref.read(serverProvider.notifier).toggleJoin(currentServer.id);
               } else if (value == 'share') {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Server invite link copied: https://eme.world/s/${currentServer.id}'),
+                    content: Text(
+                      'Server invite link copied: https://eme.world/s/${currentServer.id}',
+                    ),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -196,10 +210,12 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                           ? Icons.remove_circle_outline_rounded
                           : Icons.add_circle_outline_rounded,
                       size: 18,
-                      color: currentServer.isJoined ? const Color(0xFFEF4444) : AppColors.greenAccent,
+                      color: currentServer.isJoined
+                          ? const Color(0xFFEF4444)
+                          : AppColors.greenAccent,
                     ),
                     const SizedBox(width: 10),
-                    Text(currentServer.isJoined ? 'Leave Node' : 'Join Node'),
+                    Text(currentServer.isJoined ? 'Leave Node' : 'Join'),
                   ],
                 ),
               ),
