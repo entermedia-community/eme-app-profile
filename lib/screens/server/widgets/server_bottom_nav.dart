@@ -62,13 +62,13 @@ class ServerBottomNav extends StatelessWidget {
     final allModules = [
       const ServerModuleDefinition(
         key: 'goals',
-        title: 'Goals & OKRs',
+        title: 'Goals',
         icon: Icons.track_changes_outlined,
         activeIcon: Icons.track_changes_rounded,
       ),
       const ServerModuleDefinition(
         key: 'finance',
-        title: 'DAO Finance',
+        title: 'Finance',
         icon: Icons.account_balance_wallet_outlined,
         activeIcon: Icons.account_balance_wallet_rounded,
       ),
@@ -80,13 +80,13 @@ class ServerBottomNav extends StatelessWidget {
       ),
       const ServerModuleDefinition(
         key: 'blog',
-        title: 'Blog & Updates',
+        title: 'Blogs',
         icon: Icons.article_outlined,
         activeIcon: Icons.article_rounded,
       ),
       const ServerModuleDefinition(
         key: 'files',
-        title: 'Files & Drive',
+        title: 'Files',
         icon: Icons.folder_open_rounded,
         activeIcon: Icons.folder_rounded,
       ),
@@ -112,7 +112,9 @@ class ServerBottomNav extends StatelessWidget {
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         border: Border(
           top: BorderSide(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
             width: 1,
           ),
         ),
@@ -189,7 +191,9 @@ class ServerBottomNav extends StatelessWidget {
     required bool isDark,
   }) {
     final activeColor = server.primaryColor;
-    final inactiveColor = isDark ? AppColors.textDarkMuted : AppColors.textMuted;
+    final inactiveColor = isDark
+        ? AppColors.textDarkMuted
+        : AppColors.textMuted;
 
     return Expanded(
       child: Material(
@@ -204,7 +208,10 @@ class ServerBottomNav extends StatelessWidget {
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? activeColor.withValues(alpha: isDark ? 0.22 : 0.12)
@@ -244,17 +251,21 @@ class ServerBottomNav extends StatelessWidget {
     required List<ServerModuleDefinition> moreModules,
   }) {
     final activeColor = server.primaryColor;
-    final inactiveColor = isDark ? AppColors.textDarkMuted : AppColors.textMuted;
+    final inactiveColor = isDark
+        ? AppColors.textDarkMuted
+        : AppColors.textMuted;
 
     return Expanded(
       child: PopupMenuButton<String>(
         tooltip: 'More Server Modules',
-        position: PopupMenuPosition.over,
-        offset: const Offset(0, -220),
+        position: PopupMenuPosition.under,
+        offset: const Offset(0, 48),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
           side: BorderSide(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -275,13 +286,19 @@ class ServerBottomNav extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isItemActive
                           ? activeColor.withValues(alpha: isDark ? 0.25 : 0.15)
-                          : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9)),
+                          : (isDark
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFFF1F5F9)),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       isItemActive ? m.activeIcon : m.icon,
                       size: 18,
-                      color: isItemActive ? activeColor : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+                      color: isItemActive
+                          ? activeColor
+                          : (isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -290,10 +307,14 @@ class ServerBottomNav extends StatelessWidget {
                       m.title,
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        fontWeight: isItemActive ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isItemActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         color: isItemActive
                             ? activeColor
-                            : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+                            : (isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary),
                       ),
                     ),
                   ),
@@ -315,7 +336,11 @@ class ServerBottomNav extends StatelessWidget {
             children: [
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                alignment: Alignment.bottomCenter,
                 decoration: BoxDecoration(
                   color: isMoreSelected
                       ? activeColor.withValues(alpha: isDark ? 0.22 : 0.12)
@@ -324,7 +349,8 @@ class ServerBottomNav extends StatelessWidget {
                 ),
                 child: Icon(
                   isMoreSelected
-                      ? (selectedMoreItem?.activeIcon ?? Icons.grid_view_rounded)
+                      ? (selectedMoreItem?.activeIcon ??
+                            Icons.grid_view_rounded)
                       : Icons.more_horiz_rounded,
                   size: 22,
                   color: isMoreSelected ? activeColor : inactiveColor,
@@ -332,12 +358,16 @@ class ServerBottomNav extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                isMoreSelected ? (selectedMoreItem?.title.split(' ').first ?? 'More') : 'More',
+                isMoreSelected
+                    ? (selectedMoreItem?.title.split(' ').first ?? 'More')
+                    : 'More',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
                   fontSize: 10.5,
-                  fontWeight: isMoreSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: isMoreSelected
+                      ? FontWeight.w700
+                      : FontWeight.w500,
                   color: isMoreSelected ? activeColor : inactiveColor,
                 ),
               ),

@@ -288,30 +288,34 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Products & Services',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? AppColors.textDarkPrimary
-                          : AppColors.textPrimary,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Products',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Browse offerings provided by ${widget.server.title}',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppColors.textDarkSecondary
-                          : AppColors.textSecondary,
+                    const SizedBox(height: 2),
+                    Text(
+                      'Browse offerings provided by ${widget.server.title}',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.textDarkSecondary
+                            : AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -411,14 +415,15 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
     _ProductItem item,
     bool isDark,
   ) {
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
-        ),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
@@ -513,7 +518,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1, color: Colors.blueGrey),
+          Divider(height: 1, color: borderColor),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

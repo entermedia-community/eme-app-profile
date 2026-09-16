@@ -416,7 +416,7 @@ class ServerOverviewTab extends ConsumerWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                title: 'Goals & OKRs',
+                title: 'Goals',
                 subtitle: 'Milestones & roadmap',
                 icon: Icons.track_changes_rounded,
                 color: const Color(0xFF7C3AED),
@@ -428,7 +428,7 @@ class ServerOverviewTab extends ConsumerWidget {
             Expanded(
               child: _buildActionCard(
                 context,
-                title: 'Finance & DAO',
+                title: 'Finance',
                 subtitle: 'Treasury & stats',
                 icon: Icons.account_balance_wallet_outlined,
                 color: const Color(0xFFEA580C),
