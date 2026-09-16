@@ -1,12 +1,42 @@
 import 'package:flutter/material.dart';
 
+/// Categories available for EME World specialist profiles
+enum ProfileCategory {
+  ecoTourism('Eco Tourism'),
+  finance('Finance'),
+  artificialIntelligence('Artificial Intelligence'),
+  socialServices('Social Services'),
+  softwareTools('Software Tools'),
+  research('Research'),
+  education('Education'),
+  healthcare('Healthcare'),
+  startup('Startup'),
+  rentalAndGear('Rental & Gear'),
+  mobilityAndRides('Mobility & Rides'),
+  marketplaceAndGoods('Marketplace & Goods');
+
+  final String label;
+  const ProfileCategory(this.label);
+
+  static ProfileCategory fromString(String value) {
+    return ProfileCategory.values.firstWhere(
+      (e) =>
+          e.name.toLowerCase() == value.toLowerCase() ||
+          e.label.toLowerCase() == value.toLowerCase(),
+      orElse: () => ProfileCategory.softwareTools,
+    );
+  }
+}
+
+typedef EmeProfileCategory = ProfileCategory;
+
 class EmeProfileModel {
   final String id;
   final String name;
   final String? specialistTitle;
   final String? subtitle;
   final String description;
-  final String category;
+  final ProfileCategory category;
   final List<String> tags;
   final IconData iconData;
   final String? avatarUrl;
@@ -47,7 +77,7 @@ class EmeProfileModel {
     String? specialistTitle,
     String? subtitle,
     String? description,
-    String? category,
+    ProfileCategory? category,
     List<String>? tags,
     IconData? iconData,
     String? avatarUrl,

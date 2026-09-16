@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
 
+/// Categories available for servers/nodes
+enum ServerCategory {
+  rentalAndGear('Rental & Gear'),
+  mobilityAndRides('Mobility & Rides'),
+  marketplaceAndGoods('Marketplace & Goods'),
+  ecoTourism('Eco Tourism'),
+  finance('Finance'),
+  artificialIntelligence('Artificial Intelligence'),
+  socialServices('Social Services'),
+  softwareTools('Software Tools'),
+  research('Research'),
+  education('Education'),
+  healthcare('Healthcare'),
+  startup('Startup');
+
+  final String label;
+  const ServerCategory(this.label);
+
+  static ServerCategory fromString(String value) {
+    return ServerCategory.values.firstWhere(
+      (e) =>
+          e.name.toLowerCase() == value.toLowerCase() ||
+          e.label.toLowerCase() == value.toLowerCase(),
+      orElse: () => ServerCategory.softwareTools,
+    );
+  }
+}
+
 class ServerModel {
   final String id;
   final String title;
   final String? subtitle;
   final String description;
-  final String category;
+  final ServerCategory category;
   final List<String> tags;
   final IconData iconData;
   final Color primaryColor;
@@ -54,7 +82,7 @@ class ServerModel {
     String? title,
     String? subtitle,
     String? description,
-    String? category,
+    ServerCategory? category,
     List<String>? tags,
     IconData? iconData,
     Color? primaryColor,

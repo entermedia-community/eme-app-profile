@@ -224,7 +224,7 @@ class ServerOverviewTab extends ConsumerWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            server.category,
+                            server.category.label,
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,

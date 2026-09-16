@@ -63,10 +63,10 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
   }
 
   String _getPrimaryModuleKey(ServerModel server) {
-    final cat = server.category.toLowerCase();
-    if (cat.contains('finance')) {
+    if (server.category == ServerCategory.finance) {
       return 'finance';
-    } else if (cat.contains('social') || cat.contains('software')) {
+    } else if (server.category == ServerCategory.socialServices ||
+        server.category == ServerCategory.softwareTools) {
       return 'goals';
     } else {
       return 'products';
@@ -144,7 +144,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${currentServer.memberCount} members • ${currentServer.category}',
+                        '${currentServer.memberCount} members • ${currentServer.category.label}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           color: isDark

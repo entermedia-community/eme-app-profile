@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_world/main.dart';
 import 'package:eme_world/screens/eme_world/widgets/eme_profile_card.dart';
+import 'package:eme_world/screens/profile/widgets/server_card.dart';
 
 void main() {
   testWidgets('Renders Profile screen and navigates bottom bar tabs', (
@@ -24,8 +25,8 @@ void main() {
     expect(find.text('Edit Profile'), findsOneWidget);
 
     // Verify My Joined Servers Section
-    expect(find.text('My Joined Servers'), findsOneWidget);
-    expect(find.text('Atitlan Exchange'), findsOneWidget);
+    expect(find.byType(ServerCard), findsWidgets);
+    expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
 
     // Verify Bottom Navigation items
     expect(find.text('Profile'), findsOneWidget);

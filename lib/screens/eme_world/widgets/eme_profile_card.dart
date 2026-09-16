@@ -108,7 +108,8 @@ class EmeProfileCard extends ConsumerWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                profile.specialistTitle ?? profile.category,
+                                profile.specialistTitle ??
+                                profile.category.label,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
@@ -381,7 +382,7 @@ class EmeProfileCard extends ConsumerWidget {
                             ],
                           ),
                           Text(
-                            profile.specialistTitle ?? profile.category,
+                            profile.specialistTitle ?? profile.category.label,
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/chat_model.dart';
+import '../../models/product_message_model.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/chat/product_message_card.dart';
+import '../../widgets/chat/send_product_sheet.dart';
 import 'chat_info_screen.dart';
 import 'widgets/qr_connect_modal.dart';
 
@@ -10,12 +13,14 @@ class _MessageItem {
   final String text;
   final String time;
   final bool isMe;
+  final ProductMessageModel? product;
 
   const _MessageItem({
     required this.id,
     required this.text,
     required this.time,
     required this.isMe,
+    this.product,
   });
 }
 
@@ -105,6 +110,30 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
       );
       _messageController.clear();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _sendProduct(ProductMessageModel product) {
+    setState(() {
+      _messages.add(
+        _MessageItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          text: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          time: 'Just now',
+          isMe: true,
+          product: product,
+        ),
+      );
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -381,14 +410,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
                   color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
-                  tooltip: 'Attach file or image',
+                  tooltip: 'Share Product or Service',
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Attachment picker opened'),
-                        behavior: SnackBarBehavior.floating,
-                        duration: Duration(seconds: 1),
-                      ),
+                    SendProductSheet.show(
+                      context,
+                      onProductSelected: (product) => _sendProduct(product),
                     );
                   },
                 ),
@@ -440,91 +466,105 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          if (!isMe) ...[
-            CircleAvatar(
-              radius: 14,
-              backgroundColor: widget.chat.avatarColor.withValues(alpha: 0.2),
-              child: Text(
-                widget.chat.avatarInitials ?? widget.chat.userName.substring(0, 2),
-                style: GoogleFonts.plusJakartaSans(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                  color: widget.chat.avatarColor,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-              decoration: BoxDecoration(
-                color: isMe
-                    ? AppColors.primary
-                    : (isDark ? AppColors.darkSurface : Colors.white),
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(18),
-                  topRight: const Radius.circular(18),
-                  bottomLeft: Radius.circular(isMe ? 18 : 4),
-                  bottomRight: Radius.circular(isMe ? 4 : 18),
-                ),
-                border: isMe
-                    ? null
-                    : Border.all(
-                        color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
-                      ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    message.text,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: isMe
-                          ? Colors.white
-                          : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+          Row(
+            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isMe) ...[
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: widget.chat.avatarColor.withValues(alpha: 0.2),
+                  child: Text(
+                    widget.chat.avatarInitials ?? widget.chat.userName.substring(0, 2),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      color: widget.chat.avatarColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                ),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+                  decoration: BoxDecoration(
+                    color: isMe
+                        ? AppColors.primary
+                        : (isDark ? AppColors.darkSurface : Colors.white),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(18),
+                      topRight: const Radius.circular(18),
+                      bottomLeft: Radius.circular(isMe ? 18 : 4),
+                      bottomRight: Radius.circular(isMe ? 4 : 18),
+                    ),
+                    border: isMe
+                        ? null
+                        : Border.all(
+                            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                          ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        message.time,
+                        message.text,
                         style: GoogleFonts.inter(
-                          fontSize: 10,
+                          fontSize: 14,
                           color: isMe
-                              ? Colors.white.withValues(alpha: 0.75)
-                              : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                              ? Colors.white
+                              : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
                         ),
                       ),
-                      if (isMe) ...[
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.done_all_rounded,
-                          size: 13,
-                          color: Colors.white70,
-                        ),
-                      ],
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            message.time,
+                            style: GoogleFonts.inter(
+                              fontSize: 10,
+                              color: isMe
+                                  ? Colors.white.withValues(alpha: 0.75)
+                                  : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                            ),
+                          ),
+                          if (isMe) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.done_all_rounded,
+                              size: 13,
+                              color: Colors.white70,
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
+              ),
+            ],
+          ),
+          if (message.product != null) ...[
+            Padding(
+              padding: EdgeInsets.only(left: isMe ? 0 : 36),
+              child: ProductMessageCard(
+                product: message.product!,
+                isMe: isMe,
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

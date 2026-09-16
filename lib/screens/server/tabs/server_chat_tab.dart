@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../models/product_message_model.dart';
 import '../../../models/server_model.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/chat/product_message_card.dart';
+import '../../../widgets/chat/send_product_sheet.dart';
 
 class _ServerMessage {
   final String id;
@@ -12,6 +15,7 @@ class _ServerMessage {
   final String time;
   final bool isMe;
   final Color badgeColor;
+  final ProductMessageModel? product;
 
   const _ServerMessage({
     required this.id,
@@ -22,6 +26,7 @@ class _ServerMessage {
     required this.time,
     required this.isMe,
     required this.badgeColor,
+    this.product,
   });
 }
 
@@ -41,7 +46,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
   final List<String> _channels = [
     '#general',
     '#announcements',
-    '#roadmap-goals',
+    '#marketplace',
     '#support-desk',
   ];
   int _selectedChannelIndex = 0;
@@ -55,51 +60,180 @@ class _ServerChatTabState extends State<ServerChatTab> {
   }
 
   void _loadMessagesForServer() {
-    _messages = [
-      _ServerMessage(
-        id: '1',
-        senderName: 'EME Core Bot',
-        senderRole: 'SYSTEM BOT',
-        avatarInitials: 'EB',
-        message:
-            'Welcome to the official ${widget.server.title} node workspace! All node updates, proposal discussions, and decentralized collaborative feeds stream here.',
-        time: '9:00 AM',
-        isMe: false,
-        badgeColor: AppColors.primary,
-      ),
-      _ServerMessage(
-        id: '2',
-        senderName: 'Alex Rivera',
-        senderRole: 'NODE MAINTAINER',
-        avatarInitials: 'AR',
-        message:
-            'Good morning everyone! We just synchronized the latest sprint deliverables. Check the Goals tab for our Q3 milestones!',
-        time: '9:42 AM',
-        isMe: false,
-        badgeColor: const Color(0xFF059669),
-      ),
-      _ServerMessage(
-        id: '3',
-        senderName: 'Elena Rostova',
-        senderRole: 'CONTRIBUTOR',
-        avatarInitials: 'ER',
-        message:
-            'Reviewing the financial distribution on the Impact Bank contracts right now. Everything is balancing properly.',
-        time: '10:15 AM',
-        isMe: false,
-        badgeColor: const Color(0xFF7C3AED),
-      ),
-      const _ServerMessage(
-        id: '4',
-        senderName: 'You',
-        senderRole: 'MEMBER',
-        avatarInitials: 'ME',
-        message: 'Looking great! Excited to contribute to this node.',
-        time: 'Just now',
-        isMe: true,
-        badgeColor: AppColors.primary,
-      ),
-    ];
+    final catalog = ProductMessageModel.sampleCatalog;
+
+    if (widget.server.category == ServerCategory.marketplaceAndGoods ||
+        widget.server.id == 'srv_010') {
+      _messages = [
+        _ServerMessage(
+          id: '1',
+          senderName: 'Marketplace Bot',
+          senderRole: 'VERIFIED NODE',
+          avatarInitials: 'MB',
+          message:
+              'Welcome to ${widget.server.title}! Discover and purchase direct producer-harvested goods with smart contract escrow protection.',
+          time: '8:30 AM',
+          isMe: false,
+          badgeColor: widget.server.primaryColor,
+        ),
+        _ServerMessage(
+          id: '2',
+          senderName: 'San Marcos Organic Co-op',
+          senderRole: 'VERIFIED PRODUCER',
+          avatarInitials: 'SM',
+          message:
+              'Fresh morning roast batch completed! We just listed 15 bags of our limited reserve single-origin Gesha coffee beans.',
+          time: '9:15 AM',
+          isMe: false,
+          badgeColor: const Color(0xFFD97706),
+          product: catalog[0], // Single Origin Coffee
+        ),
+        _ServerMessage(
+          id: '3',
+          senderName: 'K\'iche\' Weavers Guild',
+          senderRole: 'ARTISAN COLLECTIVE',
+          avatarInitials: 'KW',
+          message:
+              'New handwoven botanical dye wool poncho available in locker #4 or local delivery around the lake.',
+          time: '10:05 AM',
+          isMe: false,
+          badgeColor: const Color(0xFF059669),
+          product: catalog[1], // Handwoven Poncho
+        ),
+        const _ServerMessage(
+          id: '4',
+          senderName: 'You',
+          senderRole: 'MEMBER',
+          avatarInitials: 'ME',
+          message: 'The Gesha roast looks incredible! Placing an order now.',
+          time: 'Just now',
+          isMe: true,
+          badgeColor: AppColors.primary,
+        ),
+      ];
+    } else if (widget.server.category == ServerCategory.mobilityAndRides ||
+        widget.server.id == 'srv_009') {
+      _messages = [
+        _ServerMessage(
+          id: '1',
+          senderName: 'EcoTransit Dispatch',
+          senderRole: 'DISPATCH NODE',
+          avatarInitials: 'ET',
+          message:
+              'Active fleet operating 14 EV shuttles today across Lake Atitlan & Guatemala City routes.',
+          time: '8:00 AM',
+          isMe: false,
+          badgeColor: widget.server.primaryColor,
+        ),
+        _ServerMessage(
+          id: '2',
+          senderName: 'Carlos Mendonza',
+          senderRole: 'MOBILITY OPERATOR',
+          avatarInitials: 'CM',
+          message:
+              'Departing Panajachel pier for Guatemala City Airport today at 2:30 PM. 3 seats remaining in the electric passenger van!',
+          time: '10:20 AM',
+          isMe: false,
+          badgeColor: const Color(0xFF0284C7),
+          product: catalog[2], // Rideshare Shuttle
+        ),
+        const _ServerMessage(
+          id: '3',
+          senderName: 'You',
+          senderRole: 'MEMBER',
+          avatarInitials: 'ME',
+          message: 'Perfect timing, booking 1 seat for the 2:30 PM trip.',
+          time: 'Just now',
+          isMe: true,
+          badgeColor: AppColors.primary,
+        ),
+      ];
+    } else if (widget.server.category == ServerCategory.rentalAndGear ||
+        widget.server.id == 'srv_008') {
+      _messages = [
+        _ServerMessage(
+          id: '2',
+          senderName: 'Elena & Mateo',
+          senderRole: 'SUPERHOST',
+          avatarInitials: 'EM',
+          message:
+              'Our solar eco-villa in Jaibalito is available for booking this upcoming week. High speed fiber and private kayak dock ready.',
+          time: '9:30 AM',
+          isMe: false,
+          badgeColor: const Color(0xFF0D9488),
+          product: catalog[3], // House Rental
+        ),
+        _ServerMessage(
+          id: '3',
+          senderName: 'Pan-Lake Media Collective',
+          senderRole: 'EQUIPMENT DEPOT',
+          avatarInitials: 'PM',
+          message:
+              'Sony FX6 cinema kit just returned, cleaned, and checked into Panajachel smart locker #18 ready for rent.',
+          time: '10:40 AM',
+          isMe: false,
+          badgeColor: const Color(0xFF7C3AED),
+          product: catalog[4], // Gear Rental
+        ),
+        const _ServerMessage(
+          id: '4',
+          senderName: 'You',
+          senderRole: 'MEMBER',
+          avatarInitials: 'ME',
+          message: 'Great, checking availability for the cinema kit tomorrow!',
+          time: 'Just now',
+          isMe: true,
+          badgeColor: AppColors.primary,
+        ),
+      ];
+    } else {
+      _messages = [
+        _ServerMessage(
+          id: '1',
+          senderName: 'EME Core Bot',
+          senderRole: 'SYSTEM BOT',
+          avatarInitials: 'EB',
+          message:
+              'Welcome to the official ${widget.server.title} node workspace! All node updates, decentralized collaborative feeds, and ecosystem items stream here.',
+          time: '9:00 AM',
+          isMe: false,
+          badgeColor: widget.server.primaryColor,
+        ),
+        _ServerMessage(
+          id: '2',
+          senderName: 'Alex Rivera',
+          senderRole: 'NODE MAINTAINER',
+          avatarInitials: 'AR',
+          message:
+              'Good morning everyone! We just synchronized the latest sprint deliverables. Check the Goals tab for our Q3 milestones!',
+          time: '9:42 AM',
+          isMe: false,
+          badgeColor: const Color(0xFF059669),
+        ),
+        _ServerMessage(
+          id: '3',
+          senderName: 'Community Goods Node',
+          senderRole: 'MARKETPLACE',
+          avatarInitials: 'CG',
+          message:
+              'Special community offering shared from our sister marketplace node:',
+          time: '10:15 AM',
+          isMe: false,
+          badgeColor: const Color(0xFFD97706),
+          product: catalog[0],
+        ),
+        const _ServerMessage(
+          id: '4',
+          senderName: 'You',
+          senderRole: 'MEMBER',
+          avatarInitials: 'ME',
+          message: 'Looking great! Excited to contribute to this node.',
+          time: 'Just now',
+          isMe: true,
+          badgeColor: AppColors.primary,
+        ),
+      ];
+    }
   }
 
   void _sendMessage() {
@@ -179,7 +313,9 @@ class _ServerChatTabState extends State<ServerChatTab> {
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         border: Border(
           bottom: BorderSide(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
       ),
@@ -202,9 +338,13 @@ class _ServerChatTabState extends State<ServerChatTab> {
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
               color: isSelected
                   ? Colors.white
-                  : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+                  : (isDark
+                        ? AppColors.textDarkSecondary
+                        : AppColors.textSecondary),
             ),
-            backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+            backgroundColor: isDark
+                ? const Color(0xFF0F172A)
+                : const Color(0xFFF1F5F9),
             selectedColor: widget.server.primaryColor,
             showCheckmark: false,
             shape: RoundedRectangleBorder(
@@ -227,7 +367,9 @@ class _ServerChatTabState extends State<ServerChatTab> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: widget.server.primaryColor.withValues(alpha: isDark ? 0.12 : 0.06),
+        color: widget.server.primaryColor.withValues(
+          alpha: isDark ? 0.12 : 0.06,
+        ),
         border: Border(
           bottom: BorderSide(
             color: widget.server.primaryColor.withValues(alpha: 0.15),
@@ -244,13 +386,15 @@ class _ServerChatTabState extends State<ServerChatTab> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Active Node Topic: ${widget.server.category} ecosystem discussions & proposals',
+              'Active Node Topic: ${widget.server.category.label} ecosystem discussions & proposals',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
               ),
             ),
           ),
@@ -263,45 +407,56 @@ class _ServerChatTabState extends State<ServerChatTab> {
     if (msg.isMe) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: widget.server.primaryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.server.primaryColor,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          msg.message,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: Colors.white,
+                            height: 1.35,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          msg.time,
+                          style: GoogleFonts.inter(
+                            fontSize: 9.5,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      msg.message,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.white,
-                        height: 1.35,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      msg.time,
-                      style: GoogleFonts.inter(
-                        fontSize: 9.5,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
+            if (msg.product != null) ...[
+              ProductMessageCard(product: msg.product!, isMe: true),
+            ],
           ],
         ),
       );
@@ -348,14 +503,21 @@ class _ServerChatTabState extends State<ServerChatTab> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1.5,
+                      ),
                       decoration: BoxDecoration(
-                        color: msg.badgeColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                        color: msg.badgeColor.withValues(
+                          alpha: isDark ? 0.2 : 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -372,16 +534,23 @@ class _ServerChatTabState extends State<ServerChatTab> {
                       msg.time,
                       style: GoogleFonts.inter(
                         fontSize: 10,
-                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                        color: isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                    color: isDark
+                        ? AppColors.darkSurface
+                        : AppColors.lightSurface,
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4),
                       topRight: Radius.circular(16),
@@ -389,24 +558,60 @@ class _ServerChatTabState extends State<ServerChatTab> {
                       bottomRight: Radius.circular(16),
                     ),
                     border: Border.all(
-                      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                      color: isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder,
                     ),
                   ),
                   child: Text(
                     msg.message,
                     style: GoogleFonts.inter(
                       fontSize: 13,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                       height: 1.4,
                     ),
                   ),
                 ),
+                if (msg.product != null) ...[
+                  ProductMessageCard(product: msg.product!, isMe: false),
+                ],
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _sendProduct(ProductMessageModel product) {
+    setState(() {
+      _messages.add(
+        _ServerMessage(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          senderName: 'You',
+          senderRole: 'MEMBER',
+          avatarInitials: 'ME',
+          message:
+              'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          time: 'Just now',
+          isMe: true,
+          badgeColor: AppColors.primary,
+          product: product,
+        ),
+      );
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   Widget _buildChatInput(bool isDark) {
@@ -416,7 +621,9 @@ class _ServerChatTabState extends State<ServerChatTab> {
         color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         border: Border(
           top: BorderSide(
-            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
         ),
       ),
@@ -427,16 +634,16 @@ class _ServerChatTabState extends State<ServerChatTab> {
             IconButton(
               icon: Icon(
                 Icons.add_circle_outline_rounded,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary,
                 size: 22,
               ),
-              tooltip: 'Attach file or link',
+              tooltip: 'Share Product or Service',
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('File attachment ready'),
-                    duration: Duration(seconds: 1),
-                  ),
+                SendProductSheet.show(
+                  context,
+                  onProductSelected: (product) => _sendProduct(product),
                 );
               },
             ),
@@ -448,21 +655,32 @@ class _ServerChatTabState extends State<ServerChatTab> {
                   hintText: 'Message ${_channels[_selectedChannelIndex]}...',
                   hintStyle: GoogleFonts.inter(
                     fontSize: 13,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  fillColor: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
                     borderSide: BorderSide(
-                      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                      color: isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
                     borderSide: BorderSide(
-                      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                      color: isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -482,7 +700,11 @@ class _ServerChatTabState extends State<ServerChatTab> {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                icon: const Icon(
+                  Icons.send_rounded,
+                  size: 18,
+                  color: Colors.white,
+                ),
                 onPressed: _sendMessage,
               ),
             ),

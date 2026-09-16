@@ -54,7 +54,7 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       subtitle: formattedUrl,
       location: formattedUrl,
       description: 'Connected node at $formattedUrl',
-      category: 'Software Tools',
+      category: ServerCategory.softwareTools,
       tags: const ['Connected', 'Custom Node'],
       iconData: Icons.dns_rounded,
       primaryColor: AppColors.primary,

@@ -183,7 +183,7 @@ class ServerCard extends ConsumerWidget {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      server.category.toUpperCase(),
+                                      server.category.label.toUpperCase(),
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 8.5,
                                         fontWeight: FontWeight.w800,

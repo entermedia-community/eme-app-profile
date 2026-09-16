@@ -35,7 +35,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
 
   List<_ProductItem> _getProductsForServer() {
     // Generate specialized products tailored to the server's category & services
-    final cat = widget.server.category.toLowerCase();
+    final cat = widget.server.category.label.toLowerCase();
 
     if (cat.contains('finance') || widget.server.title.contains('Passport')) {
       return [
@@ -49,15 +49,6 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.badge_outlined,
         ),
         const _ProductItem(
-          title: 'Micro-Credit Liquidity Vault',
-          category: 'Escrow',
-          description:
-              'Peer-to-peer micro-lending smart contract escrow with automated 0% humanitarian yield.',
-          price: '0.25% Node Fee',
-          tag: 'High Demand',
-          icon: Icons.account_balance_wallet_outlined,
-        ),
-        const _ProductItem(
           title: 'Cross-Border FX Settlement Gateway',
           category: 'Payments',
           description:
@@ -67,7 +58,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.currency_exchange_rounded,
         ),
       ];
-    } else if (cat.contains('eco') || widget.server.title.contains('Atitlan')) {
+    } else if (cat.contains('eco')) {
       return [
         const _ProductItem(
           title: 'Regenerative Eco-Tourism Pass',
@@ -127,7 +118,39 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.dataset_rounded,
         ),
       ];
-    } else if (cat.contains('rental') || widget.server.title.contains('Rental') || widget.server.title.contains('PeerSpace')) {
+    } else if (widget.server.title.contains('House') ||
+        widget.server.title.contains('Stay') ||
+        widget.server.title.contains('Villa')) {
+      return [
+        const _ProductItem(
+          title: 'Lakeview Solar Eco-Villa & Private Dock',
+          category: 'Sanctuaries',
+          description:
+              'Off-grid cliffside sanctuary powered by 10kW solar system with panoramic volcano views and kayak launch.',
+          price: '\$110 / Night',
+          tag: 'Superhost Verified',
+          icon: Icons.villa_rounded,
+        ),
+        const _ProductItem(
+          title: 'Cliffside Bamboo Artist Retreat',
+          category: 'Retreats',
+          description:
+              'Sustainable bamboo architecture loft with high-speed fiber internet and sunset terrace.',
+          price: '\$75 / Night',
+          tag: 'High-Speed Fiber',
+          icon: Icons.cottage_rounded,
+        ),
+        const _ProductItem(
+          title: 'Lakefront Studio with Private Kayak Dock',
+          category: 'Studios',
+          description:
+              'Minimalist modern studio right on the water with full kitchen, workstation, and solar backup power.',
+          price: '\$55 / Night',
+          tag: 'Waterfront Access',
+          icon: Icons.home_work_rounded,
+        ),
+      ];
+    } else if (cat.contains('rental')) {
       return [
         const _ProductItem(
           title: 'Sony FX3 Cinema Camera Kit',
@@ -157,17 +180,10 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.solar_power_rounded,
         ),
       ];
-    } else if (cat.contains('mobility') || cat.contains('ride') || widget.server.title.contains('Transit')) {
+    } else if (cat.contains('mobility') ||
+        cat.contains('ride') ||
+        widget.server.title.contains('Transit')) {
       return [
-        const _ProductItem(
-          title: 'On-Demand Lake Basin EV Ride',
-          category: 'On-Demand',
-          description:
-              'Direct peer-to-peer zero-emission ride hailing with instant tokenized driver settlement.',
-          price: '\$0.85 / km',
-          tag: 'Instant Pickup',
-          icon: Icons.electric_car_rounded,
-        ),
         const _ProductItem(
           title: 'Daily Intercity Electric Shuttle Pass',
           category: 'Shuttle Pass',
@@ -187,7 +203,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.local_shipping_rounded,
         ),
       ];
-    } else if (cat.contains('market') || cat.contains('artisan') || widget.server.title.contains('Artisan')) {
+    } else if (cat.contains('market') ||
+        cat.contains('artisan') ||
+        widget.server.title.contains('Artisan')) {
       return [
         const _ProductItem(
           title: 'Single-Origin Volcanic Shade Coffee (1kg)',
@@ -278,7 +296,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -286,15 +306,22 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                     'Browse offerings provided by ${widget.server.title}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
-                  color: widget.server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  color: widget.server.primaryColor.withValues(
+                    alpha: isDark ? 0.2 : 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -327,12 +354,18 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                     },
                     labelStyle: GoogleFonts.inter(
                       fontSize: 11.5,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isSelected
                           ? Colors.white
-                          : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+                          : (isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary),
                     ),
-                    backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                    backgroundColor: isDark
+                        ? AppColors.darkSurface
+                        : AppColors.lightSurface,
                     selectedColor: widget.server.primaryColor,
                     showCheckmark: false,
                     shape: RoundedRectangleBorder(
@@ -340,10 +373,15 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                       side: BorderSide(
                         color: isSelected
                             ? Colors.transparent
-                            : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+                            : (isDark
+                                  ? AppColors.darkCardBorder
+                                  : AppColors.lightCardBorder),
                       ),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                   ),
                 );
               }).toList(),
@@ -368,7 +406,11 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, _ProductItem item, bool isDark) {
+  Widget _buildProductCard(
+    BuildContext context,
+    _ProductItem item,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -394,10 +436,16 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: widget.server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  color: widget.server.primaryColor.withValues(
+                    alpha: isDark ? 0.2 : 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(item.icon, size: 24, color: widget.server.primaryColor),
+                child: Icon(
+                  item.icon,
+                  size: 24,
+                  color: widget.server.primaryColor,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -413,17 +461,26 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 14.5,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColors.greenAccent.withValues(alpha: isDark ? 0.2 : 0.1),
+                            color: AppColors.greenAccent.withValues(
+                              alpha: isDark ? 0.2 : 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: AppColors.greenAccent.withValues(alpha: 0.3),
+                              color: AppColors.greenAccent.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                           ),
                           child: Text(
@@ -431,7 +488,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                             style: GoogleFonts.inter(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? const Color(0xFF86EFAC) : const Color(0xFF166534),
+                              color: isDark
+                                  ? const Color(0xFF86EFAC)
+                                  : const Color(0xFF166534),
                             ),
                           ),
                         ),
@@ -442,7 +501,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                       item.description,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
+                        color: isDark
+                            ? AppColors.textDarkSecondary
+                            : const Color(0xFF64748B),
                         height: 1.4,
                       ),
                     ),
@@ -452,7 +513,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(height: 1),
+          const Divider(height: 1, color: Colors.blueGrey),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -461,12 +522,14 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'PRICING',
+                    'PRICE',
                     style: GoogleFonts.inter(
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                   Text(
@@ -493,11 +556,19 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                   backgroundColor: widget.server.primaryColor,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  textStyle: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-                child: const Text('Acquire / Deploy'),
+                child: const Text('Book'),
               ),
             ],
           ),

@@ -15,17 +15,6 @@ class ChatsScreen extends ConsumerStatefulWidget {
 class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   final List<ChatModel> _chats = const [
     ChatModel(
-      id: 'chat_1',
-      userName: 'Atitlan Core Team',
-      userRole: 'Community Server',
-      lastMessage: 'Next micro-grant sprint starts this Friday at 10 AM UTC.',
-      time: '12:45 PM',
-      unreadCount: 2,
-      avatarColor: Color(0xFF059669),
-      isOnline: true,
-      avatarInitials: 'AC',
-    ),
-    ChatModel(
       id: 'chat_2',
       userName: 'Elena Rostova',
       userRole: 'Impact Bank Lead',

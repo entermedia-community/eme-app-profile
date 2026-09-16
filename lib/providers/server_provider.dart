@@ -4,18 +4,7 @@ import '../models/server_model.dart';
 
 final List<String> kServerCategories = [
   'All',
-  'Rental & Gear',
-  'Mobility & Rides',
-  'Marketplace & Goods',
-  'Eco Tourism',
-  'Finance',
-  'Artificial Intelligence',
-  'Social Services',
-  'Software Tools',
-  'Research',
-  'Education',
-  'Healthcare',
-  'Startup',
+  ...ServerCategory.values.map((c) => c.label),
 ];
 
 class ServerState {
@@ -44,7 +33,7 @@ class ServerState {
       // Category Filter
       final matchesCategory =
           selectedCategory == 'All' ||
-          item.category == selectedCategory ||
+          item.category.label == selectedCategory ||
           item.tags.contains(selectedCategory);
 
       if (!matchesCategory) return false;
@@ -93,188 +82,30 @@ class ServerNotifier extends StateNotifier<ServerState> {
     : super(
         const ServerState(
           servers: [
-            // ==========================================
-            // SERVERS (Joined by default for Profile)
-            // ==========================================
-            ServerModel(
-              id: 'srv_001',
-              title: 'Atitlan Exchange',
-              subtitle: 'STARTUPS FOR SOCIAL IMPACT',
-              description:
-                  'Providing exchange services for tourist and local Guatemalans around lake Atitlan.',
-              category: 'Startup',
-              tags: ['Social Services', 'Startup', 'Eco Tourism'],
-              iconData: Icons.eco_rounded,
-              primaryColor: Color(0xFF059669),
-              secondaryColor: Color(0xFFECFDF5),
-              memberCount: 840,
-              bannerSvgOrType: 'gear_eco',
-              isJoined: false, // Joined server for Profile page
-              location: 'Lake Atitlan, Guatemala',
-              servicePricing: 'Free / DAO Fee',
-              servicesOffered: [
-                'Currency Exchange',
-                'Local Merchant Settlement',
-                'Eco Tourism Passports',
-              ],
-              lastNotification:
-                  'Liquidity pool rebalanced & DAO settlement active',
-              lastNotificationTime: '2m ago',
-              statusColor: Color(0xFF10B981),
-            ),
-            ServerModel(
-              id: 'srv_002',
-              title: 'Atitlan Passports',
-              subtitle: 'IMPACT BANK',
-              description:
-                  'Decentralized impact identity and financial passporting system for global mobility.',
-              category: 'Finance',
-              tags: ['Startup', 'Finance'],
-              iconData: Icons.account_balance_outlined,
-              primaryColor: Color(0xFF0284C7),
-              secondaryColor: Color(0xFFF0F9FF),
-              memberCount: 1420,
-              bannerSvgOrType: 'impact_bank',
-              isJoined: false, // Joined server for Profile page
-              location: 'Global / Decentralized',
-              servicePricing: '0% Humanitarian Fee',
-              servicesOffered: [
-                'Biometric ID Issuance',
-                'Cross-border Verification',
-                'Micro-credit Escrow',
-              ],
-              lastNotification: 'Identity mesh verified (v2.4) • Zero alerts',
-              lastNotificationTime: '15m ago',
-              statusColor: Color(0xFF0284C7),
-            ),
-
-            // ==========================================
-            // SERVERS (Discoverable in EME World)
-            // ==========================================
-            ServerModel(
-              id: 'srv_004',
-              title: 'Neural Matrix Collective',
-              subtitle: 'DEEP TECH INFERENCE',
-              description:
-                  'Open collective intelligence compute nodes and decentralized agent coordination mesh.',
-              category: 'Artificial Intelligence',
-              tags: ['Artificial Intelligence', 'Software Tools', 'Research'],
-              iconData: Icons.auto_awesome_rounded,
-              primaryColor: Color(0xFF7C3AED),
-              secondaryColor: Color(0xFFF5F3FF),
-              memberCount: 2310,
-              bannerSvgOrType: 'ai_brain',
-              isJoined: false,
-              location: 'Global DePIN',
-              servicePricing: 'Pay-per-token / Staking',
-              servicesOffered: [
-                'Distributed Model Inference',
-                'Agent Swarm Hosting',
-                'Dataset Verification',
-              ],
-              lastNotification:
-                  'High compute load • 12 inference workers active',
-              lastNotificationTime: 'Just now',
-              statusColor: Color(0xFFF59E0B),
-            ),
-            ServerModel(
-              id: 'srv_005',
-              title: 'EcoTourism Sanctuary',
-              subtitle: 'CONSERVATION HUB',
-              description:
-                  'Community-driven biodiversity preservation, carbon sink auditing, and regenerative travel experiences.',
-              category: 'Eco Tourism',
-              tags: ['Eco Tourism', 'Social Services'],
-              iconData: Icons.forest_rounded,
-              primaryColor: Color(0xFF16A34A),
-              secondaryColor: Color(0xFFF0FDF4),
-              memberCount: 940,
-              bannerSvgOrType: 'tree_canopy',
-              isJoined: false,
-              location: 'Costa Rica & Amazonia',
-              servicePricing: 'Bio-credits & Bookings',
-              servicesOffered: [
-                'Eco-stay Booking',
-                'Regenerative Credits',
-                'Flora & Fauna Tracking',
-              ],
-              lastNotification: 'Carbon sink audit verified for Amazonia zone',
-              lastNotificationTime: '3h ago',
-              statusColor: Color(0xFF10B981),
-            ),
-            ServerModel(
-              id: 'srv_006',
-              title: 'Developer Nexus Tools',
-              subtitle: 'OPEN SOURCE FORGE',
-              description:
-                  'Modular developer utilities, smart contracts, zero-knowledge toolchains, and microservice mesh.',
-              category: 'Software Tools',
-              tags: ['Software Tools', 'Startup'],
-              iconData: Icons.terminal_rounded,
-              primaryColor: Color(0xFFEA580C),
-              secondaryColor: Color(0xFFFFF7ED),
-              memberCount: 1850,
-              bannerSvgOrType: 'dev_forge',
-              isJoined: false,
-              location: 'Global Open Source',
-              servicePricing: '100% Free & Open Source',
-              servicesOffered: [
-                'Smart Contract Templates',
-                'CI/CD Web3 Oracles',
-                'Decentralized Storage APIs',
-              ],
-              lastNotification: 'Oracle smart contract release v1.8 deployed',
-              lastNotificationTime: '5h ago',
-              statusColor: Color(0xFFEA580C),
-            ),
-            ServerModel(
-              id: 'srv_007',
-              title: 'Decentralized Health Mesh',
-              subtitle: 'TELEMEDICINE & CLINICAL REGISTRY',
-              description:
-                  'Privacy-preserving clinical trial data registry and peer-to-peer remote doctor consultations.',
-              category: 'Healthcare',
-              tags: ['Healthcare', 'Research', 'Social Services'],
-              iconData: Icons.health_and_safety_rounded,
-              primaryColor: Color(0xFFE11D48),
-              secondaryColor: Color(0xFFFFF1F2),
-              memberCount: 780,
-              bannerSvgOrType: 'health_mesh',
-              isJoined: false,
-              location: 'Geneva / Remote',
-              servicePricing: 'Tiered Medical Escrow',
-              servicesOffered: [
-                'Zero-Knowledge Health Records',
-                'Remote Triage Consultations',
-                'Drug Efficacy Registry',
-              ],
-              lastNotification: 'Zero-knowledge clinical batch finalized',
-              lastNotificationTime: 'Yesterday',
-              statusColor: Color(0xFFE11D48),
-            ),
             ServerModel(
               id: 'srv_008',
-              title: 'PeerSpace & Gear Rentals',
-              subtitle: 'PEER-TO-PEER ASSET RENTING',
+              title: 'Lakeview Stays & House Rentals',
+              subtitle: 'HOUSE RENTALS',
               description:
-                  'Verified equipment, studio workspace, tool libraries, and eco-vehicle rentals secured by decentralized escrow.',
-              category: 'Rental & Gear',
+                  'Verified off-grid eco-villas, lakefront sanctuaries, private docks, and long-term stays secured by decentralized escrow.',
+              category: ServerCategory.rentalAndGear,
               tags: ['Rental & Gear', 'Eco Tourism', 'Startup'],
-              iconData: Icons.key_rounded,
+              iconData: Icons.villa_rounded,
               primaryColor: Color(0xFF0D9488),
               secondaryColor: Color(0xFFCCFBF1),
               memberCount: 530,
               bannerSvgOrType: 'gear_eco',
               isJoined: true,
-              location: 'Pan-Regional Hubs & Local Lockers',
-              servicePricing: 'Hourly & Daily Escrow',
+              location: 'Lake Atitlan Basin & Highlands',
+              servicePricing: 'Nightly & Weekly Escrow',
               servicesOffered: [
-                'Cinema & AV Gear Rental',
-                'Co-Working Studio Booking',
-                'Solar Power Tool Lending',
+                'Lakefront Solar Eco-Villas',
+                'Cliffside Artist Retreats',
+                'Private Boat Dock Access',
               ],
-              lastNotification: 'Cinema camera kit returned & inspected',
-              lastNotificationTime: '45m ago',
+              lastNotification:
+                  'Lakeview Solar Eco-Villa added for weekend booking',
+              lastNotificationTime: '15m ago',
               statusColor: Color(0xFF0D9488),
             ),
             ServerModel(
@@ -283,7 +114,7 @@ class ServerNotifier extends StateNotifier<ServerState> {
               subtitle: 'ZERO-EMISSION RIDESHARE',
               description:
                   'Community-owned ride sharing, electric shuttle routes, and localized micro-transit with zero intermediary platform fees.',
-              category: 'Mobility & Rides',
+              category: ServerCategory.mobilityAndRides,
               tags: ['Mobility & Rides', 'Eco Tourism', 'Social Services'],
               iconData: Icons.electric_car_rounded,
               primaryColor: Color(0xFF0284C7),
@@ -291,7 +122,7 @@ class ServerNotifier extends StateNotifier<ServerState> {
               memberCount: 1120,
               bannerSvgOrType: 'dev_forge',
               isJoined: true,
-              location: 'Atitlan & Guatemala City Corridor',
+              location: 'Guatemala City Corridor',
               servicePricing: 'Per-Km Tokenized Fare',
               servicesOffered: [
                 'On-Demand EV Rides',
@@ -308,7 +139,7 @@ class ServerNotifier extends StateNotifier<ServerState> {
               subtitle: 'PRODUCER-DIRECT COMMERCE',
               description:
                   'Direct-to-consumer marketplace for single-origin shade coffee, handwoven indigenous textiles, and organic bio-goods.',
-              category: 'Marketplace & Goods',
+              category: ServerCategory.marketplaceAndGoods,
               tags: ['Marketplace & Goods', 'Social Services', 'Startup'],
               iconData: Icons.storefront_rounded,
               primaryColor: Color(0xFFD97706),

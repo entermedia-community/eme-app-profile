@@ -21,7 +21,9 @@ class IndividualCard extends ConsumerWidget {
       specialistTitle: specialist.specialistTitle as String?,
       subtitle: specialist.subtitle as String?,
       description: specialist.description as String,
-      category: specialist.category as String,
+      category: specialist.category is ProfileCategory
+          ? specialist.category as ProfileCategory
+          : ProfileCategory.fromString(specialist.category.toString()),
       tags: (specialist.tags as List<dynamic>).cast<String>(),
       iconData: specialist.iconData as IconData,
       avatarUrl: specialist.avatarUrl as String?,

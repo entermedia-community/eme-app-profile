@@ -13,15 +13,6 @@ class FilesScreen extends StatefulWidget {
 class _FilesScreenState extends State<FilesScreen> {
   final List<FileItemModel> _files = const [
     FileItemModel(
-      id: 'f_1',
-      name: 'Atitlan_Ecosystem_Architecture.pdf',
-      category: 'Documents',
-      size: '4.8 MB',
-      updatedAt: '2 hours ago',
-      icon: Icons.picture_as_pdf_rounded,
-      color: Color(0xFFEF4444),
-    ),
-    FileItemModel(
       id: 'f_2',
       name: 'Impact_Tokenomics_v2.xlsx',
       category: 'Spreadsheet',

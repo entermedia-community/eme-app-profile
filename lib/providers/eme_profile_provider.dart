@@ -4,15 +4,7 @@ import '../models/eme_profile_model.dart';
 
 final List<String> kEmeProfileCategories = [
   'All',
-  'Eco Tourism',
-  'Finance',
-  'Artificial Intelligence',
-  'Social Services',
-  'Software Tools',
-  'Research',
-  'Education',
-  'Healthcare',
-  'Startup',
+  ...ProfileCategory.values.map((c) => c.label),
 ];
 
 class EmeProfileState {
@@ -33,7 +25,7 @@ class EmeProfileState {
       // Category Filter
       final matchesCategory =
           selectedCategory == 'All' ||
-          item.category == selectedCategory ||
+          item.category.label == selectedCategory ||
           item.tags.contains(selectedCategory);
 
       if (!matchesCategory) return false;
@@ -92,7 +84,7 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
               subtitle: 'SENIOR ECOLOGICAL SCIENTIST',
               description:
                   'Specializing in decentralized freshwater telemetry, watershed validation, and verifiable biodiversity impact certificates.',
-              category: 'Eco Tourism',
+              category: ProfileCategory.ecoTourism,
               tags: ['Eco Tourism', 'Research', 'Social Services'],
               iconData: Icons.water_drop_rounded,
               avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
@@ -117,7 +109,7 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
               subtitle: 'EX-STANFORD AI LAB',
               description:
                   'Builds decentralized multi-agent workflows, model quantization pipelines, and privacy-preserving inference nodes.',
-              category: 'Artificial Intelligence',
+              category: ProfileCategory.artificialIntelligence,
               tags: ['Artificial Intelligence', 'Software Tools'],
               iconData: Icons.psychology_rounded,
               avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -142,7 +134,7 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
               subtitle: 'IMPACT PROTOCOL STRATEGIST',
               description:
                   'Advising communities on micro-credit token design, impact bonds, and decentralized treasury management.',
-              category: 'Finance',
+              category: ProfileCategory.finance,
               tags: ['Finance', 'Startup', 'Social Services'],
               iconData: Icons.account_balance_wallet_rounded,
               avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
@@ -167,7 +159,7 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
               subtitle: 'ZK-SNARK & CONSENSUS AUDITOR',
               description:
                   'Formal verification and vulnerability audits for cross-chain bridges, token contracts, and zero-knowledge identity protocols.',
-              category: 'Software Tools',
+              category: ProfileCategory.softwareTools,
               tags: ['Software Tools', 'Finance'],
               iconData: Icons.security_rounded,
               avatarUrl: 'https://randomuser.me/api/portraits/women/33.jpg',
@@ -183,31 +175,6 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
                 'Solidity & Rust Contract Audits',
                 'ZK Circuit Security Verification',
                 'Economic Attack Simulation',
-              ],
-            ),
-            EmeProfileModel(
-              id: 'ind_006',
-              name: 'Prof. Kwame Mensah',
-              specialistTitle: 'Decentralized Curriculum Architect',
-              subtitle: 'GLOBAL OPEN PEDAGOGY',
-              description:
-                  'Designs peer-to-peer educational syllabi, verifiable credentialing schemas, and open-access STEM modules.',
-              category: 'Education',
-              tags: ['Education', 'Social Services', 'Research'],
-              iconData: Icons.school_rounded,
-              avatarUrl: 'https://randomuser.me/api/portraits/men/22.jpg',
-              primaryColor: Color(0xFFEC4899),
-              secondaryColor: Color(0xFFFDF2F8),
-              memberCount: 54,
-              rating: 4.9,
-              reviewsCount: 54,
-              servicePricing: r'$40/hr • Pro Bono',
-              location: 'Accra, Ghana',
-              isVerified: true,
-              servicesOffered: [
-                'Verifiable Credential Schema Design',
-                'Peer-to-Peer Learning Workflows',
-                'Open Textbook Curriculum',
               ],
             ),
           ],
