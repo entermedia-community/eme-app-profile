@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/eme_profile_model.dart';
+import '../services/api_service.dart';
+import 'api_providers.dart';
 
 final List<String> kEmeProfileCategories = [
   'All',
@@ -11,11 +13,15 @@ class EmeProfileState {
   final List<EmeProfileModel> profiles;
   final String selectedCategory;
   final String searchQuery;
+  final bool isLoading;
+  final String? error;
 
   const EmeProfileState({
     required this.profiles,
     this.selectedCategory = 'All',
     this.searchQuery = '',
+    this.isLoading = false,
+    this.error,
   });
 
   int get totalCount => profiles.length;
@@ -63,18 +69,24 @@ class EmeProfileState {
     List<EmeProfileModel>? profiles,
     String? selectedCategory,
     String? searchQuery,
+    bool? isLoading,
+    String? error,
   }) {
     return EmeProfileState(
       profiles: profiles ?? this.profiles,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       searchQuery: searchQuery ?? this.searchQuery,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
     );
   }
 }
 
 class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
-  EmeProfileNotifier()
-    : super(
+  final IApiService? apiService;
+
+  EmeProfileNotifier({this.apiService})
+      : super(
         const EmeProfileState(
           profiles: [
             EmeProfileModel(
@@ -181,6 +193,17 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
         ),
       );
 
+  Future<void> loadProfilesFromApi() async {
+    if (apiService == null) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final fetched = await apiService!.fetchSpecialistProfiles();
+      state = state.copyWith(profiles: fetched, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   void setCategory(String category) {
     state = state.copyWith(selectedCategory: category);
   }
@@ -196,5 +219,6 @@ class EmeProfileNotifier extends StateNotifier<EmeProfileState> {
 
 final emeProfileProvider =
     StateNotifierProvider<EmeProfileNotifier, EmeProfileState>((ref) {
-      return EmeProfileNotifier();
+      final api = ref.watch(apiServiceProvider);
+      return EmeProfileNotifier(apiService: api);
     });

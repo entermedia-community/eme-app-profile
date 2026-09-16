@@ -1,9 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/profile_model.dart';
+import '../services/api_service.dart';
+import 'api_providers.dart';
 
 class ProfileNotifier extends StateNotifier<ProfileModel> {
-  ProfileNotifier()
-    : super(
+  final IApiService? apiService;
+
+  ProfileNotifier({this.apiService})
+      : super(
         const ProfileModel(
           id: 'usr_001',
           name: 'Christopher.B',
@@ -16,6 +20,16 @@ class ProfileNotifier extends StateNotifier<ProfileModel> {
           totalConnections: 248,
         ),
       );
+
+  Future<void> loadProfileFromApi({String? userId}) async {
+    if (apiService == null) return;
+    try {
+      final fetched = await apiService!.fetchUserProfile(userId: userId);
+      state = fetched;
+    } catch (_) {
+      // Keep current state on failure
+    }
+  }
 
   void updateProfile({
     String? name,
@@ -39,5 +53,6 @@ class ProfileNotifier extends StateNotifier<ProfileModel> {
 final profileProvider = StateNotifierProvider<ProfileNotifier, ProfileModel>((
   ref,
 ) {
-  return ProfileNotifier();
+  final api = ref.watch(apiServiceProvider);
+  return ProfileNotifier(apiService: api);
 });

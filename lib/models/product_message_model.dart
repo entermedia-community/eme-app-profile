@@ -290,4 +290,108 @@ class ProductMessageModel {
       tags: ['Eco Commute', 'Helmet Included', 'QR Unlock'],
     ),
   ];
+
+  factory ProductMessageModel.fromJson(Map<String, dynamic> json) {
+    ProductType parsedType = ProductType.ecommerce;
+    final rawType = json['type'] as String? ?? 'ecommerce';
+    for (final t in ProductType.values) {
+      if (t.name.toLowerCase() == rawType.toLowerCase()) {
+        parsedType = t;
+        break;
+      }
+    }
+
+    RentalCategory? parsedRentalCategory;
+    if (json['rentalCategory'] != null) {
+      final rawCat = json['rentalCategory'] as String;
+      for (final c in RentalCategory.values) {
+        if (c.name.toLowerCase() == rawCat.toLowerCase()) {
+          parsedRentalCategory = c;
+          break;
+        }
+      }
+    }
+
+    return ProductMessageModel(
+      id: json['id'] as String? ?? '',
+      type: parsedType,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      currency: json['currency'] as String? ?? '\$',
+      priceUnit: json['priceUnit'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      iconData: json['iconCodePoint'] != null
+          // ignore: non_const_argument_for_const_parameter
+          ? IconData(json['iconCodePoint'] as int, fontFamily: 'MaterialIcons')
+          : null,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.9,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      sellerOrHostName: json['sellerOrHostName'] as String? ?? '',
+      sellerOrHostRole: json['sellerOrHostRole'] as String? ?? '',
+      location: json['location'] as String?,
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      metadata: json['metadata'] as Map<String, dynamic>? ?? const {},
+      origin: json['origin'] as String?,
+      destination: json['destination'] as String?,
+      departureTime: json['departureTime'] as String?,
+      availableSeats: (json['availableSeats'] as num?)?.toInt(),
+      totalSeats: (json['totalSeats'] as num?)?.toInt(),
+      vehicleInfo: json['vehicleInfo'] as String?,
+      driverName: json['driverName'] as String?,
+      driverRating: (json['driverRating'] as num?)?.toDouble(),
+      rentalCategory: parsedRentalCategory,
+      amenitiesOrSpecs: (json['amenitiesOrSpecs'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      depositInfo: json['depositInfo'] as String?,
+      availability: json['availability'] as String?,
+      inStock: json['inStock'] as bool? ?? true,
+      stockQuantity: (json['stockQuantity'] as num?)?.toInt(),
+      shippingOrPickupInfo: json['shippingOrPickupInfo'] as String?,
+      brandOrOrigin: json['brandOrOrigin'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.name,
+      'title': title,
+      'description': description,
+      'price': price,
+      'currency': currency,
+      if (priceUnit != null) 'priceUnit': priceUnit,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+      if (iconData != null) 'iconCodePoint': iconData!.codePoint,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'sellerOrHostName': sellerOrHostName,
+      'sellerOrHostRole': sellerOrHostRole,
+      if (location != null) 'location': location,
+      'tags': tags,
+      'metadata': metadata,
+      if (origin != null) 'origin': origin,
+      if (destination != null) 'destination': destination,
+      if (departureTime != null) 'departureTime': departureTime,
+      if (availableSeats != null) 'availableSeats': availableSeats,
+      if (totalSeats != null) 'totalSeats': totalSeats,
+      if (vehicleInfo != null) 'vehicleInfo': vehicleInfo,
+      if (driverName != null) 'driverName': driverName,
+      if (driverRating != null) 'driverRating': driverRating,
+      if (rentalCategory != null) 'rentalCategory': rentalCategory!.name,
+      'amenitiesOrSpecs': amenitiesOrSpecs,
+      if (depositInfo != null) 'depositInfo': depositInfo,
+      if (availability != null) 'availability': availability,
+      'inStock': inStock,
+      if (stockQuantity != null) 'stockQuantity': stockQuantity,
+      if (shippingOrPickupInfo != null)
+        'shippingOrPickupInfo': shippingOrPickupInfo,
+      if (brandOrOrigin != null) 'brandOrOrigin': brandOrOrigin,
+    };
+  }
 }

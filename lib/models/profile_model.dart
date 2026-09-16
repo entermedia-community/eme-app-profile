@@ -44,4 +44,35 @@ class ProfileModel {
       totalConnections: totalConnections ?? this.totalConnections,
     );
   }
+
+  factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    return ProfileModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      role: json['role'] as String? ?? '',
+      bio: json['bio'] as String? ?? '',
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      avatarUrl: json['avatarUrl'] as String?,
+      portfolioLabel: json['portfolioLabel'] as String? ?? 'PORTFOLIO',
+      totalServers: (json['totalServers'] as num?)?.toInt() ?? 8,
+      totalConnections: (json['totalConnections'] as num?)?.toInt() ?? 142,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'role': role,
+      'bio': bio,
+      'tags': tags,
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      'portfolioLabel': portfolioLabel,
+      'totalServers': totalServers,
+      'totalConnections': totalConnections,
+    };
+  }
 }

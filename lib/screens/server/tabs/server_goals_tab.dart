@@ -1,47 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/server_model.dart';
+import '../../../models/models.dart';
 import '../../../theme/app_colors.dart';
 
-class _GoalTaskItem {
-  final String id;
-  final String title;
-  final String? assignedRole;
-  final String addedBy;
-  final String addedAgo;
-  final bool isResolved;
-
-  const _GoalTaskItem({
-    required this.id,
-    required this.title,
-    this.assignedRole,
-    required this.addedBy,
-    required this.addedAgo,
-    this.isResolved = false,
-  });
-}
-
-class _GoalItem {
-  final String id;
-  final String title;
-  final String dueDate;
-  final String createdAgo;
-  final String createdBy;
-  final String ticketType;
-  final List<_GoalTaskItem> tasks;
-  final bool isResolved;
-
-  const _GoalItem({
-    required this.id,
-    required this.title,
-    required this.dueDate,
-    required this.createdAgo,
-    required this.createdBy,
-    this.ticketType = 'Chat',
-    required this.tasks,
-    this.isResolved = false,
-  });
-}
+typedef _GoalTaskItem = GoalTaskItemModel;
+typedef _GoalItem = GoalItemModel;
 
 class ServerGoalsTab extends StatelessWidget {
   final ServerModel server;

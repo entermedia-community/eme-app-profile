@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/server_model.dart';
+import '../services/api_service.dart';
+import 'api_providers.dart';
 
 final List<String> kServerCategories = [
   'All',
@@ -11,11 +13,15 @@ class ServerState {
   final List<ServerModel> servers;
   final String selectedCategory;
   final String searchQuery;
+  final bool isLoading;
+  final String? error;
 
   const ServerState({
     required this.servers,
     this.selectedCategory = 'All',
     this.searchQuery = '',
+    this.isLoading = false,
+    this.error,
   });
 
   /// Servers that the user has already joined (for the Profile page)
@@ -68,18 +74,24 @@ class ServerState {
     List<ServerModel>? servers,
     String? selectedCategory,
     String? searchQuery,
+    bool? isLoading,
+    String? error,
   }) {
     return ServerState(
       servers: servers ?? this.servers,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       searchQuery: searchQuery ?? this.searchQuery,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
     );
   }
 }
 
 class ServerNotifier extends StateNotifier<ServerState> {
-  ServerNotifier()
-    : super(
+  final IApiService? apiService;
+
+  ServerNotifier({this.apiService})
+      : super(
         const ServerState(
           servers: [
             ServerModel(
@@ -162,6 +174,17 @@ class ServerNotifier extends StateNotifier<ServerState> {
         ),
       );
 
+  Future<void> loadServersFromApi() async {
+    if (apiService == null) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final fetched = await apiService!.fetchServers();
+      state = state.copyWith(servers: fetched, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   void setCategory(String category) {
     state = state.copyWith(selectedCategory: category);
   }
@@ -188,5 +211,6 @@ class ServerNotifier extends StateNotifier<ServerState> {
 final serverProvider = StateNotifierProvider<ServerNotifier, ServerState>((
   ref,
 ) {
-  return ServerNotifier();
+  final api = ref.watch(apiServiceProvider);
+  return ServerNotifier(apiService: api);
 });

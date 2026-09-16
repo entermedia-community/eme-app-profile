@@ -127,4 +127,74 @@ class ServerModel {
       statusColor: statusColor ?? this.statusColor,
     );
   }
+
+  factory ServerModel.fromJson(Map<String, dynamic> json) {
+    return ServerModel(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      subtitle: json['subtitle'] as String?,
+      description: json['description'] as String? ?? '',
+      category: ServerCategory.fromString(json['category'] as String? ?? ''),
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      iconData: json['iconCodePoint'] != null
+          // ignore: non_const_argument_for_const_parameter
+          ? IconData(json['iconCodePoint'] as int, fontFamily: 'MaterialIcons')
+          : Icons.hub_rounded,
+      primaryColor: json['primaryColor'] != null
+          ? Color(json['primaryColor'] as int)
+          : const Color(0xFF2563EB),
+      secondaryColor: json['secondaryColor'] != null
+          ? Color(json['secondaryColor'] as int)
+          : const Color(0xFFEFF6FF),
+      memberCount: (json['memberCount'] as num?)?.toInt() ?? 120,
+      isJoined: json['isJoined'] as bool? ?? false,
+      bannerSvgOrType: json['bannerSvgOrType'] as String?,
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviewsCount: (json['reviewsCount'] as num?)?.toInt(),
+      servicePricing: json['servicePricing'] as String?,
+      location: json['location'] as String?,
+      isVerified: json['isVerified'] as bool? ?? true,
+      servicesOffered: (json['servicesOffered'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      avatarUrl: json['avatarUrl'] as String?,
+      lastNotification: json['lastNotification'] as String?,
+      lastNotificationTime: json['lastNotificationTime'] as String?,
+      statusColor: json['statusColor'] != null
+          ? Color(json['statusColor'] as int)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      if (subtitle != null) 'subtitle': subtitle,
+      'description': description,
+      'category': category.name,
+      'tags': tags,
+      'iconCodePoint': iconData.codePoint,
+      'primaryColor': primaryColor.toARGB32(),
+      'secondaryColor': secondaryColor.toARGB32(),
+      'memberCount': memberCount,
+      'isJoined': isJoined,
+      if (bannerSvgOrType != null) 'bannerSvgOrType': bannerSvgOrType,
+      if (rating != null) 'rating': rating,
+      if (reviewsCount != null) 'reviewsCount': reviewsCount,
+      if (servicePricing != null) 'servicePricing': servicePricing,
+      if (location != null) 'location': location,
+      'isVerified': isVerified,
+      'servicesOffered': servicesOffered,
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      if (lastNotification != null) 'lastNotification': lastNotification,
+      if (lastNotificationTime != null)
+        'lastNotificationTime': lastNotificationTime,
+      if (statusColor != null) 'statusColor': statusColor!.toARGB32(),
+    };
+  }
 }

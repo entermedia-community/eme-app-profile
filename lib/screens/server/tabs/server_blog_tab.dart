@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/server_model.dart';
+import '../../../models/models.dart';
 import '../../../theme/app_colors.dart';
 
-class _BlogPost {
-  final String title;
-  final String author;
-  final String date;
-  final String readTime;
-  final String excerpt;
-  final String tag;
-  final int likes;
-
-  const _BlogPost({
-    required this.title,
-    required this.author,
-    required this.date,
-    required this.readTime,
-    required this.excerpt,
-    required this.tag,
-    required this.likes,
-  });
-}
+typedef _BlogPost = BlogPostModel;
 
 class ServerBlogTab extends StatelessWidget {
   final ServerModel server;
@@ -34,6 +16,7 @@ class ServerBlogTab extends StatelessWidget {
 
     final posts = [
       _BlogPost(
+        id: 'post_01',
         title: 'Decentralized Collective Intelligence: State of the Node in 2026',
         author: 'Lead Architect',
         date: 'Sep 14, 2026',
@@ -44,6 +27,7 @@ class ServerBlogTab extends StatelessWidget {
         likes: 128,
       ),
       _BlogPost(
+        id: 'post_02',
         title: 'Community Roadmap Update: What to Expect in Q4',
         author: 'Ecosystem Core',
         date: 'Sep 08, 2026',
@@ -54,6 +38,7 @@ class ServerBlogTab extends StatelessWidget {
         likes: 94,
       ),
       _BlogPost(
+        id: 'post_03',
         title: 'Zero-Knowledge Privacy and Humanitarian Impact Passports',
         author: 'Security Research Group',
         date: 'Aug 29, 2026',

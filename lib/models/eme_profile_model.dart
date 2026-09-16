@@ -112,4 +112,63 @@ class EmeProfileModel {
       servicesOffered: servicesOffered ?? this.servicesOffered,
     );
   }
+
+  factory EmeProfileModel.fromJson(Map<String, dynamic> json) {
+    return EmeProfileModel(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      specialistTitle: json['specialistTitle'] as String?,
+      subtitle: json['subtitle'] as String?,
+      description: json['description'] as String? ?? '',
+      category: ProfileCategory.fromString(json['category'] as String? ?? ''),
+      tags: (json['tags'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+      iconData: json['iconCodePoint'] != null
+          // ignore: non_const_argument_for_const_parameter
+          ? IconData(json['iconCodePoint'] as int, fontFamily: 'MaterialIcons')
+          : Icons.person_rounded,
+      avatarUrl: json['avatarUrl'] as String?,
+      primaryColor: json['primaryColor'] != null
+          ? Color(json['primaryColor'] as int)
+          : const Color(0xFF2563EB),
+      secondaryColor: json['secondaryColor'] != null
+          ? Color(json['secondaryColor'] as int)
+          : const Color(0xFFEFF6FF),
+      memberCount: (json['memberCount'] as num?)?.toInt() ?? 50,
+      rating: (json['rating'] as num?)?.toDouble(),
+      reviewsCount: (json['reviewsCount'] as num?)?.toInt(),
+      servicePricing: json['servicePricing'] as String?,
+      location: json['location'] as String?,
+      isVerified: json['isVerified'] as bool? ?? true,
+      servicesOffered: (json['servicesOffered'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      if (specialistTitle != null) 'specialistTitle': specialistTitle,
+      if (subtitle != null) 'subtitle': subtitle,
+      'description': description,
+      'category': category.name,
+      'tags': tags,
+      'iconCodePoint': iconData.codePoint,
+      if (avatarUrl != null) 'avatarUrl': avatarUrl,
+      'primaryColor': primaryColor.toARGB32(),
+      'secondaryColor': secondaryColor.toARGB32(),
+      'memberCount': memberCount,
+      if (rating != null) 'rating': rating,
+      if (reviewsCount != null) 'reviewsCount': reviewsCount,
+      if (servicePricing != null) 'servicePricing': servicePricing,
+      if (location != null) 'location': location,
+      'isVerified': isVerified,
+      'servicesOffered': servicesOffered,
+    };
+  }
 }

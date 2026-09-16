@@ -1,23 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/server_model.dart';
+import '../../../models/models.dart';
 import '../../../theme/app_colors.dart';
 
-class _TransactionItem {
-  final String title;
-  final String date;
-  final String amount;
-  final bool isCredit;
-  final String category;
-
-  const _TransactionItem({
-    required this.title,
-    required this.date,
-    required this.amount,
-    required this.isCredit,
-    required this.category,
-  });
-}
+typedef _TransactionItem = TransactionItemModel;
 
 class ServerFinanceTab extends StatelessWidget {
   final ServerModel server;
@@ -30,6 +16,7 @@ class ServerFinanceTab extends StatelessWidget {
 
     final transactions = [
       const _TransactionItem(
+        id: 'tx_01',
         title: 'Community DAO Ecosystem Grant',
         date: 'Today, 2:15 PM',
         amount: '+ \$5,000.00',
@@ -37,6 +24,7 @@ class ServerFinanceTab extends StatelessWidget {
         category: 'Grant',
       ),
       const _TransactionItem(
+        id: 'tx_02',
         title: 'Compute Cluster Hosting Node #04',
         date: 'Yesterday',
         amount: '- \$240.00',
@@ -44,6 +32,7 @@ class ServerFinanceTab extends StatelessWidget {
         category: 'Infrastructure',
       ),
       const _TransactionItem(
+        id: 'tx_03',
         title: 'Biometric Verification Bounty Payout',
         date: 'Sep 12, 2026',
         amount: '- \$1,200.00',
@@ -51,6 +40,7 @@ class ServerFinanceTab extends StatelessWidget {
         category: 'Bounty',
       ),
       const _TransactionItem(
+        id: 'tx_04',
         title: 'Cross-Border FX Micro-Settlement Fee Pool',
         date: 'Sep 10, 2026',
         amount: '+ \$890.50',
