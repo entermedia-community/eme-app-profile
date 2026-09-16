@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/eme_profile_model.dart';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'eme_profile_card.dart';
 
 /// Legacy alias for EmeProfileCard

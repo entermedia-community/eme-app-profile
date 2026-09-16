@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../models/product_message_model.dart';
-import '../../../models/server_model.dart';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/chat/product_message_card.dart';
 import '../../../widgets/chat/send_product_sheet.dart';

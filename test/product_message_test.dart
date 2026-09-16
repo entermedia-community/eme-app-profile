@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eme_world/models/product_message_model.dart';
-import 'package:eme_world/models/server_model.dart';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/server/tabs/server_chat_tab.dart';
 import 'package:eme_world/widgets/chat/product_detail_modal.dart';
 import 'package:eme_world/widgets/chat/product_message_card.dart';

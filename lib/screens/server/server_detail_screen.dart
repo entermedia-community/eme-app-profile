@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/server_model.dart';
-import '../../providers/server_provider.dart';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
 import 'tabs/server_blog_tab.dart';
