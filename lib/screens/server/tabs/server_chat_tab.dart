@@ -15,6 +15,7 @@ class _ServerMessage {
   final bool isMe;
   final Color badgeColor;
   final ProductMessageModel? product;
+  final MessageRenderType messageRenderType;
 
   const _ServerMessage({
     required this.id,
@@ -26,7 +27,11 @@ class _ServerMessage {
     required this.isMe,
     required this.badgeColor,
     this.product,
+    this.messageRenderType = MessageRenderType.text,
   });
+
+  MessageRenderType get renderType =>
+      product != null ? MessageRenderType.product : messageRenderType;
 }
 
 class ServerChatTab extends StatefulWidget {
@@ -453,7 +458,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
                 ),
               ],
             ),
-            if (msg.product != null) ...[
+            if (msg.renderType.isProduct && msg.product != null) ...[
               ProductMessageCard(product: msg.product!, isMe: true),
             ],
           ],
@@ -573,7 +578,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
                     ),
                   ),
                 ),
-                if (msg.product != null) ...[
+                if (msg.renderType.isProduct && msg.product != null) ...[
                   ProductMessageCard(product: msg.product!, isMe: false),
                 ],
               ],
@@ -598,6 +603,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           isMe: true,
           badgeColor: AppColors.primary,
           product: product,
+          messageRenderType: MessageRenderType.product,
         ),
       );
     });

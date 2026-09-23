@@ -7,22 +7,6 @@ import '../../widgets/chat/send_product_sheet.dart';
 import 'chat_info_screen.dart';
 import 'widgets/qr_connect_modal.dart';
 
-class _MessageItem {
-  final String id;
-  final String text;
-  final String time;
-  final bool isMe;
-  final ProductMessageModel? product;
-
-  const _MessageItem({
-    required this.id,
-    required this.text,
-    required this.time,
-    required this.isMe,
-    this.product,
-  });
-}
-
 class ChatDetailScreen extends StatefulWidget {
   final ChatModel chat;
 
@@ -60,29 +44,47 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   bool _isSearchOpen = false;
   String _searchQuery = '';
-  late List<_MessageItem> _messages;
+  late List<ChatMessage> _messages;
 
   @override
   void initState() {
     super.initState();
     _messages = [
-      _MessageItem(
-        id: '1',
-        text: 'Hello! Welcome to the ${widget.chat.userName} channel.',
-        time: '10:00 AM',
-        isMe: false,
+      ChatMessage(
+        messageId: '1',
+        channel: widget.chat.id,
+        userId: widget.chat.id,
+        message: 'Hello! Welcome to the ${widget.chat.userName} channel.',
+        messageType: 'welcome',
+        agentContextValues: AgentContextValues(
+          messageRenderType: MessageRenderType.welcome,
+          componentContent: 'Hello! Welcome to the ${widget.chat.userName} channel.',
+        ),
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
       ),
-      _MessageItem(
-        id: '2',
-        text: widget.chat.lastMessage,
-        time: widget.chat.time,
-        isMe: false,
+      ChatMessage(
+        messageId: '2',
+        channel: widget.chat.id,
+        userId: widget.chat.id,
+        message: widget.chat.lastMessage,
+        messageType: 'message',
+        agentContextValues: AgentContextValues(
+          messageRenderType: MessageRenderType.text,
+          componentContent: widget.chat.lastMessage,
+        ),
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
       ),
-      const _MessageItem(
-        id: '3',
-        text: 'Great, thanks for the update! Reviewing the details now.',
-        time: 'Just now',
-        isMe: true,
+      ChatMessage(
+        messageId: '3',
+        channel: widget.chat.id,
+        userId: 'user',
+        message: 'Great, thanks for the update! Reviewing the details now.',
+        messageType: 'message',
+        agentContextValues: AgentContextValues(
+          messageRenderType: MessageRenderType.text,
+          componentContent: 'Great, thanks for the update! Reviewing the details now.',
+        ),
+        createdAt: DateTime.now(),
       ),
     ];
   }
@@ -95,17 +97,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.dispose();
   }
 
+  String _formatTime(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 2) return 'Just now';
+    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
+    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final period = date.hour >= 12 ? 'PM' : 'AM';
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$hour:$minute $period';
+  }
+
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
     setState(() {
       _messages.add(
-        _MessageItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: text,
-          time: 'Just now',
-          isMe: true,
+        ChatMessage(
+          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          channel: widget.chat.id,
+          userId: 'user',
+          message: text,
+          messageType: 'message',
+          agentContextValues: AgentContextValues(
+            messageRenderType: MessageRenderType.text,
+            componentContent: text,
+          ),
+          createdAt: DateTime.now(),
         ),
       );
       _messageController.clear();
@@ -125,12 +143,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendProduct(ProductMessageModel product) {
     setState(() {
       _messages.add(
-        _MessageItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          text: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
-          time: 'Just now',
-          isMe: true,
+        ChatMessage(
+          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          channel: widget.chat.id,
+          userId: 'user',
+          message: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          messageType: 'product',
           product: product,
+          agentContextValues: AgentContextValues(
+            messageRenderType: MessageRenderType.product,
+            product: product,
+            componentContent: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          ),
+          createdAt: DateTime.now(),
         ),
       );
     });
@@ -460,8 +485,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildMessageBubble(_MessageItem message, bool isDark) {
-    final isMe = message.isMe;
+  Widget _buildMessageBubble(ChatMessage message, bool isDark) {
+    final isMe = message.isUser;
+    final timeStr = _formatTime(message.createdAt);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -488,82 +514,441 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 const SizedBox(width: 8),
               ],
               Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: isMe
-                        ? AppColors.primary
-                        : (isDark ? AppColors.darkSurface : Colors.white),
-                    borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(18),
-                      topRight: const Radius.circular(18),
-                      bottomLeft: Radius.circular(isMe ? 18 : 4),
-                      bottomRight: Radius.circular(isMe ? 4 : 18),
-                    ),
-                    border: isMe
-                        ? null
-                        : Border.all(
-                            color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
-                          ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        message.text,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: isMe
-                              ? Colors.white
-                              : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            message.time,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: isMe
-                                  ? Colors.white.withValues(alpha: 0.75)
-                                  : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
-                            ),
-                          ),
-                          if (isMe) ...[
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Icons.done_all_rounded,
-                              size: 13,
-                              color: Colors.white70,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                child: _buildMessageContent(message, isMe, timeStr, isDark),
               ),
             ],
           ),
-          if (message.product != null) ...[
+          if (message.messageRenderType.isProduct && message.product != null) ...[
             Padding(
-              padding: EdgeInsets.only(left: isMe ? 0 : 36),
+              padding: EdgeInsets.only(left: isMe ? 0 : 36, top: 4),
               child: ProductMessageCard(
                 product: message.product!,
                 isMe: isMe,
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageContent(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    switch (message.messageRenderType) {
+      case MessageRenderType.question:
+        return _buildQuestionCard(message, isMe, timeStr, isDark);
+      case MessageRenderType.progressupdate:
+        return _buildProgressUpdateCard(message, isMe, timeStr, isDark);
+      case MessageRenderType.asset:
+        return _buildAssetCard(message, isMe, timeStr, isDark);
+      case MessageRenderType.welcome:
+        return _buildWelcomeBubble(message, isMe, timeStr, isDark);
+      case MessageRenderType.product:
+      case MessageRenderType.text:
+      case MessageRenderType.answer:
+      case MessageRenderType.answereval:
+      case MessageRenderType.usercomment:
+      case MessageRenderType.agentcomment:
+      case MessageRenderType.end:
+        return _buildStandardBubble(message.text, isMe, timeStr, isDark);
+    }
+  }
+
+  Widget _buildStandardBubble(
+    String text,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+      decoration: BoxDecoration(
+        color: isMe
+            ? AppColors.primary
+            : (isDark ? AppColors.darkSurface : Colors.white),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        border: isMe
+            ? null
+            : Border.all(
+                color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+              ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: isMe
+                  ? Colors.white
+                  : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                timeStr,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: isMe
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                ),
+              ),
+              if (isMe) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.done_all_rounded,
+                  size: 13,
+                  color: Colors.white70,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeBubble(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: widget.chat.avatarColor.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: widget.chat.avatarColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.waving_hand_rounded, size: 16, color: widget.chat.avatarColor),
+              const SizedBox(width: 6),
+              Text(
+                'WELCOME',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: widget.chat.avatarColor,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            message.text,
+            style: GoogleFonts.inter(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            timeStr,
+            style: GoogleFonts.inter(
+              fontSize: 9.5,
+              color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    final question = message.question;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 320),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.help_outline_rounded, size: 16, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                'QUESTION',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              if (question?.cognitiveLevel.isNotEmpty == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    question!.cognitiveLevel.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            question?.question ?? message.text,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13.5,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+            ),
+          ),
+          if (question != null && question.options.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...question.options.entries.map((entry) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          entry.key.letter,
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        entry.value,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressUpdateCard(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    final progress = message.progressUpdate;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 300),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.trending_up_rounded, size: 16, color: Color(0xFF059669)),
+              const SizedBox(width: 6),
+              Text(
+                'PROGRESS UPDATE',
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF059669),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          if (progress != null) ...[
+            const SizedBox(height: 10),
+            _buildProgressBar('Beginner', progress.beginnerProgress, Colors.blue, isDark),
+            const SizedBox(height: 6),
+            _buildProgressBar('Competent', progress.competentProgress, Colors.orange, isDark),
+            const SizedBox(height: 6),
+            _buildProgressBar('Expert', progress.expertProgress, const Color(0xFF059669), isDark),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressBar(String label, double value, Color color, bool isDark) {
+    final clamped = value.clamp(0.0, 1.0);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+              ),
+            ),
+            Text(
+              '${(clamped * 100).toInt()}%',
+              style: GoogleFonts.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 3),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: clamped,
+            backgroundColor: color.withValues(alpha: 0.15),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 6,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssetCard(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    final asset = message.asset;
+    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 280),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.attachment_rounded, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  asset?.mediaType ?? 'Asset',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  asset?.url ?? 'Media file',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
