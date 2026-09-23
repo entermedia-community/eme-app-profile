@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eme_world/main.dart';
 import 'package:eme_world/screens/eme_world/widgets/eme_profile_card.dart';
 import 'package:eme_world/screens/profile/widgets/server_card.dart';
+import 'test_helpers.dart';
 
 void main() {
   testWidgets('Renders Profile screen and navigates bottom bar tabs', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
+    await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
     // Verify Profile Header elements
@@ -61,7 +60,7 @@ void main() {
   testWidgets('Menu button opens Navigation Drawer', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
+    await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
     // Tap the menu icon in AppBar

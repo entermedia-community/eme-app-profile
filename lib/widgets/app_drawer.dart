@@ -5,6 +5,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
+import 'auth/auth_modal_sheet.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -12,9 +13,16 @@ class AppDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final authState = ref.watch(authProvider);
     final currentTab = ref.watch(navigationProvider);
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
+    final currentUser = authState.user;
+
+    final displayName = currentUser?.displayName ?? profile.name;
+    final displayRole = currentUser != null ? 'AUTHENTICATED' : profile.role;
+    final displayInitials = currentUser?.avatarInitials ??
+        (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C');
 
     return Drawer(
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
@@ -24,127 +32,139 @@ class AppDrawer extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header with User Info
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark
-                        ? AppColors.darkCardBorder
-                        : AppColors.lightCardBorder,
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                AuthModalSheet.show(context);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder,
+                    ),
                   ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDark
-                          ? const Color(0xFF334155)
-                          : const Color(0xFFEFF6FF),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.12),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFEFF6FF),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          width: 2,
                         ),
-                      ],
-                    ),
-                    child: profile.avatarUrl != null
-                        ? ClipOval(
-                            child: Image.network(
-                              profile.avatarUrl!,
-                              width: 54,
-                              height: 54,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Center(
-                                    child: Text(
-                                      profile.name.isNotEmpty
-                                          ? profile.name.substring(0, 1)
-                                          : 'C',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.primary,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: currentUser == null && profile.avatarUrl != null
+                          ? ClipOval(
+                              child: Image.network(
+                                profile.avatarUrl!,
+                                width: 54,
+                                height: 54,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Center(
+                                      child: Text(
+                                        displayInitials,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.primary,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                            ),
-                          )
-                        : Center(
-                            child: Text(
-                              profile.name.isNotEmpty
-                                  ? profile.name.substring(0, 1)
-                                  : 'C',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primary,
                               ),
-                            ),
-                          ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile.name,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.textDarkPrimary
-                                : AppColors.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.15,
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+                            )
+                          : Center(
                               child: Text(
-                                profile.role,
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                displayInitials,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
                                   color: AppColors.primary,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '• Online',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.greenAccent,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  displayRole,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                authState.isAuthenticated ? '• Verified' : '• Guest',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: authState.isAuthenticated
+                                      ? AppColors.greenAccent
+                                      : (isDark
+                                          ? AppColors.textDarkMuted
+                                          : AppColors.textMuted),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, size: 20),
+                  ],
+                ),
               ),
             ),
 
@@ -195,6 +215,19 @@ class AppDrawer extends ConsumerWidget {
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
                     child: Divider(height: 1, color: AppColors.lightCardBorder),
+                  ),
+                  _DrawerItem(
+                    title: authState.isAuthenticated
+                        ? 'Account & Security'
+                        : 'Sign In / Register',
+                    icon: authState.isAuthenticated
+                        ? Icons.verified_user_rounded
+                        : Icons.login_rounded,
+                    isSelected: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      AuthModalSheet.show(context);
+                    },
                   ),
                   _DrawerItem(
                     title: 'Settings',

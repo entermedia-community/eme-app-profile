@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'providers/theme_provider.dart';
-import 'screens/main_shell_screen.dart';
+import 'screens/auth/auth_gate.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -31,7 +31,7 @@ class EmeWorldApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const MainShellScreen(),
+      home: const AuthGate(),
     );
   }
 }

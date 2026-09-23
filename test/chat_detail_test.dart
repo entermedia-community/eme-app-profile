@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eme_world/main.dart';
 import 'package:eme_world/screens/chats/chat_detail_screen.dart';
 import 'package:eme_world/screens/chats/chat_info_screen.dart';
+import 'test_helpers.dart';
 
 void main() {
   testWidgets(
     'Chat screen full navigation, search, QR modal, and Info drawer test',
     (WidgetTester tester) async {
-      await tester.pumpWidget(const ProviderScope(child: EmeWorldApp()));
+      await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Navigate to Chats tab

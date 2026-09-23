@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../providers/navigation_provider.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/auth/auth_modal_sheet.dart';
 import '../../../widgets/pill_badge.dart';
 import 'edit_profile_sheet.dart';
 
@@ -13,7 +14,12 @@ class ProfileHeaderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
+    final authState = ref.watch(authProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final currentUser = authState.user;
+
+    final displayName = profile.name;
+    final displayRole = profile.role;
 
     return Container(
       width: double.infinity,
@@ -68,7 +74,7 @@ class ProfileHeaderCard extends ConsumerWidget {
                     height: 88,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        _buildAvatarFallback(profile),
+                        _buildAvatarFallback(profile, currentUser),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return Center(
@@ -97,23 +103,73 @@ class ProfileHeaderCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Eyebrow "PORTFOLIO"
-                    Text(
-                      profile.portfolioLabel.toUpperCase(),
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
-                        color: AppColors.primary,
-                      ),
+                    // Eyebrow "PORTFOLIO" & Auth status
+                    Row(
+                      children: [
+                        Text(
+                          profile.portfolioLabel.toUpperCase(),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.5,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () => AuthModalSheet.show(context),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: authState.isAuthenticated
+                                  ? AppColors.greenAccent.withValues(alpha: 0.15)
+                                  : AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: authState.isAuthenticated
+                                    ? AppColors.greenAccent.withValues(alpha: 0.4)
+                                    : AppColors.primary.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  authState.isAuthenticated
+                                      ? Icons.verified_user_rounded
+                                      : Icons.login_rounded,
+                                  size: 13,
+                                  color: authState.isAuthenticated
+                                      ? AppColors.greenAccent
+                                      : AppColors.primary,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  authState.isAuthenticated ? 'Verified' : 'Sign In',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: authState.isAuthenticated
+                                        ? AppColors.greenAccent
+                                        : AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
 
-                    // User Name "Christopher.B"
+                    // User Name
                     Text(
-                      profile.name,
+                      displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.plusJakartaSans(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
                         letterSpacing: -0.5,
@@ -121,14 +177,14 @@ class ProfileHeaderCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
 
-                    // Role "CEO" with accent bar
+                    // Role with accent bar
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          profile.role,
+                          displayRole,
                           style: GoogleFonts.inter(
-                            fontSize: 15,
+                            fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
                           ),
@@ -264,7 +320,19 @@ class ProfileHeaderCard extends ConsumerWidget {
     return 'https://randomuser.me/api/portraits/$gender/$idx.jpg';
   }
 
-  Widget _buildAvatarFallback(ProfileModel profile) {
+  Widget _buildAvatarFallback(ProfileModel profile, [EmUser? user]) {
+    if (user != null) {
+      return Center(
+        child: Text(
+          user.avatarInitials,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: AppColors.primary,
+          ),
+        ),
+      );
+    }
     return Icon(
       Icons.person_rounded,
       size: 48,
