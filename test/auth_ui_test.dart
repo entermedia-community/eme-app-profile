@@ -81,6 +81,20 @@ class MockAuthService implements IAuthService {
       errorMessage: 'Invalid OTP code',
     );
   }
+
+  @override
+  Future<List<EmUser>> searchUsers(String query) async {
+    return [
+      EmUser(
+        userid: 'admin',
+        firstname: 'The',
+        lastname: 'Administrator',
+        email: 'support@entermediadb.org',
+        assetportrait:
+            'http://localhost:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
+      ),
+    ];
+  }
 }
 
 void main() {

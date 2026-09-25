@@ -101,7 +101,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
           TextField(
             controller: _searchController,
             onChanged: (val) {
-              ref.read(emeProfileProvider.notifier).setSearchQuery(val);
+              ref.read(emeProfileProvider.notifier).searchUsers(val);
             },
             decoration: InputDecoration(
               hintText:
@@ -111,17 +111,29 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
                 color: AppColors.textMuted,
               ),
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        ref
-                            .read(emeProfileProvider.notifier)
-                            .setSearchQuery('');
-                      },
+              suffixIcon: profileState.isSearching
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     )
-                  : null,
+                  : (_searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref
+                                .read(emeProfileProvider.notifier)
+                                .clearSearch();
+                          },
+                        )
+                      : null),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 12,
@@ -281,7 +293,7 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
             onPressed: () {
               _searchController.clear();
               ref.read(emeProfileProvider.notifier).setCategory('All');
-              ref.read(emeProfileProvider.notifier).setSearchQuery('');
+              ref.read(emeProfileProvider.notifier).clearSearch();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,

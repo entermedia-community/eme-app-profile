@@ -42,6 +42,20 @@ class AuthenticatedMockAuthService implements IAuthService {
     required String code,
   }) async =>
       LoginResult(isSuccess: true, token: token, user: user);
+
+  @override
+  Future<List<EmUser>> searchUsers(String query) async {
+    return [
+      EmUser(
+        userid: 'admin',
+        firstname: 'The',
+        lastname: 'Administrator',
+        email: 'support@entermediadb.org',
+        assetportrait:
+            'http://localhost:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
+      ),
+    ];
+  }
 }
 
 Widget createTestApp({List<Override> overrides = const []}) {

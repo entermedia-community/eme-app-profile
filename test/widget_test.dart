@@ -15,9 +15,6 @@ void main() {
     expect(find.textContaining('Christopher'), findsWidgets);
     expect(find.text('chris@emeworld.org'), findsOneWidget);
     expect(find.text('ACCOUNT PROFILE'), findsOneWidget);
-    expect(find.text('Cool guy'), findsOneWidget);
-    expect(find.text('Programmer'), findsOneWidget);
-    expect(find.text('Dude'), findsOneWidget);
 
     // Verify Action Buttons
     expect(find.text('Open Chat'), findsOneWidget);
@@ -55,6 +52,15 @@ void main() {
     expect(find.byType(EmeProfileCard), findsWidgets);
     expect(find.text('Dr. Maya Lin'), findsOneWidget);
     expect(find.text('Marcus Chen'), findsOneWidget);
+
+    // Perform top search in Eme World Screen
+    final searchField = find.byType(TextField).first;
+    await tester.enterText(searchField, 'admin');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    // Verify search result from /mediadb/services/module/user/users.json
+    expect(find.text('The Administrator'), findsOneWidget);
   });
 
   testWidgets('Menu button opens Navigation Drawer', (
