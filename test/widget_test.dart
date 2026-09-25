@@ -11,10 +11,10 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    // Verify Profile Header elements
-    expect(find.text('Christopher.B'), findsWidgets);
-    expect(find.text('CEO'), findsWidgets);
-    expect(find.text('PORTFOLIO'), findsOneWidget);
+    // Verify Profile Header elements for authenticated user
+    expect(find.textContaining('Christopher'), findsWidgets);
+    expect(find.text('chris@emeworld.org'), findsOneWidget);
+    expect(find.text('ACCOUNT PROFILE'), findsOneWidget);
     expect(find.text('Cool guy'), findsOneWidget);
     expect(find.text('Programmer'), findsOneWidget);
     expect(find.text('Dude'), findsOneWidget);

@@ -18,8 +18,22 @@ class ProfileHeaderCard extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentUser = authState.user;
 
-    final displayName = profile.name;
-    final displayRole = profile.role;
+    final displayName = currentUser != null
+        ? (currentUser.fullName.isNotEmpty ? currentUser.fullName : (currentUser.screenname ?? currentUser.userid))
+        : profile.name;
+
+    final displayRole = currentUser != null
+        ? (currentUser.userid == 'admin'
+            ? 'Administrator'
+            : (currentUser.screenname != null && currentUser.screenname!.isNotEmpty
+                ? '@${currentUser.screenname}'
+                : profile.role))
+        : profile.role;
+
+    final displayHandle = currentUser != null ? '@${currentUser.userid}' : null;
+    final displayEmail = currentUser?.email;
+    final displayInitials = currentUser?.avatarInitials ??
+        (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C');
 
     return Container(
       width: double.infinity,
@@ -52,47 +66,58 @@ class ProfileHeaderCard extends ConsumerWidget {
                 height: 88,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF475569)
-                        : const Color(0xFFCBD5E1),
+                    color: authState.isAuthenticated
+                        ? AppColors.primary.withValues(alpha: 0.6)
+                        : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
                     width: 2.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    _getAvatarUrl(profile),
-                    width: 88,
-                    height: 88,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        _buildAvatarFallback(profile, currentUser),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                  child: currentUser == null && profile.avatarUrl != null
+                      ? Image.network(
+                          _getAvatarUrl(profile),
+                          width: 88,
+                          height: 88,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildAvatarFallback(profile, currentUser, displayInitials),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : (currentUser?.assetportrait != null && currentUser!.assetportrait!.isNotEmpty
+                          ? Image.network(
+                              currentUser.assetportrait!,
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildAvatarFallback(profile, currentUser, displayInitials),
+                            )
+                          : _buildAvatarFallback(profile, currentUser, displayInitials)),
                 ),
               ),
 
@@ -103,11 +128,11 @@ class ProfileHeaderCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Eyebrow "PORTFOLIO" & Auth status
+                    // Eyebrow & Auth status
                     Row(
                       children: [
                         Text(
-                          profile.portfolioLabel.toUpperCase(),
+                          currentUser != null ? 'ACCOUNT PROFILE' : profile.portfolioLabel.toUpperCase(),
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 12,
                             fontWeight: FontWeight.w800,
@@ -177,9 +202,8 @@ class ProfileHeaderCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
 
-                    // Role with accent bar
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    // Role with accent bar & handle
+                    Row(
                       children: [
                         Text(
                           displayRole,
@@ -189,16 +213,34 @@ class ProfileHeaderCard extends ConsumerWidget {
                             color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Container(
-                          width: 32,
-                          height: 3.5,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(2),
+                        if (displayHandle != null) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              displayHandle,
+                              style: GoogleFonts.firaCode(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 32,
+                      height: 3.5,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ],
                 ),
@@ -206,9 +248,56 @@ class ProfileHeaderCard extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: 16),
+          // Logged-in User Email Row
+          if (displayEmail != null && displayEmail.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.mail_outline_rounded,
+                    size: 15,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      displayEmail,
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (currentUser?.screenname != null && currentUser!.screenname!.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      '•  ${currentUser.screenname}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
 
-          // Bio text: "Cool guy"
+          const SizedBox(height: 14),
+
+          // Bio text
           Text(
             profile.bio,
             style: GoogleFonts.inter(
@@ -220,19 +309,37 @@ class ProfileHeaderCard extends ConsumerWidget {
 
           const SizedBox(height: 12),
 
-          // Tags badges: Programmer, Dude, etc.
+          // Tags badges
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: profile.tags.map((tag) {
-              return PillBadge(
-                label: tag,
-                backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                textColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
-                fontSize: 12,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              );
-            }).toList(),
+            children: [
+              if (currentUser?.userid == 'admin')
+                PillBadge(
+                  label: 'Administrator',
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                  textColor: AppColors.primary,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                ),
+              if (authState.isAuthenticated)
+                PillBadge(
+                  label: 'Verified',
+                  backgroundColor: AppColors.greenAccent.withValues(alpha: 0.15),
+                  textColor: AppColors.greenAccent,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                ),
+              ...profile.tags.map((tag) {
+                return PillBadge(
+                  label: tag,
+                  backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  textColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                );
+              }),
+            ],
           ),
 
           const SizedBox(height: 20),
@@ -320,23 +427,18 @@ class ProfileHeaderCard extends ConsumerWidget {
     return 'https://randomuser.me/api/portraits/$gender/$idx.jpg';
   }
 
-  Widget _buildAvatarFallback(ProfileModel profile, [EmUser? user]) {
-    if (user != null) {
-      return Center(
-        child: Text(
-          user.avatarInitials,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: AppColors.primary,
-          ),
+  Widget _buildAvatarFallback(ProfileModel profile, [EmUser? user, String? initials]) {
+    final text = initials ??
+        (user?.avatarInitials ?? (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C'));
+    return Center(
+      child: Text(
+        text,
+        style: GoogleFonts.plusJakartaSans(
+          fontSize: 28,
+          fontWeight: FontWeight.w800,
+          color: AppColors.primary,
         ),
-      );
-    }
-    return Icon(
-      Icons.person_rounded,
-      size: 48,
-      color: Colors.grey.shade400,
+      ),
     );
   }
 
