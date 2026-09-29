@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/profile/widgets/add_server_sheet.dart';
-import 'package:eme_world/screens/server/server_picker_screen.dart';
 import 'test_helpers.dart';
 
 void main() {
@@ -13,18 +10,8 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    // Navigate to ServerPickerScreen via Pick a Server or AppBar action
-    // Open Drawer to verify app is loaded, then push ServerPickerScreen directly
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authServiceProvider.overrideWithValue(AuthenticatedMockAuthService()),
-        ],
-        child: const MaterialApp(
-          home: ServerPickerScreen(),
-        ),
-      ),
-    );
+    // Tap the Servers button to open ServerPickerScreen
+    await tester.tap(find.text('Servers'));
     await tester.pumpAndSettle();
 
     // Tap the Add Custom Server icon in AppBar

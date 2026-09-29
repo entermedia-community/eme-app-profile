@@ -57,9 +57,16 @@ class AuthenticatedMockAuthService implements IAuthService {
 }
 
 Widget createTestApp({List<Override> overrides = const []}) {
+  final mockAuth = AuthenticatedMockAuthService();
   return ProviderScope(
     overrides: [
-      authServiceProvider.overrideWithValue(AuthenticatedMockAuthService()),
+      authServiceProvider.overrideWithValue(mockAuth),
+      authProvider.overrideWith((ref) => AuthNotifier(authService: mockAuth)
+        ..state = AuthState(
+          status: AuthStatus.authenticated,
+          user: mockAuth.user,
+          token: mockAuth.token,
+        )),
       ...overrides,
     ],
     child: const EmeWorldApp(),
