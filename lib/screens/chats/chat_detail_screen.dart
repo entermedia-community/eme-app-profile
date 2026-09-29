@@ -340,7 +340,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        widget.chat.userName,
+                        widget.chat.displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(
@@ -353,7 +353,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             ? 'Connecting...'
                             : (widget.chat.isOnline
                                   ? 'Active now'
-                                  : widget.chat.displayName),
+                                  : widget.chat.userName),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
