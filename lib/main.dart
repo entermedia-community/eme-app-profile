@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,9 +10,20 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DioUtil.init();
+
+  const isRelease = kReleaseMode;
+  const defaultSiteRoot = isRelease
+      ? 'https://eme.world'
+      : 'http://localhost.com:8080';
+  const siteRoot = String.fromEnvironment('SITEROOT', defaultValue: defaultSiteRoot);
+  const mediaDb = String.fromEnvironment(
+    'MEDIADB',
+    defaultValue: '$siteRoot/site/mediadb',
+  );
+
   await OpenI().initialize({
-    'mediadb': 'http://localhost.com:8080/site/mediadb',
-    'siteroot': 'http://localhost.com:8080',
+    'mediadb': mediaDb,
+    'siteroot': siteRoot,
     'catalogid': 'site/catalog',
   });
   SystemChrome.setSystemUIOverlayStyle(
