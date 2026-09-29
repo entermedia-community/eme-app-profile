@@ -50,8 +50,9 @@ void main() {
     expect(find.text('EME Profiles Directory'), findsOneWidget);
     // Verify only EME profile cards exist in EME World
     expect(find.byType(EmeProfileCard), findsWidgets);
-    expect(find.text('Dr. Maya Lin'), findsOneWidget);
-    expect(find.text('Marcus Chen'), findsOneWidget);
+    expect(find.text('The Administrator'), findsOneWidget);
+    expect(find.text('Dr. Maya Lin'), findsNothing);
+    expect(find.text('Marcus Chen'), findsNothing);
 
     // Perform top search in Eme World Screen
     final searchField = find.byType(TextField).first;
@@ -59,7 +60,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
 
-    // Verify search result from /mediadb/services/module/user/users.json
+    // Verify search result from /mediadb/services/module/user/usersearch.json
     expect(find.text('The Administrator'), findsOneWidget);
   });
 

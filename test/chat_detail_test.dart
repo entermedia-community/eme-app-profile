@@ -16,15 +16,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Search conversations...'), findsOneWidget);
-      expect(find.text('Elena Rostova'), findsWidgets);
+      expect(find.text('The Administrator'), findsWidgets);
 
       // Tap on the first chat item
-      await tester.tap(find.text('Elena Rostova').first);
+      await tester.tap(find.text('The Administrator').first);
       await tester.pumpAndSettle();
 
       // Verify ChatDetailScreen is open
       expect(find.byType(ChatDetailScreen), findsOneWidget);
-      expect(find.text('Elena Rostova'), findsOneWidget);
+      expect(find.text('The Administrator'), findsOneWidget);
       expect(find.byIcon(Icons.search_rounded), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_2_rounded), findsOneWidget);
       expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
@@ -36,11 +36,11 @@ void main() {
       expect(find.text('Search in conversation...'), findsOneWidget);
 
       // Enter search query
-      await tester.enterText(find.byType(TextField).first, 'pipeline');
+      await tester.enterText(find.byType(TextField).first, 'Direct');
       await tester.pumpAndSettle();
 
       expect(
-        find.text('Passport validation pipeline is ready for deployment.'),
+        find.text('Welcome to EME Direct Messaging.'),
         findsOneWidget,
       );
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
@@ -10,24 +11,22 @@ import 'widgets/qr_connect_modal.dart';
 class ChatDetailScreen extends StatefulWidget {
   final ChatModel chat;
 
-  const ChatDetailScreen({
-    super.key,
-    required this.chat,
-  });
+  const ChatDetailScreen({super.key, required this.chat});
 
   /// Custom route to animate the screen in with smooth sliding transition
   static Route<void> route(ChatModel chat) {
     return PageRouteBuilder<void>(
-      pageBuilder: (context, animation, secondaryAnimation) => ChatDetailScreen(chat: chat),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ChatDetailScreen(chat: chat),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 280),
     );
@@ -42,6 +41,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  StreamSubscription<ChatMessage>? _socketSubscription;
+  String? _channelId;
+  bool _isConnecting = false;
+
   bool _isSearchOpen = false;
   String _searchQuery = '';
   late List<ChatMessage> _messages;
@@ -49,48 +52,114 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _messages = [
-      ChatMessage(
-        messageId: '1',
-        channel: widget.chat.id,
-        userId: widget.chat.id,
-        message: 'Hello! Welcome to the ${widget.chat.userName} channel.',
-        messageType: 'welcome',
-        agentContextValues: AgentContextValues(
-          messageRenderType: MessageRenderType.welcome,
-          componentContent: 'Hello! Welcome to the ${widget.chat.userName} channel.',
-        ),
-        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-      ChatMessage(
-        messageId: '2',
-        channel: widget.chat.id,
-        userId: widget.chat.id,
-        message: widget.chat.lastMessage,
-        messageType: 'message',
-        agentContextValues: AgentContextValues(
-          messageRenderType: MessageRenderType.text,
-          componentContent: widget.chat.lastMessage,
-        ),
-        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      ),
-      ChatMessage(
-        messageId: '3',
-        channel: widget.chat.id,
-        userId: 'user',
-        message: 'Great, thanks for the update! Reviewing the details now.',
-        messageType: 'message',
-        agentContextValues: AgentContextValues(
-          messageRenderType: MessageRenderType.text,
-          componentContent: 'Great, thanks for the update! Reviewing the details now.',
-        ),
-        createdAt: DateTime.now(),
-      ),
-    ];
+    _channelId = widget.chat.channelId;
+    _messages = [];
+    _initChatConnection();
+  }
+
+  Future<void> _initChatConnection() async {
+    setState(() => _isConnecting = true);
+
+    try {
+      String? socketChannelId = widget.chat.channelId;
+
+      if (socketChannelId == null || socketChannelId.isEmpty) {
+        final fromUser = AuthService.userId ?? 'admin';
+        final toUser = widget.chat.userName;
+
+        socketChannelId = await ChatSocketService().connectUser(
+          fromUser: fromUser,
+          toUser: toUser,
+        );
+      }
+      _channelId = socketChannelId;
+
+      await _connectSocket(socketChannelId);
+      await _loadChatHistory(socketChannelId);
+    } catch (e, stack) {
+      debugPrint('Error establishing chat socket: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error establishing chat socket in ChatDetailScreen',
+      );
+      if (widget.chat.channelId != null && widget.chat.channelId!.isNotEmpty) {
+        await _connectSocket(widget.chat.channelId!);
+        await _loadChatHistory(widget.chat.channelId!);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isConnecting = false);
+      }
+    }
+  }
+
+  Future<void> _loadChatHistory(String channelId) async {
+    try {
+      final history = await ApiService().fetchChatMessages(channelId);
+      if (!mounted) return;
+      if (history.isNotEmpty) {
+        // Sort chronologically so latest messages appear at the bottom
+        history.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        setState(() {
+          _messages = history;
+        });
+        _scrollToBottom();
+      }
+    } catch (e, stack) {
+      debugPrint('Error loading chat history: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error loading chat history in ChatDetailScreen',
+        customKeys: {'channelId': channelId},
+      );
+    }
+  }
+
+  Future<void> _connectSocket(String channelId) async {
+    final currentUserId = AuthService.userId ?? 'admin';
+    await ChatSocketService().connect(
+      channel: channelId,
+      userId: currentUserId,
+    );
+    _socketSubscription?.cancel();
+    _socketSubscription = ChatSocketService().messageStream.listen((
+      incomingMsg,
+    ) {
+      debugPrint('ChatSocketService incomingMsg: ${incomingMsg.toJson()}');
+      if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
+      if (!mounted) return;
+
+      if (incomingMsg.channel.isNotEmpty &&
+          incomingMsg.channel != channelId &&
+          incomingMsg.channel != widget.chat.channelId) {
+        return;
+      }
+
+      setState(() {
+        _messages.add(incomingMsg);
+      });
+      _scrollToBottom();
+    });
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
+    _socketSubscription?.cancel();
+    ChatSocketService().disconnect();
     _messageController.dispose();
     _searchController.dispose();
     _scrollController.dispose();
@@ -101,7 +170,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final diff = DateTime.now().difference(date);
     if (diff.inMinutes < 2) return 'Just now';
     if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final hour = date.hour > 12
+        ? date.hour - 12
+        : (date.hour == 0 ? 12 : date.hour);
     final period = date.hour >= 12 ? 'PM' : 'AM';
     final minute = date.minute.toString().padLeft(2, '0');
     return '$hour:$minute $period';
@@ -111,78 +182,100 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
+    final targetChannel = _channelId ?? widget.chat.channelId ?? '';
+    final currentUserId = AuthService.userId!;
+
     setState(() {
-      _messages.add(
-        ChatMessage(
-          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
-          channel: widget.chat.id,
-          userId: 'user',
-          message: text,
-          messageType: 'message',
-          agentContextValues: AgentContextValues(
-            messageRenderType: MessageRenderType.text,
-            componentContent: text,
-          ),
-          createdAt: DateTime.now(),
-        ),
-      );
       _messageController.clear();
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
+    try {
+      if (ChatSocketService().isConnected && targetChannel.isNotEmpty) {
+        ChatSocketService().sendMessage(
+          message: text,
+          user: currentUserId,
+          channel: targetChannel,
+          command: 'messagereceived',
         );
       }
-    });
+    } catch (e, stack) {
+      debugPrint('Failed to send message over socket: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Failed to send message over ChatSocketService',
+      );
+    }
   }
 
   void _sendProduct(ProductMessageModel product) {
+    final targetChannel = _channelId ?? widget.chat.channelId ?? '';
+    final currentUserId = AuthService.userId ?? 'admin';
+
     setState(() {
       _messages.add(
         ChatMessage(
           messageId: DateTime.now().millisecondsSinceEpoch.toString(),
-          channel: widget.chat.id,
-          userId: 'user',
-          message: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          channel: targetChannel,
+          userId: currentUserId,
+          message:
+              'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
           messageType: 'product',
           product: product,
           agentContextValues: AgentContextValues(
             messageRenderType: MessageRenderType.product,
             product: product,
-            componentContent: 'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+            componentContent:
+                'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
           ),
           createdAt: DateTime.now(),
         ),
       );
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
+    _scrollToBottom();
+
+    try {
+      if (ChatSocketService().isConnected && targetChannel.isNotEmpty) {
+        ChatSocketService().sendMessage(
+          message:
+              'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
+          user: currentUserId,
+          channel: targetChannel,
+          command: 'messagereceived',
+          messageType: 'product',
+          extraData: {'product': product.toJson()},
         );
       }
-    });
+    } catch (e, stack) {
+      debugPrint('Failed to send product over socket: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Failed to send product over ChatSocketService',
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBg : AppColors.lightBg;
-    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final surfaceColor = isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     final displayedMessages = _searchQuery.isEmpty
         ? _messages
         : _messages
-            .where((m) => m.text.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
+              .where(
+                (m) =>
+                    m.text.toLowerCase().contains(_searchQuery.toLowerCase()),
+              )
+              .toList();
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -211,9 +304,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   children: [
                     CircleAvatar(
                       radius: 19,
-                      backgroundColor: widget.chat.avatarColor.withValues(alpha: 0.2),
+                      backgroundColor: widget.chat.avatarColor.withValues(
+                        alpha: 0.2,
+                      ),
                       child: Text(
-                        widget.chat.avatarInitials ?? widget.chat.userName.substring(0, 2),
+                        widget.chat.avatarInitials ??
+                            widget.chat.userName.substring(0, 2),
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w700,
                           color: widget.chat.avatarColor,
@@ -231,10 +327,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.greenAccent,
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: surfaceColor,
-                              width: 2,
-                            ),
+                            border: Border.all(color: surfaceColor, width: 2),
                           ),
                         ),
                       ),
@@ -256,15 +349,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         ),
                       ),
                       Text(
-                        widget.chat.isOnline ? 'Active now' : widget.chat.userRole,
+                        _isConnecting
+                            ? 'Connecting...'
+                            : (widget.chat.isOnline
+                                  ? 'Active now'
+                                  : widget.chat.displayName),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: widget.chat.isOnline
-                              ? AppColors.greenAccent
-                              : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
-                          fontWeight: widget.chat.isOnline ? FontWeight.w600 : FontWeight.w400,
+                          color: _isConnecting
+                              ? AppColors.primary
+                              : (widget.chat.isOnline
+                                    ? AppColors.greenAccent
+                                    : (isDark
+                                          ? AppColors.textDarkSecondary
+                                          : AppColors.textSecondary)),
+                          fontWeight: (widget.chat.isOnline || _isConnecting)
+                              ? FontWeight.w600
+                              : FontWeight.w400,
                         ),
                       ),
                     ],
@@ -343,12 +446,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                               hintText: 'Search in conversation...',
                               hintStyle: GoogleFonts.inter(
                                 fontSize: 13,
-                                color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                color: isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textMuted,
                               ),
-                              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                              prefixIcon: const Icon(
+                                Icons.search_rounded,
+                                size: 20,
+                              ),
                               suffixIcon: _searchQuery.isNotEmpty
                                   ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded, size: 18),
+                                      icon: const Icon(
+                                        Icons.clear_rounded,
+                                        size: 18,
+                                      ),
                                       onPressed: () {
                                         setState(() {
                                           _searchQuery = '';
@@ -358,8 +469,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                     )
                                   : null,
                               isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              fillColor: isDark
+                                  ? AppColors.darkBg
+                                  : AppColors.lightBg,
                               filled: true,
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -382,16 +498,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.search_off_rounded,
+                          _searchQuery.isNotEmpty
+                              ? Icons.search_off_rounded
+                              : Icons.chat_bubble_outline_rounded,
                           size: 48,
-                          color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'No messages found for "$_searchQuery"',
+                          _searchQuery.isNotEmpty
+                              ? 'No messages found for "$_searchQuery"'
+                              : 'No messages yet!',
                           style: GoogleFonts.inter(
                             fontSize: 14,
-                            color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -399,7 +523,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                     itemCount: displayedMessages.length,
                     itemBuilder: (context, index) {
                       final message = displayedMessages[index];
@@ -418,9 +545,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
             decoration: BoxDecoration(
               color: surfaceColor,
-              border: Border(
-                top: BorderSide(color: borderColor, width: 1),
-              ),
+              border: Border(top: BorderSide(color: borderColor, width: 1)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
@@ -433,7 +558,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
-                  color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                  color: isDark
+                      ? AppColors.textDarkSecondary
+                      : AppColors.textSecondary,
                   tooltip: 'Share Product or Service',
                   onPressed: () {
                     SendProductSheet.show(
@@ -450,7 +577,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       hintText: 'Type a message...',
                       hintStyle: GoogleFonts.inter(
                         fontSize: 14,
-                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                        color: isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted,
                       ),
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
@@ -492,18 +621,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment: isMe
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (!isMe) ...[
                 CircleAvatar(
                   radius: 14,
-                  backgroundColor: widget.chat.avatarColor.withValues(alpha: 0.2),
+                  backgroundColor: widget.chat.avatarColor.withValues(
+                    alpha: 0.2,
+                  ),
                   child: Text(
-                    widget.chat.avatarInitials ?? widget.chat.userName.substring(0, 2),
+                    widget.chat.avatarInitials ??
+                        widget.chat.userName.substring(0, 2),
                     style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.w700,
                       fontSize: 10,
@@ -518,13 +654,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             ],
           ),
-          if (message.messageRenderType.isProduct && message.product != null) ...[
+          if (message.messageRenderType.isProduct &&
+              message.product != null) ...[
             Padding(
               padding: EdgeInsets.only(left: isMe ? 0 : 36, top: 4),
-              child: ProductMessageCard(
-                product: message.product!,
-                isMe: isMe,
-              ),
+              child: ProductMessageCard(product: message.product!, isMe: isMe),
             ),
           ],
         ],
@@ -579,7 +713,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         border: isMe
             ? null
             : Border.all(
-                color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
               ),
         boxShadow: [
           BoxShadow(
@@ -590,7 +726,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -599,7 +737,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               fontSize: 14,
               color: isMe
                   ? Colors.white
-                  : (isDark ? AppColors.textDarkPrimary : AppColors.textPrimary),
+                  : (isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary),
             ),
           ),
           const SizedBox(height: 4),
@@ -612,7 +752,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   fontSize: 10,
                   color: isMe
                       ? Colors.white.withValues(alpha: 0.75)
-                      : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                      : (isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted),
                 ),
               ),
               if (isMe) ...[
@@ -652,7 +794,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.waving_hand_rounded, size: 16, color: widget.chat.avatarColor),
+              Icon(
+                Icons.waving_hand_rounded,
+                size: 16,
+                color: widget.chat.avatarColor,
+              ),
               const SizedBox(width: 6),
               Text(
                 'WELCOME',
@@ -695,7 +841,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     final question = message.question;
     final cardBg = isDark ? AppColors.darkSurface : Colors.white;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 320),
@@ -717,7 +865,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.help_outline_rounded, size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.help_outline_rounded,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 6),
               Text(
                 'QUESTION',
@@ -731,7 +883,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               const Spacer(),
               if (question?.cognitiveLevel.isNotEmpty == true)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
@@ -761,9 +916,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ...question.options.entries.map((entry) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  color: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: borderColor),
                 ),
@@ -793,7 +953,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         entry.value,
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                          color: isDark
+                              ? AppColors.textDarkPrimary
+                              : AppColors.textPrimary,
                         ),
                       ),
                     ),
@@ -822,14 +984,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF059669).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF059669).withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.trending_up_rounded, size: 16, color: Color(0xFF059669)),
+              const Icon(
+                Icons.trending_up_rounded,
+                size: 16,
+                color: Color(0xFF059669),
+              ),
               const SizedBox(width: 6),
               Text(
                 'PROGRESS UPDATE',
@@ -844,18 +1012,38 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
           if (progress != null) ...[
             const SizedBox(height: 10),
-            _buildProgressBar('Beginner', progress.beginnerProgress, Colors.blue, isDark),
+            _buildProgressBar(
+              'Beginner',
+              progress.beginnerProgress,
+              Colors.blue,
+              isDark,
+            ),
             const SizedBox(height: 6),
-            _buildProgressBar('Competent', progress.competentProgress, Colors.orange, isDark),
+            _buildProgressBar(
+              'Competent',
+              progress.competentProgress,
+              Colors.orange,
+              isDark,
+            ),
             const SizedBox(height: 6),
-            _buildProgressBar('Expert', progress.expertProgress, const Color(0xFF059669), isDark),
+            _buildProgressBar(
+              'Expert',
+              progress.expertProgress,
+              const Color(0xFF059669),
+              isDark,
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildProgressBar(String label, double value, Color color, bool isDark) {
+  Widget _buildProgressBar(
+    String label,
+    double value,
+    Color color,
+    bool isDark,
+  ) {
     final clamped = value.clamp(0.0, 1.0);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -867,7 +1055,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary,
               ),
             ),
             Text(
@@ -922,7 +1112,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.attachment_rounded, color: AppColors.primary, size: 20),
+            child: const Icon(
+              Icons.attachment_rounded,
+              color: AppColors.primary,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -934,7 +1128,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
                 Text(
@@ -943,7 +1139,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 10,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
                   ),
                 ),
               ],

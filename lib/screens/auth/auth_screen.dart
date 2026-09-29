@@ -52,7 +52,7 @@ class AuthScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Decentralized AI & Media Collaboration Network',
+                    'AI & Media Collaboration Network',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 13,

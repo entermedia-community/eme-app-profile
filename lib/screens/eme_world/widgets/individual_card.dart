@@ -16,7 +16,7 @@ class IndividualCard extends ConsumerWidget {
     }
     // Fallback if passing legacy specialist object
     final p = EmeProfileModel(
-      id: specialist.id as String,
+      username: specialist.id as String,
       name: (specialist.title ?? specialist.name) as String,
       specialistTitle: specialist.specialistTitle as String?,
       subtitle: specialist.subtitle as String?,
@@ -35,8 +35,8 @@ class IndividualCard extends ConsumerWidget {
       servicePricing: specialist.servicePricing as String?,
       location: specialist.location as String?,
       isVerified: specialist.isVerified as bool,
-      servicesOffered:
-          (specialist.servicesOffered as List<dynamic>).cast<String>(),
+      servicesOffered: (specialist.servicesOffered as List<dynamic>)
+          .cast<String>(),
     );
     return EmeProfileCard(profile: p);
   }

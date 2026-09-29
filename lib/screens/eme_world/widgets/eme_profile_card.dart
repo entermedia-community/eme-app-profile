@@ -1,9 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pill_badge.dart';
+import '../../chats/chat_detail_screen.dart';
 
 class EmeProfileCard extends ConsumerWidget {
   final EmeProfileModel profile;
@@ -109,7 +111,7 @@ class EmeProfileCard extends ConsumerWidget {
                               const SizedBox(height: 2),
                               Text(
                                 profile.specialistTitle ??
-                                profile.category.label,
+                                    profile.category.label,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.inter(
@@ -280,7 +282,7 @@ class EmeProfileCard extends ConsumerWidget {
 
                       // Connect Button
                       InkWell(
-                        onTap: () => _showProfileDetails(context),
+                        onTap: () => _handleConnect(context),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
@@ -502,12 +504,7 @@ class EmeProfileCard extends ConsumerWidget {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Connecting with ${profile.name}...'),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
+                        _handleConnect(context);
                       },
                       icon: const Icon(
                         Icons.chat_bubble_outline_rounded,
@@ -536,11 +533,71 @@ class EmeProfileCard extends ConsumerWidget {
     );
   }
 
+  Future<void> _handleConnect(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Connecting with ${profile.name}...'),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    try {
+      final fromUser = AuthService.userId!;
+      final toUser = profile.username;
+
+      final channelId = await ChatSocketService().connectUser(
+        fromUser: fromUser,
+        toUser: toUser,
+      );
+
+      await ChatSocketService().connect(channel: channelId);
+
+      if (context.mounted) {
+        final chat = ChatModel(
+          channelId: channelId,
+          userName: profile.name,
+          displayName: profile.name,
+          lastMessage: profile.description,
+          time: 'Just now',
+          unreadCount: 0,
+          avatarColor: profile.primaryColor,
+          isOnline: true,
+          avatarInitials: profile.name.isNotEmpty
+              ? profile.name
+                    .substring(0, min(2, profile.name.length))
+                    .toUpperCase()
+              : 'EM',
+        );
+
+        Navigator.of(context).push(ChatDetailScreen.route(chat));
+      }
+    } catch (e, stack) {
+      debugPrint('Error connecting with profile: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error connecting with profile in EmeProfileCard',
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to connect with ${profile.name}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   String _getAvatarUrl() {
     if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
       return profile.avatarUrl!;
     }
-    final idDigits = profile.id.replaceAll(RegExp(r'[^0-9]'), '');
+    final idDigits = profile.username.replaceAll(RegExp(r'[^0-9]'), '');
     final int indexNum =
         int.tryParse(idDigits) ?? (profile.name.hashCode.abs() % 70 + 1);
     final int idx = (indexNum % 70) + 1;

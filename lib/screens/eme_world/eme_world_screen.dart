@@ -17,6 +17,14 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(emeProfileProvider.notifier).loadUsers();
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -26,195 +34,238 @@ class _EmeWorldScreenState extends ConsumerState<EmeWorldScreen> {
   Widget build(BuildContext context) {
     final profileState = ref.watch(emeProfileProvider);
     final profiles = profileState.filteredProfiles;
+    final allProfiles = profileState.profiles;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Text(
-            'EME Worldwide',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-              letterSpacing: -0.4,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Global network connecting verified EME profiles, researchers, and independent service providers offering decentralized services.',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: isDark
-                  ? AppColors.textDarkSecondary
-                  : AppColors.textSecondary,
-              height: 1.4,
-            ),
-          ),
+    final totalProfiles = allProfiles.length;
+    final verifiedCount =
+        allProfiles.where((p) => p.isVerified).length;
+    final verifiedPercent = totalProfiles > 0
+        ? '${((verifiedCount / totalProfiles) * 100).round()}%'
+        : '100%';
+    final uniqueLocations = allProfiles
+        .map((p) => p.location)
+        .where((loc) => loc != null && loc.trim().isNotEmpty)
+        .toSet()
+        .length;
+    final totalServices = allProfiles.fold<int>(
+      0,
+      (sum, p) => sum + p.servicesOffered.length,
+    );
 
-          const SizedBox(height: 16),
-
-          // Network Telemetry Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
+    return RefreshIndicator(
+      onRefresh: () => ref.read(emeProfileProvider.notifier).loadUsers(),
+      color: AppColors.primary,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Text(
+              'EME Worldwide',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
                 color: isDark
-                    ? AppColors.darkCardBorder
-                    : AppColors.lightCardBorder,
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
+                letterSpacing: -0.4,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildMetricItem(
-                  'EME Profile',
-                  '${profileState.totalCount}',
-                  AppColors.primary,
-                ),
-                _buildDivider(isDark),
-                _buildMetricItem('Verified', '100%', AppColors.greenAccent),
-                _buildDivider(isDark),
-                _buildMetricItem('Countries', '12', const Color(0xFF8B5CF6)),
-                _buildDivider(isDark),
-                _buildMetricItem('Services', '18+', const Color(0xFFF59E0B)),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Search Input Bar
-          TextField(
-            controller: _searchController,
-            onChanged: (val) {
-              ref.read(emeProfileProvider.notifier).searchUsers(val);
-            },
-            decoration: InputDecoration(
-              hintText:
-                  'Search EME Profile by name, skill, service, or location...',
-              hintStyle: GoogleFonts.inter(
+            const SizedBox(height: 4),
+            Text(
+              'Global network connecting verified EME profiles, researchers, and independent service providers offering decentralized services.',
+              style: GoogleFonts.inter(
                 fontSize: 13,
-                color: AppColors.textMuted,
-              ),
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              suffixIcon: profileState.isSearching
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    )
-                  : (_searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 18),
-                          onPressed: () {
-                            _searchController.clear();
-                            ref
-                                .read(emeProfileProvider.notifier)
-                                .clearSearch();
-                          },
-                        )
-                      : null),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary,
+                height: 1.4,
               ),
             ),
-          ),
 
-          const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
-          // Category Chips Bar
-          const EmeProfileCategoryFilterBar(),
-
-          const SizedBox(height: 20),
-
-          // Directory Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'EME Profiles Directory',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+            // Network Telemetry Bar
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 16,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
                   color: isDark
-                      ? AppColors.textDarkPrimary
-                      : AppColors.textPrimary,
+                      ? AppColors.darkCardBorder
+                      : AppColors.lightCardBorder,
                 ),
-              ),
-              Text(
-                '${profiles.length} EME Profiles',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // Profiles Grid
-          if (profiles.isEmpty)
-            _buildEmptyState(context, isDark)
-          else
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isTablet = constraints.maxWidth > 600;
-                final crossAxisCount = isTablet ? 3 : 2;
-
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: profiles.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                    childAspectRatio: 0.72,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: isDark ? 0.2 : 0.03,
+                    ),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
                   ),
-                  itemBuilder: (context, index) {
-                    final item = profiles[index];
-                    return EmeProfileCard(profile: item);
-                  },
-                );
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildMetricItem(
+                    'EME Profiles',
+                    '$totalProfiles',
+                    AppColors.primary,
+                  ),
+                  _buildDivider(isDark),
+                  _buildMetricItem(
+                    'Verified',
+                    verifiedPercent,
+                    AppColors.greenAccent,
+                  ),
+                  _buildDivider(isDark),
+                  _buildMetricItem(
+                    'Locations',
+                    '$uniqueLocations',
+                    const Color(0xFF8B5CF6),
+                  ),
+                  _buildDivider(isDark),
+                  _buildMetricItem(
+                    'Services',
+                    '$totalServices',
+                    const Color(0xFFF59E0B),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Search Input Bar
+            TextField(
+              controller: _searchController,
+              onChanged: (val) {
+                ref.read(emeProfileProvider.notifier).searchUsers(val);
               },
+              decoration: InputDecoration(
+                hintText:
+                    'Search EME Profile by name, skill, service, or location...',
+                hintStyle: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.textMuted,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                suffixIcon: profileState.isSearching
+                    ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      )
+                    : (_searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () {
+                              _searchController.clear();
+                              ref
+                                  .read(emeProfileProvider.notifier)
+                                  .clearSearch();
+                            },
+                          )
+                        : null),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
             ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 14),
 
-          // Featured Ecosystem Updates Section
-          Text(
-            'Featured Ecosystem Updates',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+            // Category Chips Bar
+            const EmeProfileCategoryFilterBar(),
+
+            const SizedBox(height: 20),
+
+            // Directory Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'EME Profiles Directory',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '${profiles.length} EME Profiles',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 80),
-        ],
+
+            const SizedBox(height: 12),
+
+            // Profiles Grid
+            if (profileState.isLoading && profiles.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 48),
+                alignment: Alignment.center,
+                child: const CircularProgressIndicator(
+                  color: AppColors.primary,
+                ),
+              )
+            else if (profiles.isEmpty)
+              _buildEmptyState(context, isDark)
+            else
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTablet = constraints.maxWidth > 600;
+                  final crossAxisCount = isTablet ? 3 : 2;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: profiles.length,
+                    gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.72,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = profiles[index];
+                      return EmeProfileCard(profile: item);
+                    },
+                  );
+                },
+              ),
+
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

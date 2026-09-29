@@ -9,6 +9,11 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DioUtil.init();
+  await OpenI().initialize({
+    'mediadb': 'http://localhost.com:8080/site/mediadb',
+    'siteroot': 'http://localhost.com:8080',
+    'catalogid': 'site/catalog',
+  });
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

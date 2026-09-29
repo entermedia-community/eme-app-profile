@@ -5,7 +5,7 @@ import 'package:eme_world/main.dart';
 
 class AuthenticatedMockAuthService implements IAuthService {
   EmUser user = EmUser(
-    userid: 'usr_test_1',
+    username: 'usr_test_1',
     firstname: 'Christopher',
     lastname: 'B',
     email: 'chris@emeworld.org',
@@ -33,26 +33,24 @@ class AuthenticatedMockAuthService implements IAuthService {
     required String email,
     String? firstName,
     String? lastName,
-  }) async =>
-      SendUserCodeResult(status: SendUserCodeStatus.ok, email: email);
+  }) async => SendUserCodeResult(status: SendUserCodeStatus.ok, email: email);
 
   @override
   Future<LoginResult> loginWithCode({
     required String email,
     required String code,
-  }) async =>
-      LoginResult(isSuccess: true, token: token, user: user);
+  }) async => LoginResult(isSuccess: true, token: token, user: user);
 
   @override
   Future<List<EmUser>> searchUsers(String query) async {
     return [
       EmUser(
-        userid: 'admin',
+        username: 'admin',
         firstname: 'The',
         lastname: 'Administrator',
         email: 'support@entermediadb.org',
         assetportrait:
-            'http://localhost:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
+            'http://localhost.com:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
       ),
     ];
   }

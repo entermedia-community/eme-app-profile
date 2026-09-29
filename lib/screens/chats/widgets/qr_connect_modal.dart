@@ -7,10 +7,7 @@ import '../../../theme/app_colors.dart';
 class QrConnectModal extends StatelessWidget {
   final ChatModel chat;
 
-  const QrConnectModal({
-    super.key,
-    required this.chat,
-  });
+  const QrConnectModal({super.key, required this.chat});
 
   static Future<void> show(BuildContext context, ChatModel chat) {
     return showDialog<void>(
@@ -24,7 +21,9 @@ class QrConnectModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     return Center(
       child: Container(
@@ -88,21 +87,28 @@ class QrConnectModal extends StatelessWidget {
 
                 // User / Channel Preview Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark
                         ? AppColors.darkBg.withValues(alpha: 0.6)
                         : AppColors.lightBg,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                      color: isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder,
                     ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 18,
-                        backgroundColor: chat.avatarColor.withValues(alpha: 0.2),
+                        backgroundColor: chat.avatarColor.withValues(
+                          alpha: 0.2,
+                        ),
                         child: Text(
                           chat.avatarInitials ?? chat.userName.substring(0, 2),
                           style: GoogleFonts.plusJakartaSans(
@@ -124,17 +130,6 @@ class QrConnectModal extends StatelessWidget {
                               style: GoogleFonts.plusJakartaSans(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
-                              ),
-                            ),
-                            Text(
-                              chat.userRole,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: isDark
-                                    ? AppColors.textDarkSecondary
-                                    : AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -168,7 +163,8 @@ class QrConnectModal extends StatelessWidget {
                     painter: _QrCodePainter(
                       color: const Color(0xFF0F172A),
                       accentColor: AppColors.primary,
-                      initials: chat.avatarInitials ?? chat.userName.substring(0, 2),
+                      initials:
+                          chat.avatarInitials ?? chat.userName.substring(0, 2),
                       initialsColor: chat.avatarColor,
                     ),
                   ),
@@ -181,7 +177,9 @@ class QrConnectModal extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     height: 1.35,
-                    color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                    color: isDark
+                        ? AppColors.textDarkSecondary
+                        : AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -200,17 +198,25 @@ class QrConnectModal extends StatelessWidget {
                             SnackBar(
                               content: Row(
                                 children: [
-                                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
                                     'QR code saved to your device!',
-                                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ),
                               backgroundColor: AppColors.greenAccent,
                               behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                               duration: const Duration(seconds: 2),
                             ),
                           );
@@ -240,17 +246,23 @@ class QrConnectModal extends StatelessWidget {
                       onPressed: () {
                         HapticFeedback.lightImpact();
                         Clipboard.setData(
-                          ClipboardData(text: 'https://eme.world/connect/${chat.id}'),
+                          ClipboardData(
+                            text: 'https://eme.world/connect/${chat.channelId}',
+                          ),
                         );
                         final messenger = ScaffoldMessenger.of(context);
                         messenger.showSnackBar(
                           SnackBar(
                             content: Text(
                               'Invite link copied to clipboard!',
-                              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -264,10 +276,17 @@ class QrConnectModal extends StatelessWidget {
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                        foregroundColor: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 12,
+                        ),
+                        foregroundColor: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                         side: BorderSide(
-                          color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                          color: isDark
+                              ? AppColors.darkCardBorder
+                              : AppColors.lightCardBorder,
                           width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -343,7 +362,8 @@ class _QrCodePainter extends CustomPainter {
         }
         if (row[c] == '1') {
           // Corner position markers get slightly rounded rects
-          final isCornerMarker = (r < 7 && c < 7) || (r < 7 && c >= 14) || (r >= 14 && c < 7);
+          final isCornerMarker =
+              (r < 7 && c < 7) || (r < 7 && c >= 14) || (r >= 14 && c < 7);
           final rect = Rect.fromLTWH(
             c * moduleSize,
             r * moduleSize,
