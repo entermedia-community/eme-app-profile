@@ -556,7 +556,7 @@ class EmeProfileCard extends ConsumerWidget {
       if (context.mounted) {
         final chat = ChatModel(
           channelId: channelId,
-          userName: profile.name,
+          username: profile.username,
           displayName: profile.name,
           lastMessage: profile.description,
           time: 'Just now',

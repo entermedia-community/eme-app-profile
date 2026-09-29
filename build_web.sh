@@ -44,7 +44,7 @@ echo "📂 Target destination: $BUILD_PATH"
 echo "=========================================="
 
 # Run flutter build web
-flutter build web --release --wasm "$@"
+flutter build web --release --wasm --base-href /site/app/ "$@"
 
 SOURCE_BUILD_DIR="$PROJECT_DIR/build/web"
 

@@ -19,9 +19,9 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   Widget _buildAvatarFallback(ChatModel chat) {
     final initials =
         chat.avatarInitials ??
-        (chat.userName.isNotEmpty
-            ? chat.userName
-                  .substring(0, chat.userName.length.clamp(1, 2))
+        (chat.username.isNotEmpty
+            ? chat.username
+                  .substring(0, chat.username.length.clamp(1, 2))
                   .toUpperCase()
             : 'EM');
     return CircleAvatar(
@@ -117,7 +117,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               ),
               data: (chats) {
                 final filtered = chats.where((c) {
-                  return c.userName.toLowerCase().contains(
+                  return c.username.toLowerCase().contains(
                         _searchQuery.toLowerCase(),
                       ) ||
                       c.lastMessage.toLowerCase().contains(
@@ -328,7 +328,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                           return;
                         }
                         final fromUser = AuthService.userId;
-                        final toUser = chat.userName;
+                        final toUser = chat.username;
 
                         final channelId = await ChatSocketService().connectUser(
                           fromUser: fromUser!,

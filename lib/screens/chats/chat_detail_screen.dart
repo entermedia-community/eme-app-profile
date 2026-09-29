@@ -64,8 +64,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       String? socketChannelId = widget.chat.channelId;
 
       if (socketChannelId == null || socketChannelId.isEmpty) {
-        final fromUser = AuthService.userId ?? 'admin';
-        final toUser = widget.chat.userName;
+        final fromUser = AuthService.userId!;
+        final toUser = widget.chat.username;
 
         socketChannelId = await ChatSocketService().connectUser(
           fromUser: fromUser,
@@ -118,7 +118,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Future<void> _connectSocket(String channelId) async {
-    final currentUserId = AuthService.userId ?? 'admin';
+    final currentUserId = AuthService.userId;
     await ChatSocketService().connect(
       channel: channelId,
       userId: currentUserId,
@@ -210,7 +210,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _sendProduct(ProductMessageModel product) {
     final targetChannel = _channelId ?? widget.chat.channelId ?? '';
-    final currentUserId = AuthService.userId ?? 'admin';
+    final currentUserId = AuthService.userId!;
 
     setState(() {
       _messages.add(
@@ -309,7 +309,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                       child: Text(
                         widget.chat.avatarInitials ??
-                            widget.chat.userName.substring(0, 2),
+                            widget.chat.username.substring(0, 2),
                         style: GoogleFonts.plusJakartaSans(
                           fontWeight: FontWeight.w700,
                           color: widget.chat.avatarColor,
@@ -353,7 +353,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             ? 'Connecting...'
                             : (widget.chat.isOnline
                                   ? 'Active now'
-                                  : widget.chat.userName),
+                                  : widget.chat.username),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
@@ -639,7 +639,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   ),
                   child: Text(
                     widget.chat.avatarInitials ??
-                        widget.chat.userName.substring(0, 2),
+                        widget.chat.username.substring(0, 2),
                     style: GoogleFonts.plusJakartaSans(
                       fontWeight: FontWeight.w700,
                       fontSize: 10,

@@ -110,7 +110,7 @@ class QrConnectModal extends StatelessWidget {
                           alpha: 0.2,
                         ),
                         child: Text(
-                          chat.avatarInitials ?? chat.userName.substring(0, 2),
+                          chat.avatarInitials ?? chat.username.substring(0, 2),
                           style: GoogleFonts.plusJakartaSans(
                             fontWeight: FontWeight.w700,
                             color: chat.avatarColor,
@@ -124,7 +124,7 @@ class QrConnectModal extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              chat.userName,
+                              chat.username,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.plusJakartaSans(
@@ -164,7 +164,7 @@ class QrConnectModal extends StatelessWidget {
                       color: const Color(0xFF0F172A),
                       accentColor: AppColors.primary,
                       initials:
-                          chat.avatarInitials ?? chat.userName.substring(0, 2),
+                          chat.avatarInitials ?? chat.username.substring(0, 2),
                       initialsColor: chat.avatarColor,
                     ),
                   ),
