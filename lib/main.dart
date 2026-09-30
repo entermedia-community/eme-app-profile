@@ -7,6 +7,8 @@ import 'providers/theme_provider.dart';
 import 'screens/auth/auth_gate.dart';
 import 'theme/app_theme.dart';
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DioUtil.init();
@@ -26,6 +28,14 @@ Future<void> main() async {
     'siteroot': siteRoot,
     'catalogid': 'site/catalog',
   });
+
+  // Initialize Firebase Push Notifications
+  await PushNotificationService.instance.initialize(
+    onNotificationTap: (PushNotificationMessage message) {
+      debugPrint('[Main] Notification tapped: ${message.title} (data: ${message.data})');
+    },
+  );
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -44,6 +54,7 @@ class EmeWorldApp extends ConsumerWidget {
 
     return MaterialApp(
       title: 'EME World',
+      navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

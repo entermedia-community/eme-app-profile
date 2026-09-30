@@ -1,8 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Notification and Internet Permissions -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:label="EME World"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+        <!-- Firebase Messaging Notification Channel & Icon Metadata -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="eme_high_importance_channel" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/launcher_icon" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

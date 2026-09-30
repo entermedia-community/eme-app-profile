@@ -6,6 +6,7 @@ import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/custom_bottom_nav.dart';
+import '../widgets/notifications/notifications_sheet.dart';
 import 'chats/chats_screen.dart';
 import 'eme_world/eme_world_screen.dart';
 import 'files/files_screen.dart';
@@ -80,13 +81,7 @@ class MainShellScreen extends ConsumerWidget {
                 icon: const Icon(Icons.notifications_outlined, size: 24),
                 tooltip: 'Notifications',
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('No new notifications'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
+                  NotificationsSheet.show(context);
                 },
               ),
               Positioned(
