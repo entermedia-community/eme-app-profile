@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "517457426974",
+    "project_id": "eme-app-profile",
+    "storage_bucket": "eme-app-profile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:517457426974:android:373a23423edaa647b78c0f",
+        "android_client_info": {
+          "package_name": "world.eme.main"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEBbbIMa_O8jJRktjlEATrgP44WLgYf5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
