@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth/auth_gate.dart';
+import 'services/deep_link_handler.dart';
 import 'theme/app_theme.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -33,6 +34,24 @@ Future<void> main() async {
   await PushNotificationService.instance.initialize(
     onNotificationTap: (PushNotificationMessage message) {
       debugPrint('[Main] Notification tapped: ${message.title} (data: ${message.data})');
+      final user = message.userId ?? message.data['username']?.toString();
+      if (user != null && user.isNotEmpty) {
+        DeepLinkHandler.instance.handleDeepLink(
+          DeepLinkPayload(
+            rawUri: Uri.parse('emeworld://chat/$user'),
+            type: DeepLinkType.chat,
+            username: user,
+            channelId: message.channelId,
+          ),
+        );
+      }
+    },
+  );
+
+  // Initialize Deep Linking
+  await DeepLinkService.instance.initialize(
+    onDeepLinkReceived: (DeepLinkPayload payload) {
+      DeepLinkHandler.instance.handleDeepLink(payload);
     },
   );
 

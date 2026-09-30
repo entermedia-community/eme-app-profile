@@ -7,17 +7,31 @@ import '../theme/app_colors.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../widgets/notifications/notifications_sheet.dart';
+import '../services/deep_link_handler.dart';
 import 'chats/chats_screen.dart';
 import 'eme_world/eme_world_screen.dart';
 import 'files/files_screen.dart';
 import 'profile/profile_screen.dart';
 import 'server/server_picker_screen.dart';
 
-class MainShellScreen extends ConsumerWidget {
+class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainShellScreen> createState() => _MainShellScreenState();
+}
+
+class _MainShellScreenState extends ConsumerState<MainShellScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkHandler.instance.checkPendingDeepLink(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final currentTab = ref.watch(navigationProvider);
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;

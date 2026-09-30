@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/theme_provider.dart';
+import '../../services/deep_link_handler.dart';
 import '../../theme/app_colors.dart';
 
 class NotificationsSheet extends ConsumerStatefulWidget {
@@ -26,15 +27,24 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
   bool _subscribedGeneral = true;
   bool _subscribedAnnouncements = true;
   bool _isTesting = false;
+  final TextEditingController _testUsernameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _testUsernameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
     final tokenAsync = ref.watch(fcmTokenProvider);
+    final currentUsername = AuthService.userId ?? 'myusername';
+    final chatLink = DeepLinkService.generateUserChatLink(currentUsername);
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.of(context).size.height * 0.82,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -84,7 +94,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Push Notifications',
+                        'Push & Deep Linking',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -92,7 +102,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                         ),
                       ),
                       Text(
-                        'Firebase Cloud Messaging (FCM)',
+                        'FCM Notifications & User Chat Deep Links',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           color: isDark ? Colors.white60 : AppColors.textSecondary,
@@ -115,7 +125,109 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                // Status Card
+                // Deep Link User Chat Section
+                Text(
+                  'YOUR CHAT DEEP LINK',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                    color: isDark ? Colors.white54 : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF282A3A) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? Colors.white12 : Colors.black12,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.link_rounded, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              chatLink,
+                              style: GoogleFonts.firaCode(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.copy_rounded, size: 18),
+                            tooltip: 'Copy Chat Link',
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: chatLink));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Chat link copied to clipboard!'),
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Test Deep Link Input
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _testUsernameController,
+                        decoration: InputDecoration(
+                          hintText: 'Enter username to test chat...',
+                          prefixIcon: const Icon(Icons.alternate_email_rounded, size: 18),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          isDense: true,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final target = _testUsernameController.text.trim();
+                        if (target.isNotEmpty) {
+                          Navigator.of(context).pop();
+                          DeepLinkHandler.instance.handleDeepLink(
+                            DeepLinkPayload(
+                              rawUri: Uri.parse('emeworld://chat/$target'),
+                              type: DeepLinkType.chat,
+                              username: target,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Open Chat'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Push Service Status Card
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -149,7 +261,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Push Service Active',
+                              'Push & Link Service Active',
                               style: GoogleFonts.plusJakartaSans(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -157,7 +269,7 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                               ),
                             ),
                             Text(
-                              'Ready to receive background and foreground messages.',
+                              'Deep links & FCM notifications will automatically route to chats.',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
                                 color: isDark ? Colors.white70 : const Color(0xFF166534),
