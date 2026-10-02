@@ -32,6 +32,12 @@ class MockAuthService implements IAuthService {
   }
 
   @override
+  Future<void> saveUserFields(
+    List<MapEntry<String, String>> fields, {
+    MultipartFile? portrait,
+  }) async {}
+
+  @override
   Future<SendUserCodeResult> sendUserCode({
     required String email,
     String? firstName,
