@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
@@ -8,7 +9,7 @@ import '../../widgets/chat/send_product_sheet.dart';
 import 'chat_info_screen.dart';
 import 'widgets/qr_connect_modal.dart';
 
-class ChatDetailScreen extends StatefulWidget {
+class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatModel chat;
 
   const ChatDetailScreen({super.key, required this.chat});
@@ -33,10 +34,10 @@ class ChatDetailScreen extends StatefulWidget {
   }
 
   @override
-  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+  ConsumerState<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
 
-class _ChatDetailScreenState extends State<ChatDetailScreen> {
+class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -96,7 +97,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _loadChatHistory(String channelId) async {
     try {
-      final history = await ApiService().fetchChatMessages(channelId);
+      final history =
+          await ref.read(apiServiceProvider).fetchChatMessages(channelId);
       if (!mounted) return;
       if (history.isNotEmpty) {
         // Sort chronologically so latest messages appear at the bottom

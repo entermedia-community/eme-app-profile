@@ -62,17 +62,113 @@ class AuthenticatedMockAuthService implements IAuthService {
   }
 }
 
+class MockApiService implements IApiService {
+  @override
+  Future<List<ServerModel>> fetchServers() async => [];
+
+  @override
+  Future<ServerModel?> fetchServerById(String id) async => null;
+
+  @override
+  Future<List<EmeProfileModel>> fetchSpecialistProfiles() async => fetchUsers();
+
+  @override
+  Future<ProfileModel> fetchUserProfile({String? userId}) async =>
+      const ProfileModel(
+        id: 'usr_test_1',
+        name: 'Christopher B',
+        role: 'Community Lead',
+        bio: 'Open source contributor & community lead.',
+        tags: ['Flutter', 'OpenEdit'],
+      );
+
+  @override
+  Future<List<ProductMessageModel>> fetchProducts({
+    String? serverId,
+    ProductType? type,
+  }) async => ProductMessageModel.sampleCatalog;
+
+  @override
+  Future<List<ChatModel>> fetchChats() async {
+    return const [
+      ChatModel(
+        channelId: 'admin',
+        username: 'admin',
+        displayName: 'The Administrator',
+        lastMessage: 'Welcome to EME Direct Messaging.',
+        time: 'Just now',
+        unreadCount: 0,
+        avatarColor: Color(0xFF2563EB),
+        avatarInitials: 'TA',
+      ),
+    ];
+  }
+
+  @override
+  Future<List<ChatMessage>> fetchChatMessages(String channelId) async {
+    return [
+      ChatMessage(
+        messageId: 'msg_1',
+        channel: channelId,
+        userId: 'admin',
+        message: 'Welcome to EME Direct Messaging.',
+        createdAt: DateTime.now(),
+      ),
+    ];
+  }
+
+  @override
+  Future<List<FileItemModel>> fetchFiles({String? serverId}) async => [];
+
+  @override
+  Future<List<GoalItemModel>> fetchServerGoals(String serverId) async => [];
+
+  @override
+  Future<List<TransactionItemModel>> fetchServerTransactions(
+    String serverId,
+  ) async => [];
+
+  @override
+  Future<List<BlogPostModel>> fetchServerBlogPosts(String serverId) async => [];
+
+  @override
+  Future<List<EmeProfileModel>> searchUsers(String query) async => fetchUsers();
+
+  @override
+  Future<List<EmeProfileModel>> fetchUsers() async {
+    return const [
+      EmeProfileModel(
+        username: 'admin',
+        name: 'The Administrator',
+        category: ProfileCategory.softwareTools,
+        description: 'System Administrator',
+        tags: ['Admin'],
+        iconData: Icons.admin_panel_settings,
+        isVerified: true,
+        servicesOffered: ['Admin'],
+      ),
+    ];
+  }
+}
+
 Widget createTestApp({List<Override> overrides = const []}) {
   final mockAuth = AuthenticatedMockAuthService();
+  final mockApi = MockApiService();
   return ProviderScope(
     overrides: [
       authServiceProvider.overrideWithValue(mockAuth),
-      authProvider.overrideWith((ref) => AuthNotifier(authService: mockAuth)
-        ..state = AuthState(
-          status: AuthStatus.authenticated,
-          user: mockAuth.user,
-          token: mockAuth.token,
-        )),
+      apiServiceProvider.overrideWithValue(mockApi),
+      authProvider.overrideWith(
+        (ref) => AuthNotifier(authService: mockAuth)
+          ..state = AuthState(
+            status: AuthStatus.authenticated,
+            user: mockAuth.user,
+            token: mockAuth.token,
+          ),
+      ),
+      emeProfileProvider.overrideWith(
+        (ref) => EmeProfileNotifier(apiService: mockApi, authService: mockAuth),
+      ),
       ...overrides,
     ],
     child: const EmeWorldApp(),
