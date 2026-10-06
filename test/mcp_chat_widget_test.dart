@@ -1,18 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_world/screens/chats/mcp_chat_detail_screen.dart';
 import 'package:eme_world/screens/chats/widgets/add_mcp_server_sheet.dart';
 import 'package:eme_world/screens/chats/widgets/mcp_server_info_sheet.dart';
 import 'package:eme_world/screens/chats/widgets/mcp_tool_invocation_sheet.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
 import 'test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
 
   testWidgets(
     'MCP Client chats, filtering, Add Server sheet, and MCP Chat detail test',

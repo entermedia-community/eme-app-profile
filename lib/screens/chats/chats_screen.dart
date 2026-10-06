@@ -169,7 +169,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         : AppColors.lightCardBorder;
 
     final chatsAsync = ref.watch(unifiedChatsProvider);
-    final mcpServers = ref.watch(mcpServersProvider);
 
     return Column(
       children: [
@@ -226,21 +225,18 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               _buildFilterChip(
                 label: 'All',
                 filter: ChatFilter.all,
-                count: null,
                 isDark: isDark,
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
                 label: 'Direct Chats',
                 filter: ChatFilter.users,
-                count: null,
                 isDark: isDark,
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
                 label: 'MCP Servers',
                 filter: ChatFilter.mcp,
-                count: mcpServers.length,
                 isDark: isDark,
                 accentColor: const Color(0xFF6366F1),
               ),
@@ -629,7 +625,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   Widget _buildFilterChip({
     required String label,
     required ChatFilter filter,
-    required int? count,
     required bool isDark,
     Color? accentColor,
   }) {
@@ -637,31 +632,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     final color = accentColor ?? AppColors.primary;
 
     return ChoiceChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label),
-          if (count != null) ...[
-            const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withValues(alpha: 0.25)
-                    : (isDark ? Colors.white12 : Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '$count',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+      label: Text(label),
       selected: isSelected,
       onSelected: (_) => setState(() => _activeFilter = filter),
       labelStyle: GoogleFonts.inter(
