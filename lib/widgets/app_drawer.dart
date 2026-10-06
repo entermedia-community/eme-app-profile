@@ -5,6 +5,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
+import '../screens/chats/widgets/add_mcp_server_sheet.dart';
 import 'auth/auth_modal_sheet.dart';
 
 class AppDrawer extends ConsumerWidget {
@@ -210,6 +211,16 @@ class AppDrawer extends ConsumerWidget {
                     onTap: () {
                       Navigator.pop(context);
                       ref.read(navigationProvider.notifier).setTab(2);
+                    },
+                  ),
+                  _DrawerItem(
+                    title: 'MCP Servers',
+                    icon: Icons.hub_rounded,
+                    isSelected: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      ref.read(navigationProvider.notifier).setTab(1); // navigate to chats
+                      AddMcpServerSheet.show(context);
                     },
                   ),
                   const Padding(
