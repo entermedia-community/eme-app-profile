@@ -5,10 +5,15 @@ import 'package:eme_world/screens/chats/widgets/mcp_tool_invocation_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'test_helpers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   testWidgets(
     'MCP Client chats, filtering, Add Server sheet, and MCP Chat detail test',
@@ -25,7 +30,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Search conversations...'), findsOneWidget);
-      expect(find.text('+ MCP'), findsOneWidget);
+      expect(find.byIcon(Icons.add_rounded), findsOneWidget);
       expect(find.text('All'), findsOneWidget);
       expect(find.text('Direct Chats'), findsOneWidget);
       expect(find.text('MCP Servers'), findsOneWidget);
@@ -42,8 +47,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('The Administrator'), findsWidgets);
 
-      // 4. Test Opening "+ MCP" Add Server Sheet
-      await tester.tap(find.text('+ MCP'));
+      // 4. Test Opening MCP Add Server Sheet
+      await tester.tap(find.byIcon(Icons.add_rounded));
       await tester.pumpAndSettle();
 
       expect(find.byType(AddMcpServerSheet), findsOneWidget);

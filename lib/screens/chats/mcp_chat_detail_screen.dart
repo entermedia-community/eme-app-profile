@@ -106,72 +106,203 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  void _showToolsMenu(McpServerModel server) {
+  void _showToolsMenu(McpServerModel initialServer) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        var currentServer = initialServer;
+        bool isReloading = false;
+        String? reloadError;
+
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            final serverColor = currentServer.color;
+
+            Future<void> reload() async {
+              setModalState(() {
+                isReloading = true;
+                reloadError = null;
+              });
+              try {
+                final tools = await ref
+                    .read(mcpServersProvider.notifier)
+                    .reloadTools(currentServer.id);
+                final freshServers = ref.read(mcpServersProvider);
+                final fresh = freshServers.firstWhere(
+                  (s) => s.id == currentServer.id,
+                  orElse: () => currentServer.copyWith(tools: tools),
+                );
+                setModalState(() {
+                  currentServer = fresh;
+                  isReloading = false;
+                  if (tools.isEmpty) {
+                    reloadError = 'Server returned 0 tools via tools/list';
+                  }
+                });
+              } catch (e) {
+                setModalState(() {
+                  isReloading = false;
+                  reloadError = e.toString().replaceFirst('Exception: ', '');
+                });
+              }
+            }
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.75,
+              ),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurface : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Available Tools (${server.tools.length})',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.bolt_rounded, color: serverColor, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Available Tools (${currentServer.tools.length})',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: isReloading
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                  )
+                                : const Icon(Icons.refresh_rounded, size: 20),
+                            tooltip: 'Reload Tools (tools/list)',
+                            onPressed: isReloading ? null : reload,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (currentServer.tools.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.handyman_outlined,
+                              size: 40,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No tools advertised by server.',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                              ),
+                            ),
+                            if (reloadError != null) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                reloadError!,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.redAccent,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: isReloading ? null : reload,
+                              icon: isReloading
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Icon(Icons.refresh_rounded, size: 18),
+                              label: Text(
+                                isReloading
+                                    ? 'Fetching tools/list...'
+                                    : 'Try Reload (tools/list)',
+                                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: serverColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                elevation: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: currentServer.tools.map((t) {
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: serverColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.bolt_rounded, color: serverColor, size: 20),
+                            ),
+                            title: Text(t.name, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            subtitle: Text(
+                              t.description.isNotEmpty ? t.description : 'No description provided',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(fontSize: 12),
+                            ),
+                            trailing: const Icon(Icons.chevron_right_rounded),
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              _openToolSheet(t, currentServer);
+                            },
+                          );
+                        }).toList(),
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
                 ],
               ),
-              const SizedBox(height: 8),
-              if (server.tools.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Center(child: Text('No tools advertised by server.')),
-                )
-              else
-                ...server.tools.map((t) {
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: server.color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.bolt_rounded, color: server.color, size: 20),
-                    ),
-                    title: Text(t.name, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                    subtitle: Text(
-                      t.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontSize: 12),
-                    ),
-                    trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _openToolSheet(t, server);
-                    },
-                  );
-                }),
-            ],
-          ),
+            );
+          },
         );
       },
     );

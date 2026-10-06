@@ -432,7 +432,7 @@ class _AddMcpServerSheetState extends ConsumerState<AddMcpServerSheet> {
                     const SizedBox(height: 6),
                     TextFormField(
                       controller: _apiKeyController,
-                      obscureText: true,
+                      // obscureText: true,
                       decoration: const InputDecoration(
                         hintText: 'Bearer token or MCP auth key',
                         prefixIcon: Icon(Icons.key_rounded, size: 20),
