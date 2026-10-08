@@ -58,7 +58,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
   void _loadMessagesForServer() {
     final catalog = ProductMessageModel.sampleCatalog;
 
-    if (widget.server.category == ServerCategory.marketplaceAndGoods ||
+    if (widget.server.category == 'Marketplace & Goods' ||
         widget.server.id == 'srv_010') {
       _messages = [
         _ServerMessage(
@@ -107,7 +107,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           badgeColor: AppColors.primary,
         ),
       ];
-    } else if (widget.server.category == ServerCategory.mobilityAndRides ||
+    } else if (widget.server.category == 'Mobility & Rides' ||
         widget.server.id == 'srv_009') {
       _messages = [
         _ServerMessage(
@@ -144,7 +144,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           badgeColor: AppColors.primary,
         ),
       ];
-    } else if (widget.server.category == ServerCategory.rentalAndGear ||
+    } else if (widget.server.category == 'Rental & Gear' ||
         widget.server.id == 'srv_008') {
       _messages = [
         _ServerMessage(
@@ -322,7 +322,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Active Node Topic: ${widget.server.category.label} ecosystem discussions & proposals',
+              'Active Node Topic: ${widget.server.categoryLabel} ecosystem discussions & proposals',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(

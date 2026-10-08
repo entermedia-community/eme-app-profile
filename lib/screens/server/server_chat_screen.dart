@@ -66,7 +66,8 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(7),
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     color: currentServer.primaryColor.withValues(
                       alpha: isDark ? 0.25 : 0.12,
@@ -77,11 +78,33 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
                       width: 1,
                     ),
                   ),
-                  child: Icon(
-                    currentServer.iconData,
-                    size: 18,
-                    color: currentServer.primaryColor,
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: currentServer.avatarUrl != null &&
+                          currentServer.avatarUrl!.isNotEmpty
+                      ? Image.network(
+                          currentServer.avatarUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Center(
+                            child: Text(
+                              currentServer.displayInitials,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11.5,
+                                color: currentServer.primaryColor,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Text(
+                            currentServer.displayInitials,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 11.5,
+                              color: currentServer.primaryColor,
+                            ),
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -114,7 +137,7 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              '${currentServer.memberCount} members • ${currentServer.category.label}',
+                              '${currentServer.memberCount} members • ${currentServer.categoryLabel}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(

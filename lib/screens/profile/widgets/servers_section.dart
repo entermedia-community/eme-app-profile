@@ -38,7 +38,8 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
       return s.title.toLowerCase().contains(q) ||
           (s.subtitle?.toLowerCase().contains(q) ?? false) ||
           s.description.toLowerCase().contains(q) ||
-          s.tags.any((t) => t.toLowerCase().contains(q));
+          s.categoryLabel.toLowerCase().contains(q) ||
+          s.servicesOffered.any((srv) => srv.toLowerCase().contains(q));
     }).toList();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

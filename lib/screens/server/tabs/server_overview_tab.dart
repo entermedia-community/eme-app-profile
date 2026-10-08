@@ -95,12 +95,15 @@ class ServerOverviewTab extends ConsumerWidget {
             child: Stack(
               children: [
                 Positioned(
-                  right: -15,
-                  bottom: -20,
-                  child: Icon(
-                    server.iconData,
-                    size: 130,
-                    color: Colors.white.withValues(alpha: 0.12),
+                  right: -10,
+                  bottom: -15,
+                  child: Text(
+                    server.displayInitials,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 100,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
                   ),
                 ),
                 Padding(
@@ -109,7 +112,8 @@ class ServerOverviewTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(14),
+                        width: 60,
+                        height: 60,
                         decoration: BoxDecoration(
                           color: isDark
                               ? const Color(0xFF0F172A)
@@ -123,11 +127,33 @@ class ServerOverviewTab extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        child: Icon(
-                          server.iconData,
-                          size: 32,
-                          color: server.primaryColor,
-                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: server.avatarUrl != null &&
+                                server.avatarUrl!.isNotEmpty
+                            ? Image.network(
+                                server.avatarUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Center(
+                                  child: Text(
+                                    server.displayInitials,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: server.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Center(
+                                child: Text(
+                                  server.displayInitials,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w800,
+                                    color: server.primaryColor,
+                                  ),
+                                ),
+                              ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -178,11 +204,11 @@ class ServerOverviewTab extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (server.location != null)
+                    if (server.serverMediaDBUrl.isNotEmpty)
                       Row(
                         children: [
                           Icon(
-                            Icons.location_on_outlined,
+                            Icons.dns_outlined,
                             size: 13,
                             color: isDark
                                 ? AppColors.textDarkMuted
@@ -190,7 +216,7 @@ class ServerOverviewTab extends ConsumerWidget {
                           ),
                           const SizedBox(width: 3),
                           Text(
-                            server.location!,
+                            server.serverMediaDBUrl,
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               color: isDark
@@ -223,7 +249,7 @@ class ServerOverviewTab extends ConsumerWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            server.category.label,
+                            server.categoryLabel,
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -320,9 +346,9 @@ class ServerOverviewTab extends ConsumerWidget {
           ),
           _buildStatDivider(isDark),
           _buildStatItem(
-            'Pricing',
-            server.servicePricing?.split('/').first.trim() ?? 'Free',
-            Icons.payments_outlined,
+            'Function',
+            server.serverFunction.isNotEmpty ? server.serverFunction : 'Standard',
+            Icons.hub_outlined,
             const Color(0xFFF59E0B),
             isDark,
           ),
@@ -665,7 +691,7 @@ class ServerOverviewTab extends ConsumerWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: server.tags.map((tag) {
+            children: [server.categoryLabel, ...server.servicesOffered].map((tag) {
               return PillBadge.forCategory(tag, isDark: isDark);
             }).toList(),
           ),

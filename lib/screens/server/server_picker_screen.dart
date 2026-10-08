@@ -49,8 +49,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
 
       // Category filter
       if (_selectedCategory != 'All' &&
-          item.category.label != _selectedCategory &&
-          !item.tags.contains(_selectedCategory)) {
+          item.category != _selectedCategory) {
         return false;
       }
 
@@ -60,17 +59,13 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
         final titleMatch = item.title.toLowerCase().contains(q);
         final subtitleMatch = item.subtitle?.toLowerCase().contains(q) ?? false;
         final descMatch = item.description.toLowerCase().contains(q);
-        final tagMatch = item.tags.any((t) => t.toLowerCase().contains(q));
         final srvMatch = item.servicesOffered.any(
           (s) => s.toLowerCase().contains(q),
         );
-        final locMatch = item.location?.toLowerCase().contains(q) ?? false;
         if (!titleMatch &&
             !subtitleMatch &&
             !descMatch &&
-            !tagMatch &&
-            !srvMatch &&
-            !locMatch) {
+            !srvMatch) {
           return false;
         }
       }

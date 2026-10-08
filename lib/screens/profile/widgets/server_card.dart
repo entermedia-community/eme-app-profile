@@ -50,7 +50,7 @@ class ServerCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Avatar Icon
+                    // Avatar / Initials
                     Container(
                       width: 42,
                       height: 42,
@@ -64,15 +64,41 @@ class ServerCard extends ConsumerWidget {
                           width: 1.2,
                         ),
                       ),
-                      child: Center(
-                        child: Icon(
-                          server.iconData,
-                          size: 22,
-                          color: isDark
-                              ? server.primaryColor.withValues(alpha: 0.95)
-                              : server.primaryColor,
-                        ),
-                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: server.avatarUrl != null &&
+                              server.avatarUrl!.isNotEmpty
+                          ? Image.network(
+                              server.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Text(
+                                  server.displayInitials,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? server.primaryColor.withValues(
+                                            alpha: 0.95,
+                                          )
+                                        : server.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                server.displayInitials,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? server.primaryColor.withValues(
+                                          alpha: 0.95,
+                                        )
+                                      : server.primaryColor,
+                                ),
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 8),
                     // Status Indicator Pill (Personalized, only on joined servers)
@@ -183,7 +209,7 @@ class ServerCard extends ConsumerWidget {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      server.category.label.toUpperCase(),
+                                      server.categoryLabel.toUpperCase(),
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 8.5,
                                         fontWeight: FontWeight.w800,

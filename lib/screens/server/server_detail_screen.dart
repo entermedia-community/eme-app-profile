@@ -62,10 +62,12 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
   }
 
   String _getPrimaryModuleKey(ServerModel server) {
-    if (server.category == ServerCategory.finance) {
+    final cat = (server.category ?? '').toLowerCase();
+    if (cat.contains('finance')) {
       return 'finance';
-    } else if (server.category == ServerCategory.socialServices ||
-        server.category == ServerCategory.softwareTools) {
+    } else if (cat.contains('social') ||
+        cat.contains('tool') ||
+        cat.contains('software')) {
       return 'goals';
     } else {
       return 'products';
@@ -97,7 +99,8 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(7),
+              width: 34,
+              height: 34,
               decoration: BoxDecoration(
                 color: currentServer.primaryColor.withValues(
                   alpha: isDark ? 0.25 : 0.12,
@@ -108,11 +111,33 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                   width: 1,
                 ),
               ),
-              child: Icon(
-                currentServer.iconData,
-                size: 18,
-                color: currentServer.primaryColor,
-              ),
+              clipBehavior: Clip.antiAlias,
+              child: currentServer.avatarUrl != null &&
+                      currentServer.avatarUrl!.isNotEmpty
+                  ? Image.network(
+                      currentServer.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Center(
+                        child: Text(
+                          currentServer.displayInitials,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12,
+                            color: currentServer.primaryColor,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        currentServer.displayInitials,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: currentServer.primaryColor,
+                        ),
+                      ),
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -143,7 +168,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${currentServer.memberCount} members • ${currentServer.category.label}',
+                        '${currentServer.memberCount} members • ${currentServer.categoryLabel}',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           color: isDark

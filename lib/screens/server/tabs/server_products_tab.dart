@@ -35,7 +35,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
 
   List<_ProductItem> _getProductsForServer() {
     // Generate specialized products tailored to the server's category & services
-    final cat = widget.server.category.label.toLowerCase();
+    final cat = widget.server.categoryLabel.toLowerCase();
 
     if (cat.contains('finance') || widget.server.title.contains('Passport')) {
       return [
@@ -242,9 +242,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           category: 'Core Service',
           description:
               'Dedicated workspace infrastructure and collaboration tools for verified members.',
-          price: widget.server.servicePricing ?? 'Free tier available',
+          price: 'Free tier available',
           tag: 'Core Offering',
-          icon: widget.server.iconData,
+          icon: Icons.hub_rounded,
         ),
         const _ProductItem(
           title: 'Decentralized API Integration Suite',

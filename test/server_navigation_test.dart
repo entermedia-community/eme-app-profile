@@ -24,10 +24,10 @@ void main() {
 
       // Verify ServerChatScreen is opened
       expect(find.byType(ServerChatScreen), findsOneWidget);
-      expect(find.text('Details'), findsOneWidget);
+      expect(find.text('Console'), findsOneWidget);
 
-      // Click the Details button in the top nav bar area
-      await tester.tap(find.text('Details'));
+      // Click the Console button in the top nav bar area
+      await tester.tap(find.text('Console'));
       await tester.pumpAndSettle();
 
       // Verify ServerDetailScreen is opened

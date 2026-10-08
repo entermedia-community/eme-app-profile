@@ -51,11 +51,8 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       id: 'srv_${DateTime.now().millisecondsSinceEpoch}',
       title: name,
       subtitle: formattedUrl,
-      location: formattedUrl,
       description: 'Connected node at $formattedUrl',
-      category: ServerCategory.softwareTools,
-      tags: const ['Connected', 'Custom Node'],
-      iconData: Icons.dns_rounded,
+      category: 'Software Tools',
       primaryColor: AppColors.primary,
       secondaryColor: AppColors.primaryBg,
       memberCount: 1,
@@ -63,6 +60,7 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       lastNotification: 'Server connected to network',
       lastNotificationTime: 'Just now',
       statusColor: AppColors.greenAccent,
+      serverMediaDBUrl: formattedUrl,
     );
 
     ref.read(serverProvider.notifier).addServer(newServer);

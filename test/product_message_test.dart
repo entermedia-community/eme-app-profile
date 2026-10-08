@@ -85,9 +85,7 @@ void main() {
           title: 'Artisan Goods & Organic Market',
           description:
               'Direct-to-consumer marketplace for single-origin shade coffee.',
-          category: ServerCategory.marketplaceAndGoods,
-          tags: ['Marketplace & Goods'],
-          iconData: Icons.storefront_rounded,
+          category: 'Marketplace & Goods',
           primaryColor: Color(0xFFD97706),
         );
 
@@ -120,9 +118,7 @@ void main() {
           id: 'srv_009',
           title: 'EcoTransit Mobility & Rides',
           description: 'Zero-emission rideshare and shuttle service.',
-          category: ServerCategory.mobilityAndRides,
-          tags: ['Mobility & Rides'],
-          iconData: Icons.electric_car_rounded,
+          category: 'Mobility & Rides',
           primaryColor: Color(0xFF0284C7),
         );
 
@@ -152,9 +148,7 @@ void main() {
           id: 'srv_008',
           title: 'Gear Rentals',
           description: 'Equipment, villa rentals, and tool lending.',
-          category: ServerCategory.rentalAndGear,
-          tags: ['Rental & Gear'],
-          iconData: Icons.key_rounded,
+          category: 'Rental & Gear',
           primaryColor: Color(0xFF0D9488),
         );
 
