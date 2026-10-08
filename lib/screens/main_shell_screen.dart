@@ -129,7 +129,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           ? ElevatedButton.icon(
               onPressed: () => _openServerPicker(context),
               icon: const Icon(Icons.add, size: 22),
-              label: const Text('Servers'),
+              label: const Text('Browse'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.greenAccent,
                 foregroundColor: Colors.white,

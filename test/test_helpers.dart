@@ -64,10 +64,56 @@ class AuthenticatedMockAuthService implements IAuthService {
 
 class MockApiService implements IApiService {
   @override
-  Future<List<ServerModel>> fetchServers() async => [];
+  Future<List<ServerModel>> fetchServers({
+    String? query,
+    String? category,
+  }) async => const [
+    ServerModel(
+      id: 'srv_test_1',
+      title: 'Lakeview Stays & House Rentals',
+      subtitle: 'HOUSE RENTALS',
+      description: 'Verified off-grid eco-villas and lakefront stays.',
+      category: 'Rental & Gear',
+      primaryColor: Color(0xFF0D9488),
+      secondaryColor: Color(0xFFCCFBF1),
+      memberCount: 530,
+      isJoined: true,
+      servicesOffered: ['Solar Eco-Villas', 'Private Boat Dock Access'],
+    ),
+    ServerModel(
+      id: 'srv_test_2',
+      title: 'Artisan Goods & Organic Market',
+      subtitle: 'PRODUCER-DIRECT COMMERCE',
+      description: 'Direct-to-consumer marketplace for shade coffee and textiles.',
+      category: 'Marketplace & Goods',
+      primaryColor: Color(0xFFD97706),
+      secondaryColor: Color(0xFFFEF3C7),
+      memberCount: 1680,
+      isJoined: false,
+      servicesOffered: ['Single-Origin Coffee', 'Handwoven Textiles'],
+    ),
+  ];
 
   @override
-  Future<ServerModel?> fetchServerById(String id) async => null;
+  Future<ServerModel?> fetchServerById(String id) async {
+    final servers = await fetchServers();
+    return servers.cast<ServerModel?>().firstWhere(
+      (s) => s?.id == id,
+      orElse: () => null,
+    );
+  }
+
+  @override
+  Future<bool> joinServer(String serverId) async => true;
+
+  @override
+  Future<bool> leaveServer(String serverId) async => true;
+
+  @override
+  Future<List<ServerModel>> fetchUserServers() async {
+    final servers = await fetchServers();
+    return servers.where((s) => s.isJoined).toList();
+  }
 
   @override
   Future<List<EmeProfileModel>> fetchSpecialistProfiles() async => fetchUsers();
