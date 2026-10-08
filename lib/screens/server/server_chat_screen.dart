@@ -83,7 +83,7 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
                     color: currentServer.primaryColor,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,13 +166,13 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.dashboard_outlined,
+                        Icons.terminal,
                         size: 15,
                         color: currentServer.primaryColor,
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        'Details',
+                        'Console',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -181,12 +181,6 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
                               : AppColors.textPrimary,
                         ),
                       ),
-                      const SizedBox(width: 2),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: currentServer.primaryColor,
-                      ),
                     ],
                   ),
                 ),
@@ -194,92 +188,7 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
             ),
           ),
           // Server Options Menu
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, size: 22),
-            tooltip: 'Server Options',
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            onSelected: (value) {
-              if (value == 'details') {
-                Navigator.of(
-                  context,
-                ).push(ServerDetailScreen.route(currentServer));
-              } else if (value == 'join') {
-                ref.read(serverProvider.notifier).toggleJoin(currentServer.id);
-              } else if (value == 'share') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Server invite link copied: https://eme.world/s/${currentServer.id}',
-                    ),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              } else if (value == 'qr') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Node QR Code generated'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            itemBuilder: (ctx) => [
-              PopupMenuItem(
-                value: 'details',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.dashboard_outlined,
-                      size: 18,
-                      color: currentServer.primaryColor,
-                    ),
-                    const SizedBox(width: 10),
-                    const Text('Server Details & Modules'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'join',
-                child: Row(
-                  children: [
-                    Icon(
-                      currentServer.isJoined
-                          ? Icons.remove_circle_outline_rounded
-                          : Icons.add_circle_outline_rounded,
-                      size: 18,
-                      color: currentServer.isJoined
-                          ? const Color(0xFFEF4444)
-                          : AppColors.greenAccent,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(currentServer.isJoined ? 'Leave Node' : 'Join Node'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'share',
-                child: Row(
-                  children: [
-                    Icon(Icons.share_outlined, size: 18),
-                    SizedBox(width: 10),
-                    Text('Share Node Link'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'qr',
-                child: Row(
-                  children: [
-                    Icon(Icons.qr_code_rounded, size: 18),
-                    SizedBox(width: 10),
-                    Text('Node QR Code'),
-                  ],
-                ),
-              ),
-            ],
-          ),
+
           const SizedBox(width: 4),
         ],
       ),
