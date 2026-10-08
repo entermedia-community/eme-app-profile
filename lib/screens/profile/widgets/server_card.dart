@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
-import '../../server/server_detail_screen.dart';
+import '../../server/server_chat_screen.dart';
 
 class ServerCard extends ConsumerWidget {
   final ServerModel server;
@@ -233,6 +233,6 @@ class ServerCard extends ConsumerWidget {
   }
 
   void _openServerScreen(BuildContext context) {
-    Navigator.of(context).push(ServerDetailScreen.route(server));
+    Navigator.of(context).push(ServerChatScreen.route(server));
   }
 }
