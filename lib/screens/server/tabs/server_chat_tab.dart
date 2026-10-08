@@ -47,14 +47,6 @@ class _ServerChatTabState extends State<ServerChatTab> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  final List<String> _channels = [
-    '#general',
-    '#announcements',
-    '#marketplace',
-    '#support-desk',
-  ];
-  int _selectedChannelIndex = 0;
-
   late List<_ServerMessage> _messages;
 
   @override
@@ -284,9 +276,6 @@ class _ServerChatTabState extends State<ServerChatTab> {
 
     return Column(
       children: [
-        // Channel Selector Bar
-        _buildChannelSelector(isDark),
-
         // Pinned Topic Bar
         _buildPinnedTopicBanner(isDark),
 
@@ -306,63 +295,6 @@ class _ServerChatTabState extends State<ServerChatTab> {
         // Input Box
         _buildChatInput(isDark),
       ],
-    );
-  }
-
-  Widget _buildChannelSelector(bool isDark) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark
-                ? AppColors.darkCardBorder
-                : AppColors.lightCardBorder,
-          ),
-        ),
-      ),
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: _channels.length,
-        separatorBuilder: (context, index) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final isSelected = index == _selectedChannelIndex;
-          return ChoiceChip(
-            label: Text(_channels[index]),
-            selected: isSelected,
-            onSelected: (val) {
-              if (val) {
-                setState(() => _selectedChannelIndex = index);
-              }
-            },
-            labelStyle: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected
-                  ? Colors.white
-                  : (isDark
-                        ? AppColors.textDarkSecondary
-                        : AppColors.textSecondary),
-            ),
-            backgroundColor: isDark
-                ? const Color(0xFF0F172A)
-                : const Color(0xFFF1F5F9),
-            selectedColor: widget.server.primaryColor,
-            showCheckmark: false,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(
-                color: isSelected
-                    ? Colors.transparent
-                    : (isDark ? AppColors.darkCardBorder : Colors.transparent),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-          );
-        },
-      ),
     );
   }
 
@@ -657,7 +589,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
                 controller: _textController,
                 onSubmitted: (_) => _sendMessage(),
                 decoration: InputDecoration(
-                  hintText: 'Message ${_channels[_selectedChannelIndex]}...',
+                  hintText: 'Type your message...',
                   hintStyle: GoogleFonts.inter(
                     fontSize: 13,
                     color: isDark
