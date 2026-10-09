@@ -49,8 +49,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
 
       // Category filter
       if (_selectedCategory.id != 'all' &&
-          item.category != _selectedCategory.id &&
-          item.category != _selectedCategory.name) {
+          item.category.id != _selectedCategory.id) {
         return false;
       }
 

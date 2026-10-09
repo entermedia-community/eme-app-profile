@@ -62,7 +62,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
   }
 
   String _getPrimaryModuleKey(ServerModel server) {
-    final cat = (server.category ?? '').toLowerCase();
+    final cat = server.categoryLabel.toLowerCase();
     if (cat.contains('finance')) {
       return 'finance';
     } else if (cat.contains('social') ||

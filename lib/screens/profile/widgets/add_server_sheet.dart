@@ -52,7 +52,10 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       name: name,
       subtitle: formattedUrl,
       description: 'Connected node at $formattedUrl',
-      category: 'Software Tools',
+      category: ServerCategoryModel.fromJson({
+        "id": 'Software Tools',
+        "name": 'Software Tools',
+      }),
       primaryColor: AppColors.primary,
       secondaryColor: AppColors.primaryBg,
       memberCount: 1,

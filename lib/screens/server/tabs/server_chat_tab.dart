@@ -58,7 +58,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
   void _loadMessagesForServer() {
     final catalog = ProductMessageModel.sampleCatalog;
 
-    if (widget.server.category == 'Marketplace & Goods' ||
+    if (widget.server.category.id == 'Marketplace & Goods' ||
         widget.server.id == 'srv_010') {
       _messages = [
         _ServerMessage(
@@ -107,7 +107,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           badgeColor: AppColors.primary,
         ),
       ];
-    } else if (widget.server.category == 'Mobility & Rides' ||
+    } else if (widget.server.category.id == 'Mobility & Rides' ||
         widget.server.id == 'srv_009') {
       _messages = [
         _ServerMessage(
@@ -144,7 +144,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           badgeColor: AppColors.primary,
         ),
       ];
-    } else if (widget.server.category == 'Rental & Gear' ||
+    } else if (widget.server.category.id == 'Rental & Gear' ||
         widget.server.id == 'srv_008') {
       _messages = [
         _ServerMessage(
