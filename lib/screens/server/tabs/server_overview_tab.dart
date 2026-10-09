@@ -265,42 +265,98 @@ class ServerOverviewTab extends ConsumerWidget {
                   ],
                 ),
                 // Join / Member Status Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ref.read(serverProvider.notifier).toggleJoin(server.id);
-                  },
-                  icon: Icon(
-                    server.isJoined
-                        ? Icons.check_circle_rounded
-                        : Icons.add_circle_outline_rounded,
-                    size: 16,
-                  ),
-                  label: Text(server.isJoined ? 'Joined' : 'Join'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: server.isJoined
-                        ? (isDark
-                              ? const Color(0xFF064E3B)
-                              : const Color(0xFFDCFCE7))
-                        : server.primaryColor,
-                    foregroundColor: server.isJoined
-                        ? (isDark
-                              ? const Color(0xFF86EFAC)
-                              : const Color(0xFF166534))
-                        : Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    textStyle: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
+                ref.watch(serverProvider.select((s) => s.isJoining(server.id)))
+                    ? ElevatedButton(
+                        onPressed: null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: server.primaryColor.withValues(alpha: 0.7),
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor:
+                              server.primaryColor.withValues(alpha: 0.7),
+                          disabledForegroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 13,
+                              height: 13,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Joining...',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ElevatedButton.icon(
+                        onPressed: () async {
+                          final success = await ref
+                              .read(serverProvider.notifier)
+                              .toggleJoin(server.id);
+                          if (!success && context.mounted) {
+                            final error =
+                                ref.read(serverProvider).error ??
+                                'Failed to update server status';
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(error),
+                                backgroundColor: AppColors.redAccent,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        icon: Icon(
+                          server.isJoined
+                              ? Icons.check_circle_rounded
+                              : Icons.add_circle_outline_rounded,
+                          size: 16,
+                        ),
+                        label: Text(server.isJoined ? 'Joined' : 'Join'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: server.isJoined
+                              ? (isDark
+                                    ? const Color(0xFF064E3B)
+                                    : const Color(0xFFDCFCE7))
+                              : server.primaryColor,
+                          foregroundColor: server.isJoined
+                              ? (isDark
+                                    ? const Color(0xFF86EFAC)
+                                    : const Color(0xFF166534))
+                              : Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
               ],
             ),
           ),

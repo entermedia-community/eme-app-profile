@@ -60,4 +60,8 @@ class AppColors {
 
   static const Color badgeFinanceBg = Color(0xFFFEF3C7);
   static const Color badgeFinanceText = Color(0xFF92400E);
+
+  // Status & Alerts
+  static const Color redAccent = Color(0xFFEF4444);
+  static const Color error = Color(0xFFEF4444);
 }

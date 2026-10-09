@@ -151,31 +151,99 @@ class ServerCard extends ConsumerWidget {
 
                     // Connect / Joined Button
                     if (!server.isJoined)
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          ref
-                              .read(serverProvider.notifier)
-                              .toggleJoin(server.id);
-                        },
-                        icon: const Icon(Icons.add_link_rounded, size: 16),
-                        label: const Text('Connect'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          textStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      )
+                      ref.watch(
+                            serverProvider.select(
+                              (s) => s.isJoining(server.id),
+                            ),
+                          )
+                          ? ElevatedButton(
+                              onPressed: null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary.withValues(
+                                  alpha: 0.7,
+                                ),
+                                foregroundColor: Colors.white,
+                                disabledBackgroundColor: AppColors.primary
+                                    .withValues(alpha: 0.7),
+                                disabledForegroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 13,
+                                    height: 13,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Connecting...',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ElevatedButton.icon(
+                              onPressed: () async {
+                                final success = await ref
+                                    .read(serverProvider.notifier)
+                                    .toggleJoin(server.id);
+                                if (!success && context.mounted) {
+                                  final error =
+                                      ref.read(serverProvider).error ??
+                                      'Failed to join server';
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(error),
+                                      backgroundColor: AppColors.redAccent,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              icon: const Icon(
+                                Icons.add_link_rounded,
+                                size: 16,
+                              ),
+                              label: const Text('Connect'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                visualDensity: VisualDensity.compact,
+                                textStyle: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            )
                     else
                       Container(
                         padding: const EdgeInsets.symmetric(

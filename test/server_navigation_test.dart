@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/profile/widgets/server_card.dart';
 import 'package:eme_world/screens/server/server_chat_screen.dart';
 import 'package:eme_world/screens/server/server_detail_screen.dart';
@@ -39,6 +42,35 @@ void main() {
 
       // Verify we're back on ServerChatScreen
       expect(find.byType(ServerChatScreen), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'ServerCard renders Connect button for unjoined servers and handles tap',
+    (WidgetTester tester) async {
+      final unjoinedServer = const ServerModel(
+        id: 'srv_unjoined_99',
+        name: 'Unjoined Server',
+        description: 'Test unjoined server description',
+        category: 'Software Tools',
+        isJoined: false,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: ServerCard(server: unjoinedServer),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Connect'), findsOneWidget);
+      await tester.tap(find.text('Connect'));
+      await tester.pump();
+      await tester.pumpAndSettle();
     },
   );
 }
