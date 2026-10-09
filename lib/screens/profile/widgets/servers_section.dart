@@ -82,28 +82,15 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
         if (joinedServers.isEmpty)
           _buildEmptyState(context, isDark, serverState.joinedServers.isEmpty)
         else ...[
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isTablet = constraints.maxWidth > 600;
-              final crossAxisCount = isTablet ? 3 : 2;
-
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: joinedServers.length,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 1,
-                ),
-                itemBuilder: (context, index) {
-                  return ServerCard(server: joinedServers[index]);
-                },
-              );
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: joinedServers.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              return ServerCard(server: joinedServers[index]);
             },
           ),
-
           const SizedBox(height: 20),
         ],
       ],

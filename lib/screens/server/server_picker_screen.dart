@@ -18,7 +18,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   ServerCategoryModel _selectedCategory = ServerCategoryModel.all;
-  String _selectedScope = 'all'; // 'all', 'available', 'joined'
+  String _selectedScope = 'all';
 
   @override
   void dispose() {
@@ -112,11 +112,13 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(serverProvider.notifier).loadServersFromApi(
-          query: _searchQuery.isNotEmpty ? _searchQuery : null,
-          category: _selectedCategory.id != 'all' ? _selectedCategory.id : null,
-          forceRefreshCategories: true,
-        ),
+        onRefresh: () => ref
+            .read(serverProvider.notifier)
+            .loadServersFromApi(
+              query: _searchQuery.isNotEmpty ? _searchQuery : null,
+              category: _selectedCategory.id,
+              forceRefreshCategories: true,
+            ),
         color: AppColors.primary,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(
@@ -131,12 +133,12 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
                 controller: _searchController,
                 onChanged: (val) {
                   setState(() => _searchQuery = val);
-                  ref.read(serverProvider.notifier).loadServersFromApi(
-                    query: val.isNotEmpty ? val : null,
-                    category: _selectedCategory.id != 'all'
-                        ? _selectedCategory.id
-                        : null,
-                  );
+                  ref
+                      .read(serverProvider.notifier)
+                      .loadServersFromApi(
+                        query: val.isNotEmpty ? val : null,
+                        category: _selectedCategory.id,
+                      );
                 },
                 decoration: InputDecoration(
                   hintText: 'Search servers by title, tags, or topic...',
@@ -151,12 +153,12 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
-                            ref.read(serverProvider.notifier).loadServersFromApi(
-                              query: null,
-                              category: _selectedCategory.id != 'all'
-                                  ? _selectedCategory.id
-                                  : null,
-                            );
+                            ref
+                                .read(serverProvider.notifier)
+                                .loadServersFromApi(
+                                  query: null,
+                                  category: _selectedCategory.id,
+                                );
                           },
                         )
                       : null,
@@ -178,25 +180,14 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
               if (servers.isEmpty)
                 _buildEmptyState(isDark)
               else
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isTablet = constraints.maxWidth > 600;
-                    final crossAxisCount = isTablet ? 3 : 2;
-
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: servers.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        crossAxisSpacing: 14,
-                        mainAxisSpacing: 14,
-                        childAspectRatio: 1,
-                      ),
-                      itemBuilder: (context, index) {
-                        return ServerCard(server: servers[index]);
-                      },
-                    );
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: servers.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    return ServerCard(server: servers[index]);
                   },
                 ),
 
@@ -228,10 +219,12 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
           return InkWell(
             onTap: () {
               setState(() => _selectedCategory = cat);
-              ref.read(serverProvider.notifier).loadServersFromApi(
-                category: cat.id != 'all' ? cat.id : null,
-                query: _searchQuery.isNotEmpty ? _searchQuery : null,
-              );
+              ref
+                  .read(serverProvider.notifier)
+                  .loadServersFromApi(
+                    category: cat.id,
+                    query: _searchQuery.isNotEmpty ? _searchQuery : null,
+                  );
             },
             borderRadius: BorderRadius.circular(10),
             child: AnimatedContainer(
@@ -323,10 +316,9 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
                     _selectedCategory = ServerCategoryModel.all;
                     _selectedScope = 'all';
                   });
-                  ref.read(serverProvider.notifier).loadServersFromApi(
-                    query: null,
-                    category: null,
-                  );
+                  ref
+                      .read(serverProvider.notifier)
+                      .loadServersFromApi(query: null, category: null);
                 },
                 child: const Text('Reset Filters'),
               ),

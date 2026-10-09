@@ -41,19 +41,19 @@ class ServerCard extends ConsumerWidget {
           onTap: () => _openServerScreen(context),
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Top Row: Avatar Icon + Status / Alert Badge
+                // Top Row: Avatar + Title & Meta + Action Button (Connect / Joined)
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Avatar / Initials
+                    // Avatar / Initials Box
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: server.primaryColor.withValues(
                           alpha: isDark ? 0.22 : 0.12,
@@ -67,189 +67,239 @@ class ServerCard extends ConsumerWidget {
                       clipBehavior: Clip.antiAlias,
                       child:
                           server.avatarUrl != null &&
-                              server.avatarUrl!.isNotEmpty
-                          ? Image.network(
-                              server.avatarUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Center(
-                                child: Text(
-                                  server.displayInitials,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 14,
-                                    color: isDark
-                                        ? server.primaryColor.withValues(
-                                            alpha: 0.95,
-                                          )
-                                        : server.primaryColor,
+                                  server.avatarUrl!.isNotEmpty
+                              ? Image.network(
+                                  server.avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => Center(
+                                    child: Text(
+                                      server.displayInitials,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 14,
+                                        color: isDark
+                                            ? server.primaryColor.withValues(
+                                                alpha: 0.95,
+                                              )
+                                            : server.primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    server.displayInitials,
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 14,
+                                      color: isDark
+                                          ? server.primaryColor.withValues(
+                                              alpha: 0.95,
+                                            )
+                                          : server.primaryColor,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            )
-                          : Center(
-                              child: Text(
-                                server.displayInitials,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? server.primaryColor.withValues(
-                                          alpha: 0.95,
-                                        )
-                                      : server.primaryColor,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Name and Category / Members subtitle
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            server.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Text(
+                                server.categoryLabel,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
                                 ),
                               ),
-                            ),
-                    ),
-                    const SizedBox(width: 8),
-                    // Status Indicator Pill (Personalized, only on joined servers)
-                    Expanded(
-                      child: Text(
-                        server.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? AppColors.textDarkPrimary
-                              : AppColors.textPrimary,
-                          height: 1.2,
-                        ),
+                              const SizedBox(width: 6),
+                              Text(
+                                '•  ${server.memberCount} members',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: isDark
+                                      ? AppColors.textDarkMuted
+                                      : AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
+
+                    const SizedBox(width: 8),
+
+                    // Connect / Joined Button
+                    if (!server.isJoined)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref
+                              .read(serverProvider.notifier)
+                              .toggleJoin(server.id);
+                        },
+                        icon: const Icon(Icons.add_link_rounded, size: 16),
+                        label: const Text('Connect'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.greenAccent.withValues(
+                            alpha: isDark ? 0.2 : 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.greenAccent.withValues(
+                              alpha: isDark ? 0.4 : 0.3,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              size: 13,
+                              color: AppColors.greenAccent,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Joined',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.greenAccent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
 
                 const SizedBox(height: 10),
 
-                // Info Section (Personalized status for joined servers, description for others)
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
+                // Description or Latest status block
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF131D31)
+                        : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
                       color: isDark
-                          ? const Color(0xFF131D31)
-                          : const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isDark
-                            ? AppColors.darkCardBorder.withValues(alpha: 0.7)
-                            : AppColors.lightCardBorder.withValues(alpha: 0.9),
-                        width: 1,
-                      ),
+                          ? AppColors.darkCardBorder.withValues(alpha: 0.7)
+                          : AppColors.lightCardBorder.withValues(alpha: 0.9),
+                      width: 1,
                     ),
-                    child: server.isJoined
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.notifications_active_outlined,
-                                    size: 11.5,
-                                    color: statusColor,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      'LATEST STATUS',
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.4,
-                                        color: isDark
-                                            ? AppColors.textDarkMuted
-                                            : AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    timeText,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.w500,
+                  ),
+                  child: server.isJoined
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.notifications_active_outlined,
+                                  size: 12,
+                                  color: statusColor,
+                                ),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Text(
+                                    'LATEST STATUS',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
                                       color: isDark
                                           ? AppColors.textDarkMuted
                                           : AppColors.textMuted,
                                     ),
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                notificationText,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? AppColors.textDarkSecondary
-                                      : const Color(0xFF475569),
-                                  height: 1.25,
                                 ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.public_rounded,
-                                    size: 11.5,
+                                Text(
+                                  timeText,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w500,
                                     color: isDark
                                         ? AppColors.textDarkMuted
                                         : AppColors.textMuted,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      server.categoryLabel.toUpperCase(),
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.4,
-                                        color: isDark
-                                            ? AppColors.textDarkMuted
-                                            : AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '${server.memberCount} members',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark
-                                          ? AppColors.textDarkMuted
-                                          : AppColors.textMuted,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                server.description,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? AppColors.textDarkSecondary
-                                      : const Color(0xFF475569),
-                                  height: 1.25,
                                 ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              notificationText,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? AppColors.textDarkSecondary
+                                    : const Color(0xFF475569),
+                                height: 1.3,
                               ),
-                            ],
+                            ),
+                          ],
+                        )
+                      : Text(
+                          server.description,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? AppColors.textDarkSecondary
+                                : const Color(0xFF475569),
+                            height: 1.3,
                           ),
-                  ),
+                        ),
                 ),
               ],
             ),
