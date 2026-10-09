@@ -96,6 +96,14 @@ class MockApiService implements IApiService {
   ];
 
   @override
+  Future<List<ServerCategoryModel>> fetchServerCategories() async => const [
+    ServerCategoryModel(id: 'all', name: 'All'),
+    ServerCategoryModel(id: 'rental_gear', name: 'Rental & Gear'),
+    ServerCategoryModel(id: 'marketplace', name: 'Marketplace & Goods'),
+    ServerCategoryModel(id: 'software_tools', name: 'Software Tools'),
+  ];
+
+  @override
   Future<ServerModel?> fetchServerById(String id) async {
     final servers = await fetchServers();
     return servers.cast<ServerModel?>().firstWhere(

@@ -17,7 +17,7 @@ class ServerPickerScreen extends ConsumerStatefulWidget {
 class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String _selectedCategory = 'All';
+  ServerCategoryModel _selectedCategory = ServerCategoryModel.all;
   String _selectedScope = 'all'; // 'all', 'available', 'joined'
 
   @override
@@ -48,7 +48,9 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
       if (_selectedScope == 'joined' && !item.isJoined) return false;
 
       // Category filter
-      if (_selectedCategory != 'All' && item.category != _selectedCategory) {
+      if (_selectedCategory.id != 'all' &&
+          item.category != _selectedCategory.id &&
+          item.category != _selectedCategory.name) {
         return false;
       }
 
@@ -81,7 +83,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pick a Server',
+              'Browse Servers',
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -109,95 +111,127 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            TextField(
-              controller: _searchController,
-              onChanged: (val) {
-                setState(() => _searchQuery = val);
-              },
-              decoration: InputDecoration(
-                hintText: 'Search servers by title, tags, or topic...',
-                hintStyle: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: AppColors.textMuted,
-                ),
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Category Horizontal List
-            _buildCategorySelector(isDark),
-
-            const SizedBox(height: 12),
-
-            // Servers Grid
-            if (servers.isEmpty)
-              _buildEmptyState(isDark)
-            else
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final isTablet = constraints.maxWidth > 600;
-                  final crossAxisCount = isTablet ? 3 : 2;
-
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: servers.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 1,
-                    ),
-                    itemBuilder: (context, index) {
-                      return ServerCard(server: servers[index]);
-                    },
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(serverProvider.notifier).loadServersFromApi(
+          query: _searchQuery.isNotEmpty ? _searchQuery : null,
+          category: _selectedCategory.id != 'all' ? _selectedCategory.id : null,
+          forceRefreshCategories: true,
+        ),
+        color: AppColors.primary,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar
+              TextField(
+                controller: _searchController,
+                onChanged: (val) {
+                  setState(() => _searchQuery = val);
+                  ref.read(serverProvider.notifier).loadServersFromApi(
+                    query: val.isNotEmpty ? val : null,
+                    category: _selectedCategory.id != 'all'
+                        ? _selectedCategory.id
+                        : null,
                   );
                 },
+                decoration: InputDecoration(
+                  hintText: 'Search servers by title, tags, or topic...',
+                  hintStyle: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                  ),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                            ref.read(serverProvider.notifier).loadServersFromApi(
+                              query: null,
+                              category: _selectedCategory.id != 'all'
+                                  ? _selectedCategory.id
+                                  : null,
+                            );
+                          },
+                        )
+                      : null,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
               ),
 
-            const SizedBox(height: 80),
-          ],
+              const SizedBox(height: 12),
+
+              // Category Horizontal List
+              _buildCategorySelector(isDark, serverState.categories),
+
+              const SizedBox(height: 12),
+
+              // Servers Grid
+              if (servers.isEmpty)
+                _buildEmptyState(isDark)
+              else
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isTablet = constraints.maxWidth > 600;
+                    final crossAxisCount = isTablet ? 3 : 2;
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: servers.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                        childAspectRatio: 1,
+                      ),
+                      itemBuilder: (context, index) {
+                        return ServerCard(server: servers[index]);
+                      },
+                    );
+                  },
+                ),
+
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCategorySelector(bool isDark) {
+  Widget _buildCategorySelector(
+    bool isDark,
+    List<ServerCategoryModel> categories,
+  ) {
     return SizedBox(
       height: 36,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: kServerCategories.length,
+        itemCount: categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final cat = kServerCategories[index];
-          final isSelected = cat == _selectedCategory;
+          final cat = categories[index];
+          final isSelected =
+              cat.id == _selectedCategory.id ||
+              (cat.id == 'all' && _selectedCategory.id == 'all') ||
+              cat.name == _selectedCategory.name;
 
           return InkWell(
             onTap: () {
               setState(() => _selectedCategory = cat);
+              ref.read(serverProvider.notifier).loadServersFromApi(
+                category: cat.id != 'all' ? cat.id : null,
+                query: _searchQuery.isNotEmpty ? _searchQuery : null,
+              );
             },
             borderRadius: BorderRadius.circular(10),
             child: AnimatedContainer(
@@ -220,7 +254,7 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
               ),
               child: Center(
                 child: Text(
-                  cat,
+                  cat.name,
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
@@ -286,9 +320,13 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
                   _searchController.clear();
                   setState(() {
                     _searchQuery = '';
-                    _selectedCategory = 'All';
+                    _selectedCategory = ServerCategoryModel.all;
                     _selectedScope = 'all';
                   });
+                  ref.read(serverProvider.notifier).loadServersFromApi(
+                    query: null,
+                    category: null,
+                  );
                 },
                 child: const Text('Reset Filters'),
               ),

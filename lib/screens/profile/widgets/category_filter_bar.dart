@@ -10,6 +10,7 @@ class CategoryFilterBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final serverState = ref.watch(serverProvider);
+    final categories = serverState.categories;
     final selectedCategory = serverState.selectedCategory;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -18,15 +19,16 @@ class CategoryFilterBar extends ConsumerWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        itemCount: kServerCategories.length,
+        itemCount: categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
-          final category = kServerCategories[index];
-          final isSelected = category == selectedCategory;
+          final category = categories[index];
+          final isSelected = category.id == selectedCategory ||
+              category.name == selectedCategory;
 
           return InkWell(
             onTap: () {
-              ref.read(serverProvider.notifier).setCategory(category);
+              ref.read(serverProvider.notifier).setCategory(category.id);
             },
             borderRadius: BorderRadius.circular(10),
             child: AnimatedContainer(
@@ -56,7 +58,7 @@ class CategoryFilterBar extends ConsumerWidget {
               ),
               child: Center(
                 child: Text(
-                  category,
+                  category.name,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,

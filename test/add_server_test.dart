@@ -10,8 +10,8 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    // Tap the Servers button to open ServerPickerScreen
-    await tester.tap(find.text('Servers'));
+    // Tap the Browse button to open ServerPickerScreen
+    await tester.tap(find.text('Browse'));
     await tester.pumpAndSettle();
 
     // Tap the Add Custom Server icon in AppBar
@@ -37,7 +37,12 @@ void main() {
     await tester.pumpAndSettle();
 
     // Tap Add Server button
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Add Server'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AddServerSheet),
+        matching: find.widgetWithText(ElevatedButton, 'Add Server'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Verify modal dismissed and new server appears in grid

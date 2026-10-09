@@ -179,7 +179,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
               size: 18,
             ),
             label: Text(
-              noServersAtAll ? 'Pick a Server' : 'Clear Filter',
+              noServersAtAll ? 'Browse Servers' : 'Clear Filter',
               style: GoogleFonts.inter(fontWeight: FontWeight.w700),
             ),
             style: ElevatedButton.styleFrom(
