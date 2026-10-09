@@ -56,180 +56,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
   }
 
   void _loadMessagesForServer() {
-    final catalog = ProductMessageModel.sampleCatalog;
-
-    if (widget.server.category.id == 'Marketplace & Goods' ||
-        widget.server.id == 'srv_010') {
-      _messages = [
-        _ServerMessage(
-          id: '1',
-          senderName: 'Marketplace Bot',
-          senderRole: 'VERIFIED NODE',
-          avatarInitials: 'MB',
-          message:
-              'Welcome to ${widget.server.name}! Discover and purchase direct producer-harvested goods with smart contract escrow protection.',
-          time: '8:30 AM',
-          isMe: false,
-          badgeColor: widget.server.primaryColor,
-        ),
-        _ServerMessage(
-          id: '2',
-          senderName: 'San Marcos Organic Co-op',
-          senderRole: 'VERIFIED PRODUCER',
-          avatarInitials: 'SM',
-          message:
-              'Fresh morning roast batch completed! We just listed 15 bags of our limited reserve single-origin Gesha coffee beans.',
-          time: '9:15 AM',
-          isMe: false,
-          badgeColor: const Color(0xFFD97706),
-          product: catalog[0], // Single Origin Coffee
-        ),
-        _ServerMessage(
-          id: '3',
-          senderName: 'K\'iche\' Weavers Guild',
-          senderRole: 'ARTISAN COLLECTIVE',
-          avatarInitials: 'KW',
-          message:
-              'New handwoven botanical dye wool poncho available in locker #4 or local delivery around the lake.',
-          time: '10:05 AM',
-          isMe: false,
-          badgeColor: const Color(0xFF059669),
-          product: catalog[1], // Handwoven Poncho
-        ),
-        const _ServerMessage(
-          id: '4',
-          senderName: 'You',
-          senderRole: 'MEMBER',
-          avatarInitials: 'ME',
-          message: 'The Gesha roast looks incredible! Placing an order now.',
-          time: 'Just now',
-          isMe: true,
-          badgeColor: AppColors.primary,
-        ),
-      ];
-    } else if (widget.server.category.id == 'Mobility & Rides' ||
-        widget.server.id == 'srv_009') {
-      _messages = [
-        _ServerMessage(
-          id: '1',
-          senderName: 'EcoTransit Dispatch',
-          senderRole: 'DISPATCH NODE',
-          avatarInitials: 'ET',
-          message:
-              'Active fleet operating 14 EV shuttles today across Lake Atitlan & Guatemala City routes.',
-          time: '8:00 AM',
-          isMe: false,
-          badgeColor: widget.server.primaryColor,
-        ),
-        _ServerMessage(
-          id: '2',
-          senderName: 'Carlos Mendonza',
-          senderRole: 'MOBILITY OPERATOR',
-          avatarInitials: 'CM',
-          message:
-              'Departing Panajachel pier for Guatemala City Airport today at 2:30 PM. 3 seats remaining in the electric passenger van!',
-          time: '10:20 AM',
-          isMe: false,
-          badgeColor: const Color(0xFF0284C7),
-          product: catalog[2], // Rideshare Shuttle
-        ),
-        const _ServerMessage(
-          id: '3',
-          senderName: 'You',
-          senderRole: 'MEMBER',
-          avatarInitials: 'ME',
-          message: 'Perfect timing, booking 1 seat for the 2:30 PM trip.',
-          time: 'Just now',
-          isMe: true,
-          badgeColor: AppColors.primary,
-        ),
-      ];
-    } else if (widget.server.category.id == 'Rental & Gear' ||
-        widget.server.id == 'srv_008') {
-      _messages = [
-        _ServerMessage(
-          id: '2',
-          senderName: 'Elena & Mateo',
-          senderRole: 'SUPERHOST',
-          avatarInitials: 'EM',
-          message:
-              'Our solar eco-villa in Jaibalito is available for booking this upcoming week. High speed fiber and private kayak dock ready.',
-          time: '9:30 AM',
-          isMe: false,
-          badgeColor: const Color(0xFF0D9488),
-          product: catalog[3], // House Rental
-        ),
-        _ServerMessage(
-          id: '3',
-          senderName: 'Pan-Lake Media Collective',
-          senderRole: 'EQUIPMENT DEPOT',
-          avatarInitials: 'PM',
-          message:
-              'Sony FX6 cinema kit just returned, cleaned, and checked into Panajachel smart locker #18 ready for rent.',
-          time: '10:40 AM',
-          isMe: false,
-          badgeColor: const Color(0xFF7C3AED),
-          product: catalog[4], // Gear Rental
-        ),
-        const _ServerMessage(
-          id: '4',
-          senderName: 'You',
-          senderRole: 'MEMBER',
-          avatarInitials: 'ME',
-          message: 'Great, checking availability for the cinema kit tomorrow!',
-          time: 'Just now',
-          isMe: true,
-          badgeColor: AppColors.primary,
-        ),
-      ];
-    } else {
-      _messages = [
-        _ServerMessage(
-          id: '1',
-          senderName: 'EME Core Bot',
-          senderRole: 'SYSTEM BOT',
-          avatarInitials: 'EB',
-          message:
-              'Welcome to the official ${widget.server.name} node workspace! All node updates, decentralized collaborative feeds, and ecosystem items stream here.',
-          time: '9:00 AM',
-          isMe: false,
-          badgeColor: widget.server.primaryColor,
-        ),
-        _ServerMessage(
-          id: '2',
-          senderName: 'Alex Rivera',
-          senderRole: 'NODE MAINTAINER',
-          avatarInitials: 'AR',
-          message:
-              'Good morning everyone! We just synchronized the latest sprint deliverables. Check the Goals tab for our Q3 milestones!',
-          time: '9:42 AM',
-          isMe: false,
-          badgeColor: const Color(0xFF059669),
-        ),
-        _ServerMessage(
-          id: '3',
-          senderName: 'Community Goods Node',
-          senderRole: 'MARKETPLACE',
-          avatarInitials: 'CG',
-          message:
-              'Special community offering shared from our sister marketplace node:',
-          time: '10:15 AM',
-          isMe: false,
-          badgeColor: const Color(0xFFD97706),
-          product: catalog[0],
-        ),
-        const _ServerMessage(
-          id: '4',
-          senderName: 'You',
-          senderRole: 'MEMBER',
-          avatarInitials: 'ME',
-          message: 'Looking great! Excited to contribute to this node.',
-          time: 'Just now',
-          isMe: true,
-          badgeColor: AppColors.primary,
-        ),
-      ];
-    }
+    _messages = [];
   }
 
   void _sendMessage() {
@@ -237,18 +64,6 @@ class _ServerChatTabState extends State<ServerChatTab> {
     if (text.isEmpty) return;
 
     setState(() {
-      _messages.add(
-        _ServerMessage(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          senderName: 'You',
-          senderRole: 'MEMBER',
-          avatarInitials: 'ME',
-          message: text,
-          time: 'Just now',
-          isMe: true,
-          badgeColor: AppColors.primary,
-        ),
-      );
       _textController.clear();
     });
 
@@ -322,7 +137,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              'Active Node Topic: ${widget.server.categoryLabel} ecosystem discussions & proposals',
+              'Active  Topic: ${widget.server.categoryLabel} ecosystem discussions & proposals',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(

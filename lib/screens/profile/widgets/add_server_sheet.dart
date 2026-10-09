@@ -51,7 +51,7 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
       id: 'srv_${DateTime.now().millisecondsSinceEpoch}',
       name: name,
       subtitle: formattedUrl,
-      description: 'Connected node at $formattedUrl',
+      description: 'Connected Server at $formattedUrl',
       category: ServerCategoryModel.fromJson({
         "id": 'Software Tools',
         "name": 'Software Tools',

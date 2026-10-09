@@ -38,7 +38,7 @@ class ServerCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _openServerScreen(context),
+          onTap: server.isJoined ? () => _openServerScreen(context) : null,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -67,39 +67,39 @@ class ServerCard extends ConsumerWidget {
                       clipBehavior: Clip.antiAlias,
                       child:
                           server.avatarUrl != null &&
-                                  server.avatarUrl!.isNotEmpty
-                              ? Image.network(
-                                  server.avatarUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Center(
-                                    child: Text(
-                                      server.displayInitials,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 14,
-                                        color: isDark
-                                            ? server.primaryColor.withValues(
-                                                alpha: 0.95,
-                                              )
-                                            : server.primaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : Center(
-                                  child: Text(
-                                    server.displayInitials,
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14,
-                                      color: isDark
-                                          ? server.primaryColor.withValues(
-                                              alpha: 0.95,
-                                            )
-                                          : server.primaryColor,
-                                    ),
+                              server.avatarUrl!.isNotEmpty
+                          ? Image.network(
+                              server.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Text(
+                                  server.displayInitials,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? server.primaryColor.withValues(
+                                            alpha: 0.95,
+                                          )
+                                        : server.primaryColor,
                                   ),
                                 ),
+                              ),
+                            )
+                          : Center(
+                              child: Text(
+                                server.displayInitials,
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                  color: isDark
+                                      ? server.primaryColor.withValues(
+                                          alpha: 0.95,
+                                        )
+                                      : server.primaryColor,
+                                ),
+                              ),
+                            ),
                     ),
                     const SizedBox(width: 12),
 

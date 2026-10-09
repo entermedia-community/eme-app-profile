@@ -32,7 +32,7 @@ class ServerGoalsTab extends StatelessWidget {
       ),
       const _GoalItem(
         id: '2304',
-        title: 'Launch Cross-Node Sync & P2P Data Bridge',
+        title: 'Launch Cross-Server Sync & P2P Data Bridge',
         dueDate: '2026-06-15',
         createdAgo: '42d:12h:10m ago',
         createdBy: 'Alex K',
@@ -40,7 +40,7 @@ class ServerGoalsTab extends StatelessWidget {
         tasks: [
           _GoalTaskItem(
             id: 't-2',
-            title: 'Deploy low-latency gossip sub-network for node syncing',
+            title: 'Deploy low-latency gossip sub-network for Server syncing',
             assignedRole: 'Core Engineer - Alex.K',
             addedBy: 'Alex K',
             addedAgo: '42d 12h 10m ago',
@@ -64,7 +64,7 @@ class ServerGoalsTab extends StatelessWidget {
         tasks: [
           _GoalTaskItem(
             id: 't-4',
-            title: 'Implement quadratic voting contracts for node grants',
+            title: 'Implement quadratic voting contracts for Server grants',
             assignedRole: 'Smart Contract Dev - Sarah.T',
             addedBy: 'Sarah T',
             addedAgo: '18d 04h 22m ago',

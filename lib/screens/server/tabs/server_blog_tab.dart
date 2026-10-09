@@ -18,7 +18,7 @@ class ServerBlogTab extends StatelessWidget {
       _BlogPost(
         id: 'post_01',
         title:
-            'Decentralized Collective Intelligence: State of the Node in 2026',
+            'Decentralized Collective Intelligence: State of the Server in 2026',
         author: 'Lead Architect',
         date: 'Sep 14, 2026',
         readTime: '4 min read',
@@ -92,7 +92,7 @@ class ServerBlogTab extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Subscribed to node feed updates'),
+                      content: Text('Subscribed to Server feed updates'),
                       duration: Duration(seconds: 1),
                     ),
                   );

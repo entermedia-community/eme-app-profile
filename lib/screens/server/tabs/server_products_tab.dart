@@ -70,7 +70,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.forest_rounded,
         ),
         const _ProductItem(
-          title: 'Lake Water Telemetry Sensor Node',
+          title: 'Lake Water Telemetry Sensor Server',
           category: 'Hardware',
           description:
               'Decentralized solar water purity sensor kit streaming real-time IoT bio-credit data.',
@@ -104,7 +104,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           category: 'Agent Mesh',
           description:
               'Framework for coordinating multi-agent task execution and self-healing worker pools.',
-          price: '\$29 / Node Mo',
+          price: '\$29 / Server Mo',
           tag: 'Pro Developer',
           icon: Icons.hub_rounded,
         ),
@@ -238,7 +238,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
     } else {
       return [
         _ProductItem(
-          title: '${widget.server.name} Core Service Node',
+          title: '${widget.server.name} Core Service Server',
           category: 'Core Service',
           description:
               'Dedicated workspace infrastructure and collaboration tools for verified members.',
@@ -250,7 +250,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           title: 'Decentralized API Integration Suite',
           category: 'Developer API',
           description:
-              'Direct gRPC & REST webhooks for integrating node services into third-party dApps.',
+              'Direct gRPC & REST webhooks for integrating Server services into third-party dApps.',
           price: '\$15 / Month',
           tag: 'Developer',
           icon: Icons.api_rounded,

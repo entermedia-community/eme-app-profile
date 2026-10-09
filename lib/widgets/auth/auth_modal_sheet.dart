@@ -81,7 +81,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
       return;
     }
 
-    final res = await ref.read(authProvider.notifier).sendUserCode(email: email);
+    final res = await ref
+        .read(authProvider.notifier)
+        .sendUserCode(email: email);
     if (res.isSuccess) {
       _startCountdown();
     }
@@ -102,11 +104,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
       return;
     }
 
-    final res = await ref.read(authProvider.notifier).registerAndSendCode(
-          email: email,
-          firstName: first,
-          lastName: last,
-        );
+    final res = await ref
+        .read(authProvider.notifier)
+        .registerAndSendCode(email: email, firstName: first, lastName: last);
     if (res.isSuccess) {
       _startCountdown();
     }
@@ -124,15 +124,16 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
     }
 
     final email = _emailController.text.trim();
-    final res = await ref.read(authProvider.notifier).loginWithCode(
-          email: email,
-          code: _otpCode,
-        );
+    final res = await ref
+        .read(authProvider.notifier)
+        .loginWithCode(email: email, code: _otpCode);
 
     if (res.isSuccess && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Welcome back, ${res.user?.displayName ?? 'Explorer'}!'),
+          content: Text(
+            'Welcome back, ${res.user?.displayName ?? 'Explorer'}!',
+          ),
           backgroundColor: const Color(0xFF059669),
         ),
       );
@@ -143,8 +144,12 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final surfaceColor = isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     return Container(
       padding: EdgeInsets.only(
@@ -178,7 +183,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                    color: isDark
+                        ? const Color(0xFF475569)
+                        : const Color(0xFFCBD5E1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -190,7 +197,8 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
               const SizedBox(height: 16),
 
               // Error Banner
-              if (authState.errorMessage != null && authState.errorMessage!.isNotEmpty)
+              if (authState.errorMessage != null &&
+                  authState.errorMessage!.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
@@ -203,8 +211,11 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline_rounded,
-                          color: Color(0xFFDC2626), size: 20),
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: Color(0xFFDC2626),
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -248,7 +259,8 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
       subtitle = 'No existing account found. Complete registration below.';
     } else if (authState.isCodeSent) {
       title = 'Verification Code';
-      subtitle = 'We sent a 6-digit verification code to ${_emailController.text}';
+      subtitle =
+          'We sent a 6-digit verification code to ${_emailController.text}';
     }
 
     return Column(
@@ -278,14 +290,18 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   Text(
                     subtitle,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -312,10 +328,10 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
             hintText: 'e.g. alex@emeworld.org',
             prefixIcon: const Icon(Icons.email_outlined, size: 20),
             filled: true,
-            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            fillColor: isDark
+                ? const Color(0xFF0F172A)
+                : const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ),
         const SizedBox(height: 18),
@@ -364,7 +380,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                 decoration: InputDecoration(
                   labelText: 'First Name',
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  fillColor: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -379,7 +397,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                 decoration: InputDecoration(
                   labelText: 'Last Name',
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                  fillColor: isDark
+                      ? const Color(0xFF0F172A)
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -396,10 +416,10 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
             labelText: 'Email Address',
             prefixIcon: const Icon(Icons.email_outlined, size: 20),
             filled: true,
-            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
+            fillColor: isDark
+                ? const Color(0xFF0F172A)
+                : const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
         ),
         const SizedBox(height: 18),
@@ -474,15 +494,15 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                   ? () => _handleSendEmail()
                   : null,
               child: Text(
-                _canResend
-                    ? 'Resend Code'
-                    : 'Resend in ${_secondsRemaining}s',
+                _canResend ? 'Resend Code' : 'Resend in ${_secondsRemaining}s',
                 style: GoogleFonts.inter(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: _canResend
                       ? AppColors.primary
-                      : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                      : (isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted),
                 ),
               ),
             ),
@@ -531,7 +551,9 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
             color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+              color: isDark
+                  ? AppColors.darkCardBorder
+                  : AppColors.lightCardBorder,
             ),
           ),
           child: Row(
@@ -558,14 +580,18 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       user?.email ?? '',
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                        color: isDark
+                            ? AppColors.textDarkSecondary
+                            : AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -581,7 +607,7 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Authenticated Node',
+                          'Authenticated Server',
                           style: GoogleFonts.inter(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,

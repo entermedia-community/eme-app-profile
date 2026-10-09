@@ -269,10 +269,12 @@ class ServerOverviewTab extends ConsumerWidget {
                     ? ElevatedButton(
                         onPressed: null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: server.primaryColor.withValues(alpha: 0.7),
+                          backgroundColor: server.primaryColor.withValues(
+                            alpha: 0.7,
+                          ),
                           foregroundColor: Colors.white,
-                          disabledBackgroundColor:
-                              server.primaryColor.withValues(alpha: 0.7),
+                          disabledBackgroundColor: server.primaryColor
+                              .withValues(alpha: 0.7),
                           disabledForegroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
@@ -739,7 +741,7 @@ class ServerOverviewTab extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Node Tags & Classifications',
+            'Server Tags & Classifications',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w700,

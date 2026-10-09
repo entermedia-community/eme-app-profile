@@ -27,7 +27,7 @@ void main() {
     // Enter Server Name
     await tester.enterText(
       find.widgetWithText(TextField, 'e.g. EcoSphere Network'),
-      'My Decentralized Node',
+      'My Decentralized Server',
     );
     // Enter Server URL
     await tester.enterText(
@@ -47,6 +47,6 @@ void main() {
 
     // Verify modal dismissed and new server appears in grid
     expect(find.byType(AddServerSheet), findsNothing);
-    expect(find.text('My Decentralized Node'), findsOneWidget);
+    expect(find.text('My Decentralized Server'), findsOneWidget);
   });
 }

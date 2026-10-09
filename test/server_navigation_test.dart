@@ -74,4 +74,36 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  testWidgets(
+    'ServerDetailScreen Leave Server menu option calls toggleJoin and navigates to Profile tab',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pumpAndSettle();
+
+      // Open ServerCard -> ServerChatScreen
+      final serverCardFinder = find.byType(ServerCard).first;
+      await tester.ensureVisible(serverCardFinder);
+      await tester.tap(serverCardFinder);
+      await tester.pumpAndSettle();
+
+      // Open ServerDetailScreen
+      await tester.tap(find.text('Console'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ServerDetailScreen), findsOneWidget);
+
+      // Open PopupMenuButton
+      await tester.tap(find.byTooltip('Server Options'));
+      await tester.pumpAndSettle();
+
+      // Tap 'Leave Server'
+      expect(find.text('Leave Server'), findsOneWidget);
+      await tester.tap(find.text('Leave Server'));
+      await tester.pumpAndSettle();
+
+      // Verify popped back to main app screen (Profile tab is active)
+      expect(find.byType(ServerDetailScreen), findsNothing);
+      expect(find.byType(ServerChatScreen), findsNothing);
+    },
+  );
 }

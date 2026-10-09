@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
+import '../../providers/navigation_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
 import 'tabs/server_blog_tab.dart';
@@ -204,9 +205,46 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
-            onSelected: (value) {
+            onSelected: (value) async {
               if (value == 'join') {
-                ref.read(serverProvider.notifier).toggleJoin(currentServer.id);
+                final wasJoined = currentServer.isJoined;
+                final success = await ref
+                    .read(serverProvider.notifier)
+                    .toggleJoin(currentServer.id);
+                if (!context.mounted) return;
+                if (success) {
+                  if (wasJoined) {
+                    ref.read(navigationProvider.notifier).setTab(0);
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Left ${currentServer.name}'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Joined ${currentServer.name}'),
+                        backgroundColor: AppColors.greenAccent,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } else {
+                  final error =
+                      ref.read(serverProvider).error ??
+                      (wasJoined
+                          ? 'Failed to leave server'
+                          : 'Failed to join server');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(error),
+                      backgroundColor: AppColors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
               } else if (value == 'share') {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -219,7 +257,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
               } else if (value == 'qr') {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Node QR Code generated'),
+                    content: Text('Server QR Code generated'),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -240,7 +278,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                           : AppColors.greenAccent,
                     ),
                     const SizedBox(width: 10),
-                    Text(currentServer.isJoined ? 'Leave Node' : 'Join'),
+                    Text(currentServer.isJoined ? 'Leave Server' : 'Join'),
                   ],
                 ),
               ),
@@ -250,7 +288,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                   children: [
                     Icon(Icons.share_outlined, size: 18),
                     SizedBox(width: 10),
-                    Text('Share Node Link'),
+                    Text('Share Server Link'),
                   ],
                 ),
               ),
@@ -260,7 +298,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                   children: [
                     Icon(Icons.qr_code_rounded, size: 18),
                     SizedBox(width: 10),
-                    Text('Node QR Code'),
+                    Text('Server QR Code'),
                   ],
                 ),
               ),

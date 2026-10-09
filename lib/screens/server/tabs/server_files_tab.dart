@@ -72,11 +72,13 @@ class ServerFilesTab extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Node Drive & Assets',
+                    'Server Drive & Assets',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -84,7 +86,9 @@ class ServerFilesTab extends StatelessWidget {
                     'Shared documents, specs, and resources',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -115,10 +119,14 @@ class ServerFilesTab extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+                  color: isDark
+                      ? AppColors.darkSurface
+                      : AppColors.lightSurface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder,
+                    color: isDark
+                        ? AppColors.darkCardBorder
+                        : AppColors.lightCardBorder,
                   ),
                 ),
                 child: Row(
@@ -126,7 +134,9 @@ class ServerFilesTab extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: file.iconColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                        color: file.iconColor.withValues(
+                          alpha: isDark ? 0.2 : 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(file.icon, color: file.iconColor, size: 20),
@@ -143,7 +153,9 @@ class ServerFilesTab extends StatelessWidget {
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -151,7 +163,9 @@ class ServerFilesTab extends StatelessWidget {
                             '${file.size} • ${file.date}',
                             style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textMuted,
                             ),
                           ),
                         ],
@@ -159,7 +173,9 @@ class ServerFilesTab extends StatelessWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.download_rounded, size: 18),
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

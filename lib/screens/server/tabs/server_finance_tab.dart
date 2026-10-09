@@ -25,7 +25,7 @@ class ServerFinanceTab extends StatelessWidget {
       ),
       const _TransactionItem(
         id: 'tx_02',
-        title: 'Compute Cluster Hosting Node #04',
+        title: 'Compute Cluster Hosting Server #04',
         date: 'Yesterday',
         amount: '- \$240.00',
         isCredit: false,
@@ -107,7 +107,10 @@ class ServerFinanceTab extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(8),
@@ -161,8 +164,13 @@ class ServerFinanceTab extends StatelessWidget {
                           foregroundColor: const Color(0xFF0369A1),
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
@@ -177,13 +185,28 @@ class ServerFinanceTab extends StatelessWidget {
                             ),
                           );
                         },
-                        icon: const Icon(Icons.send_rounded, size: 15, color: Colors.white),
-                        label: const Text('Request Grant', style: TextStyle(color: Colors.white)),
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          size: 15,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Request Grant',
+                          style: TextStyle(color: Colors.white),
+                        ),
                         style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white, width: 1.2),
+                          side: const BorderSide(
+                            color: Colors.white,
+                            width: 1.2,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          textStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          textStyle: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
@@ -197,7 +220,7 @@ class ServerFinanceTab extends StatelessWidget {
 
           // Financial Health Overview
           Text(
-            'Node Economics',
+            'Server Economics',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -259,7 +282,12 @@ class ServerFinanceTab extends StatelessWidget {
   }
 
   Widget _buildMetricCard(
-      String title, String value, Color color, IconData icon, bool isDark) {
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -314,13 +342,20 @@ class ServerFinanceTab extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: (tx.isCredit ? AppColors.greenAccent : const Color(0xFFEF4444))
-                  .withValues(alpha: isDark ? 0.2 : 0.1),
+              color:
+                  (tx.isCredit
+                          ? AppColors.greenAccent
+                          : const Color(0xFFEF4444))
+                      .withValues(alpha: isDark ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              tx.isCredit ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
-              color: tx.isCredit ? AppColors.greenAccent : const Color(0xFFEF4444),
+              tx.isCredit
+                  ? Icons.arrow_downward_rounded
+                  : Icons.arrow_upward_rounded,
+              color: tx.isCredit
+                  ? AppColors.greenAccent
+                  : const Color(0xFFEF4444),
               size: 18,
             ),
           ),
@@ -334,7 +369,9 @@ class ServerFinanceTab extends StatelessWidget {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -342,7 +379,9 @@ class ServerFinanceTab extends StatelessWidget {
                   '${tx.category} • ${tx.date}',
                   style: GoogleFonts.inter(
                     fontSize: 11,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
                   ),
                 ),
               ],
@@ -355,7 +394,9 @@ class ServerFinanceTab extends StatelessWidget {
               fontWeight: FontWeight.w800,
               color: tx.isCredit
                   ? (isDark ? const Color(0xFF86EFAC) : const Color(0xFF166534))
-                  : (isDark ? const Color(0xFFFCA5A5) : const Color(0xFFDC2626)),
+                  : (isDark
+                        ? const Color(0xFFFCA5A5)
+                        : const Color(0xFFDC2626)),
             ),
           ),
         ],
