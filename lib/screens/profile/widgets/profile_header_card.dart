@@ -24,15 +24,6 @@ class ProfileHeaderCard extends ConsumerWidget {
               : (currentUser.screenname ?? currentUser.username))
         : profile.name;
 
-    final displayRole = currentUser != null
-        ? (currentUser.username == 'admin'
-              ? 'Administrator'
-              : (currentUser.screenname != null &&
-                        currentUser.screenname!.isNotEmpty
-                    ? '@${currentUser.screenname}'
-                    : profile.role))
-        : profile.role;
-
     final displayHandle = currentUser != null
         ? '@${currentUser.username}'
         : null;
@@ -242,45 +233,29 @@ class ProfileHeaderCard extends ConsumerWidget {
                     const SizedBox(height: 4),
 
                     // Role with accent bar & handle
-                    Row(
-                      children: [
-                        Text(
-                          displayRole,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
+                    if (displayHandle != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          displayHandle,
+                          style: GoogleFonts.firaCode(
+                            fontSize: 10.5,
                             fontWeight: FontWeight.w600,
                             color: isDark
-                                ? AppColors.textDarkSecondary
-                                : AppColors.textSecondary,
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF64748B),
                           ),
                         ),
-                        if (displayHandle != null) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 1.5,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFE2E8F0),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              displayHandle,
-                              style: GoogleFonts.firaCode(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
                     const SizedBox(height: 4),
                     Container(
                       width: 32,
