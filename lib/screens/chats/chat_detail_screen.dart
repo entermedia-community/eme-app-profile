@@ -43,7 +43,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
 
   StreamSubscription<ChatMessage>? _socketSubscription;
-  String? _channelId;
+  late final String _channelId;
   bool _isConnecting = false;
 
   bool _isSearchOpen = false;
@@ -53,7 +53,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _channelId = widget.chat.channelId;
     _messages = [];
     _initChatConnection();
   }
@@ -73,10 +72,11 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           toUser: toUser,
         );
       }
+
       _channelId = socketChannelId;
 
-      await _connectSocket(socketChannelId);
-      await _loadChatHistory(socketChannelId);
+      await _connectSocket(_channelId);
+      await _loadChatHistory(_channelId);
     } catch (e, stack) {
       debugPrint('Error establishing chat socket: $e');
       AppErrorHandler.recordNonFatal(
@@ -97,8 +97,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
   Future<void> _loadChatHistory(String channelId) async {
     try {
-      final history =
-          await ref.read(apiServiceProvider).fetchChatMessages(channelId);
+      final history = await ref
+          .read(apiServiceProvider)
+          .fetchUserChatMessages(channelId);
       if (!mounted) return;
       if (history.isNotEmpty) {
         // Sort chronologically so latest messages appear at the bottom
@@ -184,7 +185,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
-    final targetChannel = _channelId ?? widget.chat.channelId ?? '';
+    final targetChannel = _channelId;
     final currentUserId = AuthService.userId!;
 
     setState(() {
@@ -211,7 +212,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   void _sendProduct(ProductMessageModel product) {
-    final targetChannel = _channelId ?? widget.chat.channelId ?? '';
+    final targetChannel = _channelId;
     final currentUserId = AuthService.userId!;
 
     setState(() {

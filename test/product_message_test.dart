@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/server/tabs/server_chat_tab.dart';
 import 'package:eme_world/widgets/chat/product_detail_modal.dart';
 import 'package:eme_world/widgets/chat/product_message_card.dart';
 import 'package:eme_world/widgets/chat/send_product_sheet.dart';
+import 'test_helpers.dart';
+
+class _MockProductApiService extends MockApiService {
+  final List<ChatMessage> mockMessages;
+  _MockProductApiService(this.mockMessages);
+
+  @override
+  Future<List<ChatMessage>> fetchServerChatMessages(
+    String channelId, {
+    String? serverId,
+    String? baseUrl,
+  }) async {
+    return mockMessages;
+  }
+}
 
 void main() {
   group('ProductMessageModel Tests', () {
@@ -78,7 +94,7 @@ void main() {
     );
 
     testWidgets(
-      'ServerChatTab renders server-specific product demo messages for Marketplace server',
+      'ServerChatTab renders server-specific product messages for Marketplace server',
       (tester) async {
         const marketplaceServer = ServerModel(
           id: 'srv_010',
@@ -92,9 +108,29 @@ void main() {
           primaryColor: Color(0xFFD97706),
         );
 
+        final catalog = ProductMessageModel.sampleCatalog;
+        final coffee = catalog.firstWhere(
+          (p) => p.type == ProductType.ecommerce,
+        );
+
+        final mockApi = _MockProductApiService([
+          ChatMessage(
+            messageId: 'msg_market_1',
+            channel: 'srv_010',
+            userId: 'artisan_lead',
+            message: 'Shared a product: ${coffee.title}',
+            messageType: 'product',
+            product: coffee,
+            createdAt: DateTime.now(),
+          ),
+        ]);
+
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: ServerChatTab(server: marketplaceServer)),
+          ProviderScope(
+            overrides: [apiServiceProvider.overrideWithValue(mockApi)],
+            child: const MaterialApp(
+              home: Scaffold(body: ServerChatTab(server: marketplaceServer)),
+            ),
           ),
         );
         await tester.pumpAndSettle();
@@ -107,15 +143,11 @@ void main() {
           ),
           findsOneWidget,
         );
-        expect(
-          find.text('Handwoven Natural Dye Wool Poncho', skipOffstage: false),
-          findsOneWidget,
-        );
       },
     );
 
     testWidgets(
-      'ServerChatTab renders rideshare product demo messages for Mobility server',
+      'ServerChatTab renders rideshare product messages for Mobility server',
       (tester) async {
         const mobilityServer = ServerModel(
           id: 'srv_009',
@@ -128,9 +160,27 @@ void main() {
           primaryColor: Color(0xFF0284C7),
         );
 
+        final catalog = ProductMessageModel.sampleCatalog;
+        final ride = catalog.firstWhere((p) => p.type == ProductType.rideshare);
+
+        final mockApi = _MockProductApiService([
+          ChatMessage(
+            messageId: 'msg_ride_1',
+            channel: 'srv_009',
+            userId: 'driver_alex',
+            message: 'Shared a rideshare: ${ride.title}',
+            messageType: 'product',
+            product: ride,
+            createdAt: DateTime.now(),
+          ),
+        ]);
+
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: ServerChatTab(server: mobilityServer)),
+          ProviderScope(
+            overrides: [apiServiceProvider.overrideWithValue(mockApi)],
+            child: const MaterialApp(
+              home: Scaffold(body: ServerChatTab(server: mobilityServer)),
+            ),
           ),
         );
         await tester.pumpAndSettle();
@@ -148,7 +198,7 @@ void main() {
     );
 
     testWidgets(
-      'ServerChatTab renders rental product demo messages for Rental & Gear server',
+      'ServerChatTab renders rental product messages for Rental & Gear server',
       (tester) async {
         const rentalServer = ServerModel(
           id: 'srv_008',
@@ -161,9 +211,31 @@ void main() {
           primaryColor: Color(0xFF0D9488),
         );
 
+        final catalog = ProductMessageModel.sampleCatalog;
+        final house = catalog.firstWhere(
+          (p) =>
+              p.type == ProductType.rental &&
+              p.rentalCategory == RentalCategory.house,
+        );
+
+        final mockApi = _MockProductApiService([
+          ChatMessage(
+            messageId: 'msg_rent_1',
+            channel: 'srv_008',
+            userId: 'host_maria',
+            message: 'Shared a rental: ${house.title}',
+            messageType: 'product',
+            product: house,
+            createdAt: DateTime.now(),
+          ),
+        ]);
+
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: ServerChatTab(server: rentalServer)),
+          ProviderScope(
+            overrides: [apiServiceProvider.overrideWithValue(mockApi)],
+            child: const MaterialApp(
+              home: Scaffold(body: ServerChatTab(server: rentalServer)),
+            ),
           ),
         );
         await tester.pumpAndSettle();
@@ -172,13 +244,6 @@ void main() {
         expect(
           find.text(
             'Lakeview Solar Eco-Villa with Private Dock',
-            skipOffstage: false,
-          ),
-          findsOneWidget,
-        );
-        expect(
-          find.text(
-            'Sony FX6 Cinema Kit & G-Master Cine Lenses',
             skipOffstage: false,
           ),
           findsOneWidget,

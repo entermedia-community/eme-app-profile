@@ -163,13 +163,30 @@ class MockApiService implements IApiService {
   }
 
   @override
-  Future<List<ChatMessage>> fetchChatMessages(String channelId) async {
+  Future<List<ChatMessage>> fetchUserChatMessages(String channelId) async {
     return [
       ChatMessage(
         messageId: 'msg_1',
         channel: channelId,
         userId: 'admin',
         message: 'Welcome to EME Direct Messaging.',
+        createdAt: DateTime.now(),
+      ),
+    ];
+  }
+
+  @override
+  Future<List<ChatMessage>> fetchServerChatMessages(
+    String channelId, {
+    String? serverId,
+    String? baseUrl,
+  }) async {
+    return [
+      ChatMessage(
+        messageId: 'msg_server_1',
+        channel: channelId,
+        userId: 'admin',
+        message: 'Welcome to server discussions & proposals.',
         createdAt: DateTime.now(),
       ),
     ];
