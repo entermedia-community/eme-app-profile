@@ -52,16 +52,17 @@ void main() {
         id: 'srv_unjoined_99',
         name: 'Unjoined Server',
         description: 'Test unjoined server description',
-        category: 'Software Tools',
+        category: ServerCategoryModel(
+          id: 'software_tools',
+          name: 'Software Tools',
+        ),
         isJoined: false,
       );
 
       await tester.pumpWidget(
         ProviderScope(
           child: MaterialApp(
-            home: Scaffold(
-              body: ServerCard(server: unjoinedServer),
-            ),
+            home: Scaffold(body: ServerCard(server: unjoinedServer)),
           ),
         ),
       );

@@ -85,7 +85,10 @@ void main() {
           name: 'Artisan Goods & Organic Market',
           description:
               'Direct-to-consumer marketplace for single-origin shade coffee.',
-          category: 'Marketplace & Goods',
+          category: ServerCategoryModel(
+            id: 'marketplace',
+            name: 'Marketplace & Goods',
+          ),
           primaryColor: Color(0xFFD97706),
         );
 
@@ -118,7 +121,10 @@ void main() {
           id: 'srv_009',
           name: 'EcoTransit Mobility & Rides',
           description: 'Zero-emission rideshare and shuttle service.',
-          category: 'Mobility & Rides',
+          category: ServerCategoryModel(
+            id: 'Mobility & Rides',
+            name: 'Mobility & Rides',
+          ),
           primaryColor: Color(0xFF0284C7),
         );
 
@@ -148,7 +154,10 @@ void main() {
           id: 'srv_008',
           name: 'Gear Rentals',
           description: 'Equipment, villa rentals, and tool lending.',
-          category: 'Rental & Gear',
+          category: ServerCategoryModel(
+            id: 'rental_gear',
+            name: 'Rental & Gear',
+          ),
           primaryColor: Color(0xFF0D9488),
         );
 

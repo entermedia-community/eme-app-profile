@@ -73,7 +73,7 @@ class MockApiService implements IApiService {
       name: 'Lakeview Stays & House Rentals',
       subtitle: 'HOUSE RENTALS',
       description: 'Verified off-grid eco-villas and lakefront stays.',
-      category: 'Rental & Gear',
+      category: ServerCategoryModel(id: 'rental_gear', name: 'Rental & Gear'),
       primaryColor: Color(0xFF0D9488),
       secondaryColor: Color(0xFFCCFBF1),
       memberCount: 530,
@@ -86,7 +86,10 @@ class MockApiService implements IApiService {
       subtitle: 'PRODUCER-DIRECT COMMERCE',
       description:
           'Direct-to-consumer marketplace for shade coffee and textiles.',
-      category: 'Marketplace & Goods',
+      category: ServerCategoryModel(
+        id: 'marketplace',
+        name: 'Marketplace & Goods',
+      ),
       primaryColor: Color(0xFFD97706),
       secondaryColor: Color(0xFFFEF3C7),
       memberCount: 1680,
