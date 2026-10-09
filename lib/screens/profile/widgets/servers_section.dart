@@ -35,7 +35,7 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
     final joinedServers = serverState.joinedServers.where((s) {
       if (_localSearch.isEmpty) return true;
       final q = _localSearch.toLowerCase();
-      return s.title.toLowerCase().contains(q) ||
+      return s.name.toLowerCase().contains(q) ||
           (s.subtitle?.toLowerCase().contains(q) ?? false) ||
           s.description.toLowerCase().contains(q) ||
           s.categoryLabel.toLowerCase().contains(q) ||

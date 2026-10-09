@@ -37,7 +37,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
     // Generate specialized products tailored to the server's category & services
     final cat = widget.server.categoryLabel.toLowerCase();
 
-    if (cat.contains('finance') || widget.server.title.contains('Passport')) {
+    if (cat.contains('finance') || widget.server.name.contains('Passport')) {
       return [
         const _ProductItem(
           title: 'Decentralized Biometric ID Pass',
@@ -118,9 +118,9 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
           icon: Icons.dataset_rounded,
         ),
       ];
-    } else if (widget.server.title.contains('House') ||
-        widget.server.title.contains('Stay') ||
-        widget.server.title.contains('Villa')) {
+    } else if (widget.server.name.contains('House') ||
+        widget.server.name.contains('Stay') ||
+        widget.server.name.contains('Villa')) {
       return [
         const _ProductItem(
           title: 'Lakeview Solar Eco-Villa & Private Dock',
@@ -182,7 +182,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
       ];
     } else if (cat.contains('mobility') ||
         cat.contains('ride') ||
-        widget.server.title.contains('Transit')) {
+        widget.server.name.contains('Transit')) {
       return [
         const _ProductItem(
           title: 'Daily Intercity Electric Shuttle Pass',
@@ -205,7 +205,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
       ];
     } else if (cat.contains('market') ||
         cat.contains('artisan') ||
-        widget.server.title.contains('Artisan')) {
+        widget.server.name.contains('Artisan')) {
       return [
         const _ProductItem(
           title: 'Single-Origin Volcanic Shade Coffee (1kg)',
@@ -238,7 +238,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
     } else {
       return [
         _ProductItem(
-          title: '${widget.server.title} Core Service Node',
+          title: '${widget.server.name} Core Service Node',
           category: 'Core Service',
           description:
               'Dedicated workspace infrastructure and collaboration tools for verified members.',
@@ -304,7 +304,7 @@ class _ServerProductsTabState extends State<ServerProductsTab> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Browse offerings provided by ${widget.server.title}',
+                      'Browse offerings provided by ${widget.server.name}',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 2,
                       style: GoogleFonts.inter(

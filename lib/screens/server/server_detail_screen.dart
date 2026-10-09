@@ -112,7 +112,8 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                 ),
               ),
               clipBehavior: Clip.antiAlias,
-              child: currentServer.avatarUrl != null &&
+              child:
+                  currentServer.avatarUrl != null &&
                       currentServer.avatarUrl!.isNotEmpty
                   ? Image.network(
                       currentServer.avatarUrl!,
@@ -145,7 +146,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    currentServer.title,
+                    currentServer.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.plusJakartaSans(

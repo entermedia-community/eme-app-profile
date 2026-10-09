@@ -67,7 +67,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           senderRole: 'VERIFIED NODE',
           avatarInitials: 'MB',
           message:
-              'Welcome to ${widget.server.title}! Discover and purchase direct producer-harvested goods with smart contract escrow protection.',
+              'Welcome to ${widget.server.name}! Discover and purchase direct producer-harvested goods with smart contract escrow protection.',
           time: '8:30 AM',
           isMe: false,
           badgeColor: widget.server.primaryColor,
@@ -190,7 +190,7 @@ class _ServerChatTabState extends State<ServerChatTab> {
           senderRole: 'SYSTEM BOT',
           avatarInitials: 'EB',
           message:
-              'Welcome to the official ${widget.server.title} node workspace! All node updates, decentralized collaborative feeds, and ecosystem items stream here.',
+              'Welcome to the official ${widget.server.name} node workspace! All node updates, decentralized collaborative feeds, and ecosystem items stream here.',
           time: '9:00 AM',
           isMe: false,
           badgeColor: widget.server.primaryColor,

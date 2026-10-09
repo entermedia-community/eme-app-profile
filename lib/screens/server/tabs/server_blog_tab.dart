@@ -17,12 +17,13 @@ class ServerBlogTab extends StatelessWidget {
     final posts = [
       _BlogPost(
         id: 'post_01',
-        title: 'Decentralized Collective Intelligence: State of the Node in 2026',
+        title:
+            'Decentralized Collective Intelligence: State of the Node in 2026',
         author: 'Lead Architect',
         date: 'Sep 14, 2026',
         readTime: '4 min read',
         excerpt:
-            'How ${server.title} is scaling distributed compute, local governance, and verifiable data pipelines across 12 countries.',
+            'How ${server.name} is scaling distributed compute, local governance, and verifiable data pipelines across 12 countries.',
         tag: 'Architecture',
         likes: 128,
       ),
@@ -67,15 +68,19 @@ class ServerBlogTab extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Announcements and publications from ${server.title}',
+                    'Announcements and publications from ${server.name}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -139,7 +144,9 @@ class ServerBlogTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: server.primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                  color: server.primaryColor.withValues(
+                    alpha: isDark ? 0.2 : 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -156,14 +163,18 @@ class ServerBlogTab extends StatelessWidget {
                   Icon(
                     Icons.access_time_rounded,
                     size: 13,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     post.readTime,
                     style: GoogleFonts.inter(
                       fontSize: 11,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -185,7 +196,9 @@ class ServerBlogTab extends StatelessWidget {
             post.excerpt,
             style: GoogleFonts.inter(
               fontSize: 12.5,
-              color: isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B),
+              color: isDark
+                  ? AppColors.textDarkSecondary
+                  : const Color(0xFF64748B),
               height: 1.45,
             ),
           ),
@@ -214,7 +227,9 @@ class ServerBlogTab extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],

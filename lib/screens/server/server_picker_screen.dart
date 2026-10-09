@@ -48,24 +48,20 @@ class _ServerPickerScreenState extends ConsumerState<ServerPickerScreen> {
       if (_selectedScope == 'joined' && !item.isJoined) return false;
 
       // Category filter
-      if (_selectedCategory != 'All' &&
-          item.category != _selectedCategory) {
+      if (_selectedCategory != 'All' && item.category != _selectedCategory) {
         return false;
       }
 
       // Search filter
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
-        final titleMatch = item.title.toLowerCase().contains(q);
+        final titleMatch = item.name.toLowerCase().contains(q);
         final subtitleMatch = item.subtitle?.toLowerCase().contains(q) ?? false;
         final descMatch = item.description.toLowerCase().contains(q);
         final srvMatch = item.servicesOffered.any(
           (s) => s.toLowerCase().contains(q),
         );
-        if (!titleMatch &&
-            !subtitleMatch &&
-            !descMatch &&
-            !srvMatch) {
+        if (!titleMatch && !subtitleMatch && !descMatch && !srvMatch) {
           return false;
         }
       }

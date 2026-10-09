@@ -65,7 +65,8 @@ class ServerCard extends ConsumerWidget {
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: server.avatarUrl != null &&
+                      child:
+                          server.avatarUrl != null &&
                               server.avatarUrl!.isNotEmpty
                           ? Image.network(
                               server.avatarUrl!,
@@ -104,7 +105,7 @@ class ServerCard extends ConsumerWidget {
                     // Status Indicator Pill (Personalized, only on joined servers)
                     Expanded(
                       child: Text(
-                        server.title,
+                        server.name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.plusJakartaSans(

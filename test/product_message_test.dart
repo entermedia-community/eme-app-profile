@@ -82,7 +82,7 @@ void main() {
       (tester) async {
         const marketplaceServer = ServerModel(
           id: 'srv_010',
-          title: 'Artisan Goods & Organic Market',
+          name: 'Artisan Goods & Organic Market',
           description:
               'Direct-to-consumer marketplace for single-origin shade coffee.',
           category: 'Marketplace & Goods',
@@ -116,7 +116,7 @@ void main() {
       (tester) async {
         const mobilityServer = ServerModel(
           id: 'srv_009',
-          title: 'EcoTransit Mobility & Rides',
+          name: 'EcoTransit Mobility & Rides',
           description: 'Zero-emission rideshare and shuttle service.',
           category: 'Mobility & Rides',
           primaryColor: Color(0xFF0284C7),
@@ -146,7 +146,7 @@ void main() {
       (tester) async {
         const rentalServer = ServerModel(
           id: 'srv_008',
-          title: 'Gear Rentals',
+          name: 'Gear Rentals',
           description: 'Equipment, villa rentals, and tool lending.',
           category: 'Rental & Gear',
           primaryColor: Color(0xFF0D9488),

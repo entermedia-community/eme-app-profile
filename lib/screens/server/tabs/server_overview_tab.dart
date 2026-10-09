@@ -128,7 +128,8 @@ class ServerOverviewTab extends ConsumerWidget {
                           ],
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: server.avatarUrl != null &&
+                        child:
+                            server.avatarUrl != null &&
                                 server.avatarUrl!.isNotEmpty
                             ? Image.network(
                                 server.avatarUrl!,
@@ -162,7 +163,7 @@ class ServerOverviewTab extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              server.title,
+                              server.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.plusJakartaSans(
@@ -347,7 +348,9 @@ class ServerOverviewTab extends ConsumerWidget {
           _buildStatDivider(isDark),
           _buildStatItem(
             'Function',
-            server.serverFunction.isNotEmpty ? server.serverFunction : 'Standard',
+            server.serverFunction.isNotEmpty
+                ? server.serverFunction
+                : 'Standard',
             Icons.hub_outlined,
             const Color(0xFFF59E0B),
             isDark,
@@ -691,7 +694,9 @@ class ServerOverviewTab extends ConsumerWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [server.categoryLabel, ...server.servicesOffered].map((tag) {
+            children: [server.categoryLabel, ...server.servicesOffered].map((
+              tag,
+            ) {
               return PillBadge.forCategory(tag, isDark: isDark);
             }).toList(),
           ),

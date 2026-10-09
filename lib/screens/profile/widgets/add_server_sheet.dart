@@ -49,7 +49,7 @@ class _AddServerSheetState extends ConsumerState<AddServerSheet> {
 
     final newServer = ServerModel(
       id: 'srv_${DateTime.now().millisecondsSinceEpoch}',
-      title: name,
+      name: name,
       subtitle: formattedUrl,
       description: 'Connected node at $formattedUrl',
       category: 'Software Tools',

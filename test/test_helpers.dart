@@ -70,7 +70,7 @@ class MockApiService implements IApiService {
   }) async => const [
     ServerModel(
       id: 'srv_test_1',
-      title: 'Lakeview Stays & House Rentals',
+      name: 'Lakeview Stays & House Rentals',
       subtitle: 'HOUSE RENTALS',
       description: 'Verified off-grid eco-villas and lakefront stays.',
       category: 'Rental & Gear',
@@ -82,9 +82,10 @@ class MockApiService implements IApiService {
     ),
     ServerModel(
       id: 'srv_test_2',
-      title: 'Artisan Goods & Organic Market',
+      name: 'Artisan Goods & Organic Market',
       subtitle: 'PRODUCER-DIRECT COMMERCE',
-      description: 'Direct-to-consumer marketplace for shade coffee and textiles.',
+      description:
+          'Direct-to-consumer marketplace for shade coffee and textiles.',
       category: 'Marketplace & Goods',
       primaryColor: Color(0xFFD97706),
       secondaryColor: Color(0xFFFEF3C7),
