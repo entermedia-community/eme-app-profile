@@ -950,14 +950,12 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
   @override
   void initState() {
     super.initState();
-    print("============");
-    print(widget.fields);
     _initFields();
   }
 
   void _initFields() {
     for (final field in widget.fields) {
-      final type = field.type.toLowerCase().trim();
+      final type = field.type.name;
       if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
         final val = field.value;
         _boolValues[field.name] =
@@ -1016,7 +1014,7 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
 
     final Map<String, dynamic> result = {};
     for (final field in widget.fields) {
-      final type = field.type.toLowerCase().trim();
+      final type = field.type.name;
       if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
         result[field.name] = _boolValues[field.name] ?? false;
       } else {
@@ -1080,7 +1078,7 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
   }
 
   Widget _buildFieldWidget(FormField field) {
-    final type = field.type.toLowerCase().trim();
+    final type = field.type.name;
     final name = field.name;
     final label = field.label.isNotEmpty ? field.label : field.name;
     final isFieldReadOnly =
