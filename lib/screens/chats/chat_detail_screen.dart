@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:eme_world/widgets/delta_viewer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -228,8 +229,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           agentContextValues: AgentContextValues(
             messageRenderType: MessageRenderType.product,
             product: product,
-            componentContent:
-                'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
           ),
           createdAt: DateTime.now(),
         ),
@@ -676,22 +675,17 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     bool isDark,
   ) {
     switch (message.messageRenderType) {
-      case MessageRenderType.question:
-        return _buildQuestionCard(message, isMe, timeStr, isDark);
-      case MessageRenderType.progressupdate:
-        return _buildProgressUpdateCard(message, isMe, timeStr, isDark);
       case MessageRenderType.asset:
         return _buildAssetCard(message, isMe, timeStr, isDark);
       case MessageRenderType.welcome:
         return _buildWelcomeBubble(message, isMe, timeStr, isDark);
       case MessageRenderType.product:
       case MessageRenderType.text:
-      case MessageRenderType.answer:
-      case MessageRenderType.answereval:
-      case MessageRenderType.usercomment:
-      case MessageRenderType.agentcomment:
-      case MessageRenderType.end:
         return _buildStandardBubble(message.text, isMe, timeStr, isDark);
+      case MessageRenderType.delta:
+        return _buildDeltaBubble(message.deltaOps, isMe, timeStr, isDark);
+      case MessageRenderType.form:
+        return _buildFormBubble(message, isMe, timeStr, isDark);
     }
   }
 
@@ -775,6 +769,85 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     );
   }
 
+  Widget _buildDeltaBubble(
+    List<dynamic> deltas,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+      decoration: BoxDecoration(
+        color: isMe
+            ? AppColors.primary
+            : (isDark ? AppColors.darkSurface : Colors.white),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        border: isMe
+            ? null
+            : Border.all(
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
+              ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DeltaViewer(deltaOps: deltas),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                timeStr,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: isMe
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : (isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted),
+                ),
+              ),
+              if (isMe) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.done_all_rounded,
+                  size: 13,
+                  color: Colors.white70,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormBubble(
+    ChatMessage message,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    return const SizedBox();
+  }
+
   Widget _buildWelcomeBubble(
     ChatMessage message,
     bool isMe,
@@ -833,257 +906,6 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildQuestionCard(
-    ChatMessage message,
-    bool isMe,
-    String timeStr,
-    bool isDark,
-  ) {
-    final question = message.question;
-    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
-    final borderColor = isDark
-        ? AppColors.darkCardBorder
-        : AppColors.lightCardBorder;
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 320),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.help_outline_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'QUESTION',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              if (question?.cognitiveLevel.isNotEmpty == true)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    question!.cognitiveLevel.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            question?.question ?? message.text,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-            ),
-          ),
-          if (question != null && question.options.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            ...question.options.entries.map((entry) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: borderColor),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          entry.key.letter,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        entry.value,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.textDarkPrimary
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressUpdateCard(
-    ChatMessage message,
-    bool isMe,
-    String timeStr,
-    bool isDark,
-  ) {
-    final progress = message.progressUpdate;
-    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 300),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF059669).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.trending_up_rounded,
-                size: 16,
-                color: Color(0xFF059669),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'PROGRESS UPDATE',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF059669),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          if (progress != null) ...[
-            const SizedBox(height: 10),
-            _buildProgressBar(
-              'Beginner',
-              progress.beginnerProgress,
-              Colors.blue,
-              isDark,
-            ),
-            const SizedBox(height: 6),
-            _buildProgressBar(
-              'Competent',
-              progress.competentProgress,
-              Colors.orange,
-              isDark,
-            ),
-            const SizedBox(height: 6),
-            _buildProgressBar(
-              'Expert',
-              progress.expertProgress,
-              const Color(0xFF059669),
-              isDark,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressBar(
-    String label,
-    double value,
-    Color color,
-    bool isDark,
-  ) {
-    final clamped = value.clamp(0.0, 1.0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                color: isDark
-                    ? AppColors.textDarkSecondary
-                    : AppColors.textSecondary,
-              ),
-            ),
-            Text(
-              '${(clamped * 100).toInt()}%',
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 3),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: clamped,
-            backgroundColor: color.withValues(alpha: 0.15),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 6,
-          ),
-        ),
-      ],
     );
   }
 

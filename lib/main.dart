@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'providers/theme_provider.dart';
@@ -18,7 +20,10 @@ Future<void> main() async {
   const defaultSiteRoot = isRelease
       ? 'https://eme.world'
       : 'http://localhost.com:8080';
-  const siteRoot = String.fromEnvironment('SITEROOT', defaultValue: defaultSiteRoot);
+  const siteRoot = String.fromEnvironment(
+    'SITEROOT',
+    defaultValue: defaultSiteRoot,
+  );
   const mediaDb = String.fromEnvironment(
     'MEDIADB',
     defaultValue: '$siteRoot/site/mediadb',
@@ -33,7 +38,9 @@ Future<void> main() async {
   // Initialize Firebase Push Notifications
   await PushNotificationService.instance.initialize(
     onNotificationTap: (PushNotificationMessage message) {
-      debugPrint('[Main] Notification tapped: ${message.title} (data: ${message.data})');
+      debugPrint(
+        '[Main] Notification tapped: ${message.title} (data: ${message.data})',
+      );
       final user = message.userId ?? message.data['username']?.toString();
       if (user != null && user.isNotEmpty) {
         DeepLinkHandler.instance.handleDeepLink(
@@ -73,6 +80,13 @@ class EmeWorldApp extends ConsumerWidget {
 
     return MaterialApp(
       title: 'EME World',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        FlutterQuillLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en')],
       navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,

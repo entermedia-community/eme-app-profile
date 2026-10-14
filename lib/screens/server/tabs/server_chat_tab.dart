@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:eme_world/widgets/delta_viewer.dart';
+import 'package:flutter/material.dart' hide FormField;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
@@ -180,6 +181,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           user: currentUserId,
           channel: targetChannel,
           command: 'messagereceived',
+          extraData: {"entityid": widget.server.id},
         );
       }
     } catch (e, stack) {
@@ -210,8 +212,6 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           agentContextValues: AgentContextValues(
             messageRenderType: MessageRenderType.product,
             product: product,
-            componentContent:
-                'Shared a ${product.typeLabel.toLowerCase()}: ${product.title}',
           ),
           createdAt: DateTime.now(),
         ),
@@ -329,6 +329,13 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   Widget _buildMessageItem(ChatMessage msg, bool isDark) {
     final isMe = msg.isUser;
     final timeStr = _formatTime(msg.createdAt);
+
+    if (msg.messageRenderType.isForm) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Center(child: _buildFormBubble(msg, timeStr, isDark)),
+      );
+    }
 
     if (isMe) {
       return Padding(
@@ -461,23 +468,21 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     String timeStr,
     bool isDark,
   ) {
+    debugPrint(
+      'ServerChatTab rendering message type: ${message.messageRenderType}',
+    );
     switch (message.messageRenderType) {
-      case MessageRenderType.question:
-        return _buildQuestionCard(message, isMe, timeStr, isDark);
-      case MessageRenderType.progressupdate:
-        return _buildProgressUpdateCard(message, isMe, timeStr, isDark);
       case MessageRenderType.asset:
         return _buildAssetCard(message, isMe, timeStr, isDark);
       case MessageRenderType.welcome:
         return _buildWelcomeBubble(message, isMe, timeStr, isDark);
       case MessageRenderType.product:
       case MessageRenderType.text:
-      case MessageRenderType.answer:
-      case MessageRenderType.answereval:
-      case MessageRenderType.usercomment:
-      case MessageRenderType.agentcomment:
-      case MessageRenderType.end:
         return _buildStandardBubble(message.text, isMe, timeStr, isDark);
+      case MessageRenderType.delta:
+        return _buildDeltaBubble(message.deltaOps, isMe, timeStr, isDark);
+      case MessageRenderType.form:
+        return _buildFormBubble(message, timeStr, isDark);
     }
   }
 
@@ -554,6 +559,76 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     );
   }
 
+  Widget _buildDeltaBubble(
+    List<dynamic> deltas,
+    bool isMe,
+    String timeStr,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+      decoration: BoxDecoration(
+        color: isMe
+            ? AppColors.primary
+            : (isDark ? AppColors.darkSurface : Colors.white),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: Radius.circular(isMe ? 18 : 4),
+          bottomRight: Radius.circular(isMe ? 4 : 18),
+        ),
+        border: isMe
+            ? null
+            : Border.all(
+                color: isDark
+                    ? AppColors.darkCardBorder
+                    : AppColors.lightCardBorder,
+              ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DeltaViewer(deltaOps: deltas),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                timeStr,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  color: isMe
+                      ? Colors.white.withValues(alpha: 0.75)
+                      : (isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted),
+                ),
+              ),
+              if (isMe) ...[
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.done_all_rounded,
+                  size: 13,
+                  color: Colors.white70,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildWelcomeBubble(
     ChatMessage message,
     bool isMe,
@@ -617,259 +692,64 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     );
   }
 
-  Widget _buildQuestionCard(
-    ChatMessage message,
-    bool isMe,
-    String timeStr,
-    bool isDark,
-  ) {
-    final question = message.question;
-    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
-    final borderColor = isDark
-        ? AppColors.darkCardBorder
-        : AppColors.lightCardBorder;
-
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 320),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: widget.server.primaryColor.withValues(alpha: 0.3),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: widget.server.primaryColor.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.help_outline_rounded,
-                size: 16,
-                color: widget.server.primaryColor,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'QUESTION',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: widget.server.primaryColor,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              if (question?.cognitiveLevel.isNotEmpty == true)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: widget.server.primaryColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    question!.cognitiveLevel.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: widget.server.primaryColor,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            question?.question ?? message.text,
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 13.5,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-            ),
-          ),
-          if (question != null && question.options.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            ...question.options.entries.map((entry) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 6),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: borderColor),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: widget.server.primaryColor.withValues(
-                          alpha: 0.15,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          entry.key.letter,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: widget.server.primaryColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        entry.value,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: isDark
-                              ? AppColors.textDarkPrimary
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ],
-      ),
+  Widget _buildFormBubble(ChatMessage message, String timeStr, bool isDark) {
+    return _ChatFormWidget(
+      fields: message.formFields,
+      timeStr: timeStr,
+      isDark: isDark,
+      primaryColor: widget.server.primaryColor,
+      onSubmit: (values) => _handleFormSubmit(message, values),
     );
   }
 
-  Widget _buildProgressUpdateCard(
-    ChatMessage message,
-    bool isMe,
-    String timeStr,
-    bool isDark,
-  ) {
-    final progress = message.progressUpdate;
-    final cardBg = isDark ? AppColors.darkSurface : Colors.white;
+  void _handleFormSubmit(ChatMessage message, Map<String, dynamic> values) {
+    final targetChannel = _channelId;
+    final currentUserId = AuthService.userId ?? 'user';
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 300),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF059669).withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.trending_up_rounded,
-                size: 16,
-                color: Color(0xFF059669),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'PROGRESS UPDATE',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF059669),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          if (progress != null) ...[
-            const SizedBox(height: 10),
-            _buildProgressBar(
-              'Beginner',
-              progress.beginnerProgress,
-              Colors.blue,
-              isDark,
-            ),
-            const SizedBox(height: 6),
-            _buildProgressBar(
-              'Competent',
-              progress.competentProgress,
-              Colors.orange,
-              isDark,
-            ),
-            const SizedBox(height: 6),
-            _buildProgressBar(
-              'Expert',
-              progress.expertProgress,
-              const Color(0xFF059669),
-              isDark,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+    final summary = values.entries
+        .map((e) => '${e.key}: ${e.value}')
+        .join(', ');
+    final submitText = 'Submitted: $summary';
 
-  Widget _buildProgressBar(
-    String label,
-    double value,
-    Color color,
-    bool isDark,
-  ) {
-    final clamped = value.clamp(0.0, 1.0);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11,
-                color: isDark
-                    ? AppColors.textDarkSecondary
-                    : AppColors.textSecondary,
-              ),
-            ),
-            Text(
-              '${(clamped * 100).toInt()}%',
-              style: GoogleFonts.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
+    setState(() {
+      _messages.add(
+        ChatMessage(
+          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          channel: targetChannel,
+          userId: currentUserId,
+          message: submitText,
+          replyToId: message.messageId,
+          createdAt: DateTime.now(),
         ),
-        const SizedBox(height: 3),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: LinearProgressIndicator(
-            value: clamped,
-            backgroundColor: color.withValues(alpha: 0.15),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 6,
-          ),
-        ),
-      ],
-    );
+      );
+    });
+
+    _scrollToBottom();
+
+    try {
+      if (ChatSocketService().isConnected && targetChannel.isNotEmpty) {
+        ChatSocketService().sendMessage(
+          message: submitText,
+          user: currentUserId,
+          channel: targetChannel,
+          command: 'messagereceived',
+          replyToId: message.messageId,
+          extraData: {
+            'form': values,
+            'entityid': widget.server.id,
+            'replytoid': message.messageId,
+          },
+        );
+      }
+    } catch (e, stack) {
+      debugPrint('Failed to send form response over socket: $e');
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason:
+            'Failed to send form response over ChatSocketService in ServerChatTab',
+      );
+    }
   }
 
   Widget _buildAssetCard(
@@ -1032,6 +912,495 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
                   color: Colors.white,
                 ),
                 onPressed: _sendMessage,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChatFormWidget extends StatefulWidget {
+  final List<FormField> fields;
+  final String timeStr;
+  final bool isDark;
+  final Color primaryColor;
+  final void Function(Map<String, dynamic> values) onSubmit;
+
+  const _ChatFormWidget({
+    required this.fields,
+    required this.timeStr,
+    required this.isDark,
+    required this.primaryColor,
+    required this.onSubmit,
+  });
+
+  @override
+  State<_ChatFormWidget> createState() => _ChatFormWidgetState();
+}
+
+class _ChatFormWidgetState extends State<_ChatFormWidget> {
+  final _formKey = GlobalKey<FormState>();
+  final Map<String, TextEditingController> _controllers = {};
+  final Map<String, bool> _boolValues = {};
+  bool _isSubmitted = false;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print("============");
+    print(widget.fields);
+    _initFields();
+  }
+
+  void _initFields() {
+    for (final field in widget.fields) {
+      final type = field.type.toLowerCase().trim();
+      if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
+        final val = field.value;
+        _boolValues[field.name] =
+            (val == true || val == 'true' || val == 1 || val == '1');
+      } else {
+        _controllers[field.name] = TextEditingController(
+          text: field.value?.toString() ?? '',
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  bool get _isFormReadOnly {
+    final fields = widget.fields;
+    if (fields.isEmpty) return true;
+    return fields.every((f) => f.readOnly == true);
+  }
+
+  Future<void> _pickDate(String fieldName, bool isReadOnly) async {
+    if (isReadOnly) return;
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: widget.isDark ? ThemeData.dark() : ThemeData.light(),
+          child: child ?? const SizedBox(),
+        );
+      },
+    );
+    if (picked != null && mounted) {
+      final formatted =
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      _controllers[fieldName]?.text = formatted;
+    }
+  }
+
+  Future<void> _handleSubmit() async {
+    if (_isSubmitting || _isSubmitted) return;
+    if (!(_formKey.currentState?.validate() ?? true)) return;
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final Map<String, dynamic> result = {};
+    for (final field in widget.fields) {
+      final type = field.type.toLowerCase().trim();
+      if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
+        result[field.name] = _boolValues[field.name] ?? false;
+      } else {
+        result[field.name] = _controllers[field.name]?.text.trim() ?? '';
+      }
+    }
+
+    widget.onSubmit(result);
+
+    if (mounted) {
+      setState(() {
+        _isSubmitting = false;
+        _isSubmitted = true;
+      });
+    }
+  }
+
+  InputDecoration _buildInputDecoration({
+    required String labelText,
+    String? hintText,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      hintStyle: GoogleFonts.inter(
+        fontSize: 12.5,
+        color: widget.isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+      ),
+      labelStyle: GoogleFonts.inter(
+        fontSize: 12.5,
+        color: widget.isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+      ),
+      filled: true,
+      fillColor: widget.isDark
+          ? AppColors.darkCardBorder.withValues(alpha: 0.35)
+          : AppColors.lightSurface,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: widget.isDark
+              ? AppColors.darkCardBorder
+              : AppColors.lightCardBorder,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color: widget.isDark
+              ? AppColors.darkCardBorder
+              : AppColors.lightCardBorder,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(color: widget.primaryColor, width: 1.5),
+      ),
+    );
+  }
+
+  Widget _buildFieldWidget(FormField field) {
+    final type = field.type.toLowerCase().trim();
+    final name = field.name;
+    final label = field.label.isNotEmpty ? field.label : field.name;
+    final isFieldReadOnly =
+        (field.readOnly == true) || _isFormReadOnly || _isSubmitted;
+
+    if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
+      final isChecked = _boolValues[name] ?? false;
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: widget.isDark
+              ? AppColors.darkCardBorder.withValues(alpha: 0.25)
+              : AppColors.lightSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: widget.isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: widget.isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
+                ),
+              ),
+            ),
+            Checkbox(
+              value: isChecked,
+              activeColor: widget.primaryColor,
+              onChanged: isFieldReadOnly
+                  ? null
+                  : (bool? val) {
+                      setState(() {
+                        _boolValues[name] = val ?? false;
+                      });
+                    },
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (type == 'date') {
+      return TextFormField(
+        controller: _controllers[name],
+        readOnly: true,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: widget.isDark
+              ? AppColors.textDarkPrimary
+              : AppColors.textPrimary,
+        ),
+        onTap: () => _pickDate(name, isFieldReadOnly),
+        decoration: _buildInputDecoration(
+          labelText: label,
+          hintText: 'YYYY-MM-DD',
+          suffixIcon: IconButton(
+            icon: Icon(
+              Icons.calendar_today_rounded,
+              size: 18,
+              color: widget.primaryColor,
+            ),
+            onPressed: isFieldReadOnly
+                ? null
+                : () => _pickDate(name, isFieldReadOnly),
+          ),
+        ),
+      );
+    }
+
+    final isMultiline =
+        type == 'textarea' || type == 'multiline' || type == 'paragraph';
+    final isNumber =
+        type == 'number' ||
+        type == 'int' ||
+        type == 'integer' ||
+        type == 'decimal' ||
+        type == 'float' ||
+        type == 'numeric';
+    final isPhone = type == 'phone' || type == 'tel';
+    final isEmail = type == 'email';
+    final isPassword = type == 'password';
+
+    TextInputType keyboardType = TextInputType.text;
+    if (isMultiline) {
+      keyboardType = TextInputType.multiline;
+    } else if (isNumber) {
+      keyboardType = const TextInputType.numberWithOptions(decimal: true);
+    } else if (isPhone) {
+      keyboardType = TextInputType.phone;
+    } else if (isEmail) {
+      keyboardType = TextInputType.emailAddress;
+    }
+
+    return TextFormField(
+      controller: _controllers[name],
+      readOnly: isFieldReadOnly,
+      minLines: isMultiline ? 3 : 1,
+      maxLines: isMultiline ? 5 : 1,
+      obscureText: isPassword,
+      keyboardType: keyboardType,
+      style: GoogleFonts.inter(
+        fontSize: 13,
+        color: widget.isDark
+            ? AppColors.textDarkPrimary
+            : AppColors.textPrimary,
+      ),
+      decoration: _buildInputDecoration(labelText: label),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fields = widget.fields;
+    final cardBg = widget.isDark ? AppColors.darkSurface : Colors.white;
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 420),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: widget.isDark
+              ? AppColors.darkCardBorder
+              : AppColors.lightCardBorder,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: widget.isDark ? 0.25 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: widget.primaryColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.dynamic_form_rounded,
+                    size: 18,
+                    color: widget.primaryColor,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Form',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: widget.isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _isSubmitted
+                        ? Colors.green.withValues(alpha: 0.15)
+                        : (_isFormReadOnly
+                              ? (widget.isDark
+                                    ? AppColors.darkCardBorder
+                                    : AppColors.lightCardBorder)
+                              : widget.primaryColor.withValues(alpha: 0.12)),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    _isSubmitted
+                        ? 'SUBMITTED'
+                        : (_isFormReadOnly ? 'VIEW ONLY' : 'FORM'),
+                    style: GoogleFonts.inter(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: _isSubmitted
+                          ? Colors.green
+                          : (_isFormReadOnly
+                                ? (widget.isDark
+                                      ? AppColors.textDarkMuted
+                                      : AppColors.textMuted)
+                                : widget.primaryColor),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // Form Fields
+            if (fields.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Center(
+                  child: Text(
+                    'No fields available.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      color: widget.isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
+                    ),
+                  ),
+                ),
+              )
+            else
+              for (int i = 0; i < fields.length; i++) ...[
+                if (i > 0) const SizedBox(height: 10),
+                _buildFieldWidget(fields[i]),
+              ],
+
+            // Submit Button or Submitted Badge
+            if (!_isFormReadOnly && !_isSubmitted) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Submit',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                ),
+              ),
+            ] else if (_isSubmitted) ...[
+              const SizedBox(height: 14),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 9),
+                decoration: BoxDecoration(
+                  color: Colors.green.withValues(
+                    alpha: widget.isDark ? 0.2 : 0.08,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      size: 15,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Submitted successfully',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // Time footer
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                widget.timeStr,
+                style: GoogleFonts.inter(
+                  fontSize: 9.5,
+                  color: widget.isDark
+                      ? AppColors.textDarkMuted
+                      : AppColors.textMuted,
+                ),
               ),
             ),
           ],

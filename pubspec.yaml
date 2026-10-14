@@ -15,6 +15,9 @@ dependencies:
   eme_app_sdk:
     path: ../eme-app-sdk
   flutter_svg: ^2.3.0
+  flutter_quill: ^11.6.0
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
