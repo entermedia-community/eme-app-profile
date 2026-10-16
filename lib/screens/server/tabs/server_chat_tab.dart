@@ -23,7 +23,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   final ScrollController _scrollController = ScrollController();
 
   StreamSubscription<ChatMessage>? _socketSubscription;
-  late final String _channelId;
+  String _channelId = '';
   bool _isConnecting = false;
 
   late List<ChatMessage> _messages;
@@ -44,7 +44,6 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           ? widget.server.serverMediaDBUrl
           : null;
 
-      // Make connect request to ../services/chat/connect.json
       _channelId = await ChatSocketService().connectChat(serverId);
 
       await _connectSocket(_channelId, baseUrl: customBaseUrl);
@@ -57,7 +56,8 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
         reason: 'Error establishing server chat socket in ServerChatTab',
         customKeys: {'serverId': widget.server.id},
       );
-      final fallbackChannel = widget.server.id;
+      _channelId = widget.server.id;
+      final fallbackChannel = _channelId;
       if (fallbackChannel.isNotEmpty) {
         final customBaseUrl = widget.server.serverMediaDBUrl.isNotEmpty
             ? widget.server.serverMediaDBUrl
@@ -598,7 +598,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
             : CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          DeltaViewer(deltaOps: deltas),
+          DeltaViewer(deltaOps: deltas, onLinkTap: _handleLinkTap),
           const SizedBox(height: 4),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -854,46 +854,49 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
               },
             ),
             Expanded(
-              child: TextField(
-                controller: _textController,
-                onSubmitted: (_) => _sendMessage(),
-                decoration: InputDecoration(
-                  hintText: 'Type your message...',
-                  hintStyle: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: isDark
-                        ? AppColors.textDarkMuted
-                        : AppColors.textMuted,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  filled: true,
-                  fillColor: isDark
-                      ? const Color(0xFF0F172A)
-                      : const Color(0xFFF8FAFC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(
+              child: Semantics(
+                identifier: "server_chat_input",
+                child: TextField(
+                  controller: _textController,
+                  onSubmitted: (_) => _sendMessage(),
+                  decoration: InputDecoration(
+                    hintText: 'Type your message...',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 13,
                       color: isDark
-                          ? AppColors.darkCardBorder
-                          : AppColors.lightCardBorder,
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(
-                      color: isDark
-                          ? AppColors.darkCardBorder
-                          : AppColors.lightCardBorder,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide(
-                      color: widget.server.primaryColor,
-                      width: 1.5,
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF0F172A)
+                        : const Color(0xFFF8FAFC),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? AppColors.darkCardBorder
+                            : AppColors.lightCardBorder,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? AppColors.darkCardBorder
+                            : AppColors.lightCardBorder,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      borderSide: BorderSide(
+                        color: widget.server.primaryColor,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -905,19 +908,32 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
                 color: widget.server.primaryColor,
                 shape: BoxShape.circle,
               ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.send_rounded,
-                  size: 18,
-                  color: Colors.white,
+              child: Semantics(
+                identifier: "server_chat_send",
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.send_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  onPressed: _sendMessage,
                 ),
-                onPressed: _sendMessage,
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  _handleLinkTap(String link, Map<String, dynamic> data) async {
+    debugPrint(
+      "Link: $link",
+    ); //e.g.: /site/mediadb/views/modules/emeserver/editors/entitychat/chatterbox/changescenario.html
+    debugPrint(
+      "Data: $data",
+    ); //e.g.; {targetdiv: changescenario, channel: AaFAj3-udKixTInEx17X, currentscenario: eme_server_search_media, functionname: eme_server_search_media_confirm, oemaxlevel: 1}
+    await ChatSocketService().connectChat(widget.server.id, params: data);
   }
 }
 
@@ -944,6 +960,7 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, bool> _boolValues = {};
+  final Map<String, dynamic> _selectValues = {};
   bool _isSubmitted = false;
   bool _isSubmitting = false;
 
@@ -956,10 +973,28 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
   void _initFields() {
     for (final field in widget.fields) {
       final type = field.type.name;
+      final isSelect =
+          field.type == FormFieldType.select ||
+          type == 'select' ||
+          type == 'dropdown' ||
+          field.options.isNotEmpty;
+
       if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
         final val = field.value;
         _boolValues[field.name] =
             (val == true || val == 'true' || val == 1 || val == '1');
+      } else if (isSelect) {
+        dynamic initialValue;
+        if (field.value != null) {
+          for (final opt in field.options) {
+            if (opt.value == field.value ||
+                opt.value?.toString() == field.value?.toString()) {
+              initialValue = opt.value;
+              break;
+            }
+          }
+        }
+        _selectValues[field.name] = initialValue;
       } else {
         _controllers[field.name] = TextEditingController(
           text: field.value?.toString() ?? '',
@@ -1015,8 +1050,16 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
     final Map<String, dynamic> result = {};
     for (final field in widget.fields) {
       final type = field.type.name;
+      final isSelect =
+          field.type == FormFieldType.select ||
+          type == 'select' ||
+          type == 'dropdown' ||
+          field.options.isNotEmpty;
+
       if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
         result[field.name] = _boolValues[field.name] ?? false;
+      } else if (isSelect) {
+        result[field.name] = _selectValues[field.name] ?? '';
       } else {
         result[field.name] = _controllers[field.name]?.text.trim() ?? '';
       }
@@ -1070,6 +1113,16 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
               : AppColors.lightCardBorder,
         ),
       ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide(
+          color:
+              (widget.isDark
+                      ? AppColors.darkCardBorder
+                      : AppColors.lightCardBorder)
+                  .withValues(alpha: 0.5),
+        ),
+      ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(color: widget.primaryColor, width: 1.5),
@@ -1083,6 +1136,11 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
     final label = field.label.isNotEmpty ? field.label : field.name;
     final isFieldReadOnly =
         (field.readOnly == true) || _isFormReadOnly || _isSubmitted;
+    final isSelect =
+        field.type == FormFieldType.select ||
+        type == 'select' ||
+        type == 'dropdown' ||
+        field.options.isNotEmpty;
 
     if (type == 'bool' || type == 'boolean' || type == 'checkbox') {
       final isChecked = _boolValues[name] ?? false;
@@ -1126,6 +1184,88 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
             ),
           ],
         ),
+      );
+    }
+
+    if (isSelect) {
+      final seenValues = <dynamic>{};
+      final uniqueOptions = <FormFieldOption>[];
+      for (final opt in field.options) {
+        if (!seenValues.contains(opt.value)) {
+          seenValues.add(opt.value);
+          uniqueOptions.add(opt);
+        }
+      }
+
+      final currentValue = _selectValues[name];
+      final validValue = seenValues.contains(currentValue)
+          ? currentValue
+          : null;
+
+      return DropdownButtonFormField<dynamic>(
+        initialValue: validValue,
+        isExpanded: true,
+        dropdownColor: widget.isDark ? AppColors.darkSurface : Colors.white,
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: widget.isDark
+              ? AppColors.textDarkPrimary
+              : AppColors.textPrimary,
+        ),
+        icon: Icon(
+          Icons.arrow_drop_down_rounded,
+          color: widget.isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+        ),
+        hint: Text(
+          uniqueOptions.isEmpty ? 'No options available' : 'Select $label',
+          style: GoogleFonts.inter(
+            fontSize: 12.5,
+            color: widget.isDark
+                ? AppColors.textDarkMuted
+                : AppColors.textMuted,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        disabledHint: validValue != null
+            ? null
+            : Text(
+                'None selected',
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  color:
+                      (widget.isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted)
+                          .withValues(alpha: 0.6),
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+        decoration: _buildInputDecoration(labelText: label),
+        items: uniqueOptions.map((opt) {
+          final optText = opt.label.isNotEmpty
+              ? opt.label
+              : opt.value?.toString() ?? '';
+          return DropdownMenuItem<dynamic>(
+            value: opt.value,
+            child: Text(
+              optText,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: widget.isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: isFieldReadOnly
+            ? null
+            : (val) {
+                setState(() {
+                  _selectValues[name] = val;
+                });
+              },
       );
     }
 

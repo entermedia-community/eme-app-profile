@@ -1,0 +1,18 @@
+appId: world.eme.main
+---
+- launchApp
+
+- extendedWaitUntil:
+    visible:
+      id: "joined_server_list"
+- tapOn:
+    id: "server_card_0"
+
+- extendedWaitUntil:
+    visible:
+      id: "server_chat_input"
+- tapOn:
+    id: "server_chat_input"
+- inputText: "Hello!"
+- tapOn:
+    id: "server_chat_send"

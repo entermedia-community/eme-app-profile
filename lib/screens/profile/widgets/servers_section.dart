@@ -82,14 +82,20 @@ class _ServersSectionState extends ConsumerState<ServersSection> {
         if (joinedServers.isEmpty)
           _buildEmptyState(context, isDark, serverState.joinedServers.isEmpty)
         else ...[
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: joinedServers.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              return ServerCard(server: joinedServers[index]);
-            },
+          Semantics(
+            identifier: "joined_server_list",
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: joinedServers.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                return Semantics(
+                  identifier: "server_card_$index",
+                  child: ServerCard(server: joinedServers[index]),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 20),
         ],
