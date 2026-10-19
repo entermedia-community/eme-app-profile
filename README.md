@@ -2,7 +2,12 @@
 
 A new Flutter project.
 
-## Getting Started
 
-run `emulator @name`
-then `flutter run`
+emulator @android
+flutter run
+
+## Getting Started
+flutter pub get
+
+
+flutter run -d chrome
