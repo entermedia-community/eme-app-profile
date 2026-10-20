@@ -19,3 +19,11 @@
 - If a backend endpoint, data schema, or remote capability is not yet implemented or unavailable:
   - Implement real error handling for the unavailable state.
   - Ask the user for guidance or clarification if uncertain, rather than inventing mock implementations.
+
+## Project rule: Semantics identifiers
+
+Every button and input you add or touch (`*Button`, `IconButton`, `TextField`/`TextFormField`, `Switch`, `Checkbox`, `Slider`, `Dropdown*`, chips, and tappable `InkWell`/`GestureDetector`/`ListTile` MUST be wrapped in `Semantics(identifier: '...', child: ...)`.
+
+- Identifiers are `snake_case`, stable, and never localized text.
+- Must be unique on screen: list items append a stable key (`'filter_chip_$idx'`, `'chat_list_item_${tmpl.id}'`).
+- Inside reusable widgets that appear more than once per screen, prefix with the widget's `id` param, and pass a unique `id:` at each call site.
