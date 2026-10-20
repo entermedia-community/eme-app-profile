@@ -21,7 +21,10 @@ class McpChatDetailScreen extends ConsumerStatefulWidget {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
         return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 280),
@@ -29,7 +32,8 @@ class McpChatDetailScreen extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<McpChatDetailScreen> createState() => _McpChatDetailScreenState();
+  ConsumerState<McpChatDetailScreen> createState() =>
+      _McpChatDetailScreenState();
 }
 
 class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
@@ -77,15 +81,17 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     setState(() => _isSending = true);
 
     try {
-      await ref.read(mcpConversationsProvider.notifier).sendMessage(
-            serverId: widget.conversation.serverId,
-            text: text,
-          );
+      await ref
+          .read(mcpConversationsProvider.notifier)
+          .sendMessage(serverId: widget.conversation.serverId, text: text);
       _scrollToBottom();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Failed to send: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -156,7 +162,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               ),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurface : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -168,7 +176,11 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.bolt_rounded, color: serverColor, size: 22),
+                          Icon(
+                            Icons.bolt_rounded,
+                            color: serverColor,
+                            size: 22,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Available Tools (${currentServer.tools.length})',
@@ -186,7 +198,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                                 ? const SizedBox(
                                     width: 16,
                                     height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Icon(Icons.refresh_rounded, size: 20),
                             tooltip: 'Reload Tools (tools/list)',
@@ -203,7 +217,10 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                   const SizedBox(height: 8),
                   if (currentServer.tools.isEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
                       child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -218,7 +235,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                               'No tools advertised by server.',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
-                                color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                color: isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textMuted,
                               ),
                             ),
                             if (reloadError != null) ...[
@@ -249,7 +268,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                                 isReloading
                                     ? 'Fetching tools/list...'
                                     : 'Try Reload (tools/list)',
-                                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: serverColor,
@@ -281,11 +302,22 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                                 color: serverColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: Icon(Icons.bolt_rounded, color: serverColor, size: 20),
+                              child: Icon(
+                                Icons.bolt_rounded,
+                                color: serverColor,
+                                size: 20,
+                              ),
                             ),
-                            title: Text(t.name, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                            title: Text(
+                              t.name,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                             subtitle: Text(
-                              t.description.isNotEmpty ? t.description : 'No description provided',
+                              t.description.isNotEmpty
+                                  ? t.description
+                                  : 'No description provided',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.inter(fontSize: 12),
@@ -312,8 +344,12 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBg : AppColors.lightBg;
-    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final surfaceColor = isDark
+        ? AppColors.darkSurface
+        : AppColors.lightSurface;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     // Watch live conversation & server state
     final conversations = ref.watch(mcpConversationsProvider);
@@ -328,8 +364,12 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     final displayedMessages = _searchQuery.isEmpty
         ? messages
         : messages
-            .where((m) => m.content.toLowerCase().contains(_searchQuery.toLowerCase()))
-            .toList();
+              .where(
+                (m) => m.content.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+              )
+              .toList();
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -373,8 +413,8 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                           color: server.status == McpServerStatus.connected
                               ? AppColors.greenAccent
                               : (server.status == McpServerStatus.connecting
-                                  ? Colors.amber
-                                  : Colors.red),
+                                    ? Colors.amber
+                                    : Colors.red),
                           shape: BoxShape.circle,
                           border: Border.all(color: surfaceColor, width: 2),
                         ),
@@ -403,7 +443,10 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                           ),
                           const SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: serverColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
@@ -423,13 +466,15 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                         server.status == McpServerStatus.connected
                             ? '${server.tools.length} Tools • Active'
                             : (server.status == McpServerStatus.connecting
-                                ? 'Connecting...'
-                                : 'Disconnected'),
+                                  ? 'Connecting...'
+                                  : 'Disconnected'),
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           color: server.status == McpServerStatus.connected
                               ? AppColors.greenAccent
-                              : (isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                              : (isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textMuted),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -481,7 +526,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                     decoration: BoxDecoration(
                       color: surfaceColor,
-                      border: Border(bottom: BorderSide(color: borderColor, width: 1)),
+                      border: Border(
+                        bottom: BorderSide(color: borderColor, width: 1),
+                      ),
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -491,8 +538,13 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                         hintText: 'Search in MCP conversation...',
                         prefixIcon: const Icon(Icons.search_rounded, size: 20),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        fillColor: isDark
+                            ? AppColors.darkBg
+                            : AppColors.lightBg,
                         filled: true,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -511,7 +563,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               padding: const EdgeInsets.symmetric(vertical: 4),
               decoration: BoxDecoration(
                 color: surfaceColor,
-                border: Border(bottom: BorderSide(color: borderColor, width: 0.8)),
+                border: Border(
+                  bottom: BorderSide(color: borderColor, width: 0.8),
+                ),
               ),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
@@ -521,16 +575,24 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                 itemBuilder: (context, index) {
                   final tool = server.tools[index];
                   return ActionChip(
-                    avatar: Icon(Icons.bolt_rounded, size: 14, color: serverColor),
+                    avatar: Icon(
+                      Icons.bolt_rounded,
+                      size: 14,
+                      color: serverColor,
+                    ),
                     label: Text(
                       tool.name,
                       style: GoogleFonts.inter(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
-                    backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
+                    backgroundColor: isDark
+                        ? AppColors.darkBg
+                        : AppColors.lightBg,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(color: borderColor),
@@ -553,7 +615,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                         Icon(
                           Icons.hub_rounded,
                           size: 48,
-                          color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
                         ),
                         const SizedBox(height: 12),
                         Text(
@@ -568,7 +632,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                           'Type a prompt or tap a tool above to get started.',
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                            color: isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -576,7 +642,10 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                     itemCount: displayedMessages.length,
                     itemBuilder: (context, index) {
                       final msg = displayedMessages[index];
@@ -628,10 +697,15 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                       hintText: 'Prompt MCP server or /tool <name>...',
                       hintStyle: GoogleFonts.inter(
                         fontSize: 14,
-                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                        color: isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted,
                       ),
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
                       filled: true,
                       border: OutlineInputBorder(
@@ -660,7 +734,11 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  Widget _buildMessageItem(McpChatMessage message, McpServerModel server, bool isDark) {
+  Widget _buildMessageItem(
+    McpChatMessage message,
+    McpServerModel server,
+    bool isDark,
+  ) {
     switch (message.role) {
       case McpMessageRole.system:
         return _buildSystemNotice(message, server, isDark);
@@ -706,7 +784,10 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _formatTime(message.timestamp),
-                    style: GoogleFonts.inter(fontSize: 10, color: Colors.white70),
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: Colors.white70,
+                    ),
                   ),
                 ],
               ),
@@ -717,8 +798,14 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  Widget _buildAssistantBubble(McpChatMessage message, McpServerModel server, bool isDark) {
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+  Widget _buildAssistantBubble(
+    McpChatMessage message,
+    McpServerModel server,
+    bool isDark,
+  ) {
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -757,7 +844,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                     message.content,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textDarkPrimary
+                          : AppColors.textPrimary,
                       height: 1.4,
                     ),
                   ),
@@ -766,7 +855,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                     _formatTime(message.timestamp),
                     style: GoogleFonts.inter(
                       fontSize: 10,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                 ],
@@ -778,7 +869,11 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  Widget _buildSystemNotice(McpChatMessage message, McpServerModel server, bool isDark) {
+  Widget _buildSystemNotice(
+    McpChatMessage message,
+    McpServerModel server,
+    bool isDark,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -797,7 +892,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               message.content,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary,
                 height: 1.35,
               ),
             ),
@@ -807,8 +904,14 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  Widget _buildToolCallCard(McpChatMessage message, McpServerModel server, bool isDark) {
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+  Widget _buildToolCallCard(
+    McpChatMessage message,
+    McpServerModel server,
+    bool isDark,
+  ) {
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     return Container(
       margin: const EdgeInsets.only(bottom: 12, left: 32),
       padding: const EdgeInsets.all(12),
@@ -849,7 +952,8 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               ),
             ],
           ),
-          if (message.toolArguments != null && message.toolArguments!.isNotEmpty) ...[
+          if (message.toolArguments != null &&
+              message.toolArguments!.isNotEmpty) ...[
             const SizedBox(height: 6),
             Container(
               width: double.infinity,
@@ -869,7 +973,11 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     );
   }
 
-  Widget _buildToolResultCard(McpChatMessage message, McpServerModel server, bool isDark) {
+  Widget _buildToolResultCard(
+    McpChatMessage message,
+    McpServerModel server,
+    bool isDark,
+  ) {
     final isSuccess = !message.isError;
     final formatted = message.formattedResult ?? message.content;
 
@@ -901,18 +1009,24 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               Row(
                 children: [
                   Icon(
-                    isSuccess ? Icons.check_circle_rounded : Icons.error_rounded,
+                    isSuccess
+                        ? Icons.check_circle_rounded
+                        : Icons.error_rounded,
                     size: 16,
                     color: isSuccess ? AppColors.greenAccent : Colors.red,
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    message.toolName != null ? 'Result: ${message.toolName}' : 'Tool Output',
+                    message.toolName != null
+                        ? 'Result: ${message.toolName}'
+                        : 'Tool Output',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: isSuccess
-                          ? (isDark ? Colors.greenAccent : AppColors.greenButtonText)
+                          ? (isDark
+                                ? Colors.greenAccent
+                                : AppColors.greenButtonText)
                           : Colors.red,
                     ),
                   ),
@@ -922,7 +1036,10 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                 children: [
                   if (message.latencyMs != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: isDark ? AppColors.darkBg : AppColors.tagBg,
                         borderRadius: BorderRadius.circular(6),
@@ -932,7 +1049,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
                         ),
                       ),
                     ),
@@ -967,7 +1086,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
               formatted,
               style: GoogleFonts.firaCode(
                 fontSize: 12,
-                color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                color: isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
                 height: 1.35,
               ),
             ),
@@ -1005,7 +1126,9 @@ class _McpChatDetailScreenState extends ConsumerState<McpChatDetailScreen> {
     final diff = DateTime.now().difference(date);
     if (diff.inMinutes < 2) return 'Just now';
     if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
+    final hour = date.hour > 12
+        ? date.hour - 12
+        : (date.hour == 0 ? 12 : date.hour);
     final period = date.hour >= 12 ? 'PM' : 'AM';
     final minute = date.minute.toString().padLeft(2, '0');
     return '$hour:$minute $period';

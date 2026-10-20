@@ -6,10 +6,7 @@ import '../../theme/app_colors.dart';
 class SendProductSheet extends StatelessWidget {
   final ValueChanged<ProductMessageModel> onProductSelected;
 
-  const SendProductSheet({
-    super.key,
-    required this.onProductSelected,
-  });
+  const SendProductSheet({super.key, required this.onProductSelected});
 
   static Future<void> show(
     BuildContext context, {
@@ -19,9 +16,8 @@ class SendProductSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SendProductSheet(
-        onProductSelected: onProductSelected,
-      ),
+      builder: (context) =>
+          SendProductSheet(onProductSelected: onProductSelected),
     );
   }
 
@@ -29,7 +25,9 @@ class SendProductSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     final catalog = ProductMessageModel.sampleCatalog;
 
     return DraggableScrollableSheet(
@@ -68,14 +66,20 @@ class SendProductSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                 child: Row(
                   children: [
-                    const Icon(Icons.share_location_rounded, size: 22, color: AppColors.primary),
+                    const Icon(
+                      Icons.share_location_rounded,
+                      size: 22,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Share Product in Chat',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const Spacer(),
@@ -91,13 +95,18 @@ class SendProductSheet extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   itemCount: catalog.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final item = catalog[index];
                     Color typeColor;
-                    IconData typeIcon = item.iconData ?? Icons.shopping_bag_outlined;
+                    IconData typeIcon =
+                        item.iconData ?? Icons.shopping_bag_outlined;
 
                     switch (item.type) {
                       case ProductType.ecommerce:
@@ -113,26 +122,38 @@ class SendProductSheet extends StatelessWidget {
 
                     return Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: borderColor),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         leading: Container(
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: typeColor.withValues(alpha: isDark ? 0.25 : 0.12),
+                            color: typeColor.withValues(
+                              alpha: isDark ? 0.25 : 0.12,
+                            ),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: typeColor.withValues(alpha: 0.3)),
+                            border: Border.all(
+                              color: typeColor.withValues(alpha: 0.3),
+                            ),
                           ),
                           child: Icon(typeIcon, color: typeColor, size: 22),
                         ),
                         title: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               margin: const EdgeInsets.only(right: 6),
                               decoration: BoxDecoration(
                                 color: typeColor.withValues(alpha: 0.12),
@@ -155,7 +176,9 @@ class SendProductSheet extends StatelessWidget {
                                 style: GoogleFonts.plusJakartaSans(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                                  color: isDark
+                                      ? AppColors.textDarkPrimary
+                                      : AppColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -181,7 +204,9 @@ class SendProductSheet extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.inter(
                                     fontSize: 11,
-                                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                    color: isDark
+                                        ? AppColors.textDarkMuted
+                                        : AppColors.textMuted,
                                   ),
                                 ),
                               ),
@@ -193,7 +218,10 @@ class SendProductSheet extends StatelessWidget {
                             backgroundColor: typeColor,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             minimumSize: Size.zero,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
@@ -203,7 +231,13 @@ class SendProductSheet extends StatelessWidget {
                             onProductSelected(item);
                             Navigator.of(context).pop();
                           },
-                          child: const Text('Send', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Send',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     );

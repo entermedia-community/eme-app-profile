@@ -23,20 +23,15 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pumpAndSettle();
 
-      // 1. Navigate to Chats tab
-      await tester.tap(find.text('Chats').last);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.pumpAndSettle();
-
+      // 1. App opens on Chats (home)
       expect(find.text('Search conversations...'), findsOneWidget);
-      expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+      expect(find.bySemanticsIdentifier('chats_open_search'), findsOneWidget);
       expect(find.text('All'), findsOneWidget);
-      expect(find.text('Direct Chats'), findsOneWidget);
-      expect(find.text('MCP Servers'), findsOneWidget);
+      expect(find.text('People'), findsOneWidget);
+      expect(find.text('Servers'), findsOneWidget);
 
       // 2. Test Filtering by MCP Servers
-      await tester.tap(find.text('MCP Servers'));
+      await tester.tap(find.text('Servers'));
       await tester.pumpAndSettle();
 
       expect(find.text('EnterMedia EME World MCP'), findsWidgets);
@@ -47,8 +42,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('The Administrator'), findsWidgets);
 
-      // 4. Test Opening MCP Add Server Sheet
-      await tester.tap(find.byIcon(Icons.add_rounded));
+      // 4. Test the MCP Add Server Sheet. Its chat-list button only shows in
+      // the empty MCP state, which this fixture doesn't have, so open it directly.
+      AddMcpServerSheet.show(tester.element(find.byType(Scaffold).first));
       await tester.pumpAndSettle();
 
       expect(find.byType(AddMcpServerSheet), findsOneWidget);

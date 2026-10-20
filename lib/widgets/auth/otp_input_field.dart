@@ -114,7 +114,9 @@ class _OtpInputFieldState extends State<OtpInputField> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     final boxBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
 
     return Column(
@@ -134,7 +136,7 @@ class _OtpInputFieldState extends State<OtpInputField> {
                       _focusNodes[index - 1].requestFocus();
                       widget.onChanged?.call(_currentCode);
                     }
-                  }
+                  },
                 },
                 child: TextField(
                   controller: _controllers[index],
@@ -146,11 +148,11 @@ class _OtpInputFieldState extends State<OtpInputField> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                    color: isDark
+                        ? AppColors.textDarkPrimary
+                        : AppColors.textPrimary,
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     counterText: '',
                     filled: true,

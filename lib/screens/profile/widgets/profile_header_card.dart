@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/auth/auth_modal_sheet.dart';
-import '../../../widgets/profile_app_bar_button.dart';
-import '../../chats/chat_detail_screen.dart';
 import '../../../widgets/pill_badge.dart';
 import 'edit_profile_sheet.dart';
 
@@ -213,11 +211,32 @@ class ProfileHeaderCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+
+                    // User Name with edit pencil
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: isDark
+                                  ? AppColors.textDarkPrimary
+                                  : AppColors.textPrimary,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ),
                         Semantics(
                           identifier: 'profile_edit_button',
                           child: IconButton(
-                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            icon: const Icon(Icons.edit_outlined, size: 18),
                             tooltip: 'Edit Profile',
                             color: AppColors.primary,
                             visualDensity: VisualDensity.compact,
@@ -226,22 +245,6 @@ class ProfileHeaderCard extends ConsumerWidget {
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    // User Name
-                    Text(
-                      displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: isDark
-                            ? AppColors.textDarkPrimary
-                            : AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
                     ),
                     const SizedBox(height: 4),
 
@@ -403,67 +406,9 @@ class ProfileHeaderCard extends ConsumerWidget {
               }),
             ],
           ),
-
-          const SizedBox(height: 20),
-
-          // Chat with yourself ("EME <first name>"), green accent as in mockup
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: ElevatedButton.icon(
-                    onPressed: currentUser == null
-                        ? null
-                        : () => _openSelfChat(context, currentUser, profile),
-                    icon: const Icon(
-                      Icons.chat_bubble_outline_rounded,
-                      size: 18,
-                    ),
-                    label: Text(
-                      emeProfileLabel(currentUser, profile),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? const Color(0xFF15803D)
-                          : const Color(0xFF86EFAC),
-                      foregroundColor: isDark
-                          ? Colors.white
-                          : const Color(0xFF14532D),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
-  }
-
-  /// Opens a DM with the signed-in user themselves.
-  void _openSelfChat(BuildContext context, EmUser user, ProfileModel profile) {
-    final chat = ChatModel(
-      username: user.username,
-      displayName: emeProfileLabel(user, profile),
-      lastMessage: '',
-      time: '',
-      avatarColor: AppColors.primary,
-      avatarInitials: user.avatarInitials,
-      avatarUrl: user.assetportrait,
-    );
-    Navigator.of(context).push(ChatDetailScreen.route(chat));
   }
 
   String _getAvatarUrl(ProfileModel profile) {

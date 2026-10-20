@@ -6,6 +6,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pill_badge.dart';
 import '../../chats/chat_detail_screen.dart';
+import 'greeting_draft.dart';
 
 class EmeProfileCard extends ConsumerWidget {
   final EmeProfileModel profile;
@@ -36,7 +37,7 @@ class EmeProfileCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _showProfileDetails(context),
+          onTap: () => showDetails(context),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
@@ -336,7 +337,8 @@ class EmeProfileCard extends ConsumerWidget {
     );
   }
 
-  void _showProfileDetails(BuildContext context) {
+  /// Opens the profile details sheet (with the greeting composer).
+  void showDetails(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -345,195 +347,222 @@ class EmeProfileCard extends ConsumerWidget {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
 
         return Container(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(
+            24,
+            24,
+            24,
+            24 + MediaQuery.of(ctx).viewInsets.bottom,
+          ),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      _buildAvatar(isDark, size: 48),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                profile.name,
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              if (profile.isVerified) ...[
-                                const SizedBox(width: 6),
-                                const Icon(
-                                  Icons.verified_rounded,
-                                  size: 16,
-                                  color: Color(0xFF0284C7),
-                                ),
-                              ],
-                            ],
-                          ),
-                          Text(
-                            profile.specialistTitle ?? profile.category.label,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: profile.primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (profile.location != null || profile.rating != null) ...[
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (profile.rating != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFF59E0B,
-                          ).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
+                    Row(
+                      children: [
+                        _buildAvatar(isDark, size: 48),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 15,
-                              color: Color(0xFFD97706),
+                            Row(
+                              children: [
+                                Text(
+                                  profile.name,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                if (profile.isVerified) ...[
+                                  const SizedBox(width: 6),
+                                  const Icon(
+                                    Icons.verified_rounded,
+                                    size: 16,
+                                    color: Color(0xFF0284C7),
+                                  ),
+                                ],
+                              ],
                             ),
-                            const SizedBox(width: 4),
                             Text(
-                              '${profile.rating} (${profile.reviewsCount} reviews)',
+                              profile.specialistTitle ?? profile.category.label,
                               style: GoogleFonts.inter(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: profile.primaryColor,
                               ),
                             ),
                           ],
                         ),
+                      ],
+                    ),
+                    Semantics(
+                      identifier: 'profile_details_close',
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded),
                       ),
-                    if (profile.location != null) ...[
-                      const SizedBox(width: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, size: 14),
-                          const SizedBox(width: 3),
-                          Text(
-                            profile.location!,
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ],
                 ),
-                const SizedBox(height: 14),
-              ],
-              Text(
-                profile.description,
-                style: GoogleFonts.inter(fontSize: 14, height: 1.5),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Services Offered:',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: profile.servicesOffered.map((srv) {
-                  return PillBadge(
-                    label: srv,
-                    backgroundColor: profile.primaryColor.withValues(
-                      alpha: isDark ? 0.2 : 0.1,
-                    ),
-                    textColor: isDark
-                        ? profile.secondaryColor
-                        : profile.primaryColor,
-                    fontSize: 11.5,
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 16),
+                if (profile.location != null || profile.rating != null) ...[
+                  Row(
+                    children: [
+                      if (profile.rating != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFFF59E0B,
+                            ).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 15,
+                                color: Color(0xFFD97706),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${profile.rating} (${profile.reviewsCount} reviews)',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: const Text('Close'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _handleConnect(context);
-                      },
-                      icon: const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        size: 16,
-                      ),
-                      label: Text(
-                        'Message EME Profile',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      if (profile.location != null) ...[
+                        const SizedBox(width: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 14),
+                            const SizedBox(width: 3),
+                            Text(
+                              profile.location!,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
+                      ],
+                    ],
                   ),
+                  const SizedBox(height: 14),
                 ],
-              ),
-            ],
+                Text(
+                  profile.description,
+                  style: GoogleFonts.inter(fontSize: 14, height: 1.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Services Offered:',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: profile.servicesOffered.map((srv) {
+                    return PillBadge(
+                      label: srv,
+                      backgroundColor: profile.primaryColor.withValues(
+                        alpha: isDark ? 0.2 : 0.1,
+                      ),
+                      textColor: isDark
+                          ? profile.secondaryColor
+                          : profile.primaryColor,
+                      fontSize: 11.5,
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+                _GreetingComposer(
+                  profile: profile,
+                  onSend: (text) {
+                    Navigator.pop(ctx);
+                    _handleConnect(context, message: text);
+                  },
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Semantics(
+                        identifier: 'profile_details_close_button',
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Close'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Semantics(
+                        identifier: 'profile_details_open_chat',
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _handleConnect(context);
+                          },
+                          icon: const Icon(
+                            Icons.chat_bubble_outline_rounded,
+                            size: 16,
+                          ),
+                          label: Text(
+                            'Message EME Profile',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Future<void> _handleConnect(BuildContext context) async {
+  /// Opens a DM with [profile]. When [message] is given it is sent first.
+  Future<void> _handleConnect(BuildContext context, {String? message}) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Connecting with ${profile.name}...'),
@@ -552,6 +581,19 @@ class EmeProfileCard extends ConsumerWidget {
       );
 
       await ChatSocketService().connect(channel: channelId);
+
+      if (message != null && message.trim().isNotEmpty) {
+        // sendMessage drops messages silently when the socket is down, so
+        // fail visibly instead.
+        if (!ChatSocketService().isConnected) {
+          throw StateError('Chat socket is not connected');
+        }
+        ChatSocketService().sendMessage(
+          message: message.trim(),
+          user: fromUser,
+          channel: channelId,
+        );
+      }
 
       if (context.mounted) {
         final chat = ChatModel(
@@ -583,7 +625,11 @@ class EmeProfileCard extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to connect with ${profile.name}'),
+            content: Text(
+              message == null
+                  ? 'Failed to connect with ${profile.name}'
+                  : 'Message not sent to ${profile.name}: could not connect',
+            ),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
@@ -656,6 +702,131 @@ class EmeProfileCard extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+/// Text area pre-filled with a greeting based on what the signed-in user and
+/// [profile] have in common, with a Send button.
+class _GreetingComposer extends ConsumerStatefulWidget {
+  final EmeProfileModel profile;
+  final ValueChanged<String> onSend;
+
+  const _GreetingComposer({required this.profile, required this.onSend});
+
+  @override
+  ConsumerState<_GreetingComposer> createState() => _GreetingComposerState();
+}
+
+class _GreetingComposerState extends ConsumerState<_GreetingComposer> {
+  late final TextEditingController _controller;
+  late final SharedWithProfile _shared;
+
+  @override
+  void initState() {
+    super.initState();
+    final me = ref.read(authProvider).user;
+    _shared = findShared(
+      me: me,
+      myProfile: ref.read(profileProvider),
+      other: widget.profile,
+    );
+    _controller = TextEditingController(
+      text: buildGreetingDraft(me: me, other: widget.profile, shared: _shared),
+    );
+    _controller.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final canSend = _controller.text.trim().isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!_shared.isEmpty) ...[
+          Text(
+            'In common:',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final interest in _shared.interests)
+                PillBadge(
+                  label: interest,
+                  backgroundColor: AppColors.greenAccent.withValues(
+                    alpha: isDark ? 0.2 : 0.12,
+                  ),
+                  textColor: AppColors.greenAccent,
+                  fontSize: 11.5,
+                ),
+              if (_shared.location != null)
+                PillBadge(
+                  label: _shared.location!,
+                  backgroundColor: AppColors.greenAccent.withValues(
+                    alpha: isDark ? 0.2 : 0.12,
+                  ),
+                  textColor: AppColors.greenAccent,
+                  fontSize: 11.5,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+        Semantics(
+          identifier: 'profile_greeting_input',
+          child: TextField(
+            controller: _controller,
+            minLines: 3,
+            maxLines: 6,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              hintText: 'Write a message to ${widget.profile.name}...',
+              hintStyle: GoogleFonts.inter(fontSize: 13.5),
+            ),
+            style: GoogleFonts.inter(fontSize: 14, height: 1.4),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Semantics(
+            identifier: 'profile_greeting_send',
+            child: ElevatedButton.icon(
+              onPressed: canSend ? () => widget.onSend(_controller.text) : null,
+              icon: const Icon(Icons.send_rounded, size: 16),
+              label: Text(
+                'Send',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.greenAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

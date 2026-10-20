@@ -2,14 +2,17 @@ appId: world.eme.main
 ---
 - launchApp
 
-# Joined servers live on the EME (profile) tab; the app opens on Chats
-- tapOn: "EME"
+# Find a server in Search (Servers filter); tapping it joins (if needed) and opens its chat
+- tapOn:
+    id: "chats_open_search"
+- tapOn:
+    id: "search_type_servers"
 
 - extendedWaitUntil:
     visible:
-      id: "joined_server_list"
+      id: "search_results"
 - tapOn:
-    id: "server_card_0"
+    id: "search_result_0"
 
 - extendedWaitUntil:
     visible:

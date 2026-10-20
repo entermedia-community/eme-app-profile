@@ -79,13 +79,16 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
     String message;
     switch (widget.product.type) {
       case ProductType.ecommerce:
-        message = 'Ordered $_quantityOrUnits x ${widget.product.title} for ${widget.product.currency}$formattedTotal! Escrow initiated.';
+        message =
+            'Ordered $_quantityOrUnits x ${widget.product.title} for ${widget.product.currency}$formattedTotal! Escrow initiated.';
         break;
       case ProductType.rideshare:
-        message = 'Confirmed $_quantityOrUnits seat(s) on ${widget.product.title}! Driver notified.';
+        message =
+            'Confirmed $_quantityOrUnits seat(s) on ${widget.product.title}! Driver notified.';
         break;
       case ProductType.rental:
-        message = 'Rental booking secured for $_quantityOrUnits unit(s)! Lock/Host credentials sent.';
+        message =
+            'Rental booking secured for $_quantityOrUnits unit(s)! Lock/Host credentials sent.';
         break;
     }
 
@@ -93,12 +96,19 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: Colors.white,
+              size: 20,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -114,8 +124,12 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppColors.darkSurface : Colors.white;
-    final bgHeaderColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final bgHeaderColor = isDark
+        ? const Color(0xFF0F172A)
+        : const Color(0xFFF8FAFC);
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
     final typeColor = _getTypeColor();
 
     final maxUnits = widget.product.type == ProductType.rideshare
@@ -158,7 +172,10 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
               Expanded(
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 6,
+                  ),
                   children: [
                     // Header Card with Icon & Type
                     Container(
@@ -175,14 +192,20 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: typeColor.withValues(alpha: isDark ? 0.25 : 0.12),
+                              color: typeColor.withValues(
+                                alpha: isDark ? 0.25 : 0.12,
+                              ),
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: typeColor.withValues(alpha: 0.35),
                                 width: 1.5,
                               ),
                             ),
-                            child: Icon(_getTypeIcon(), size: 32, color: typeColor),
+                            child: Icon(
+                              _getTypeIcon(),
+                              size: 32,
+                              color: typeColor,
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
@@ -197,7 +220,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                                         vertical: 3,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: typeColor.withValues(alpha: isDark ? 0.2 : 0.1),
+                                        color: typeColor.withValues(
+                                          alpha: isDark ? 0.2 : 0.1,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
@@ -211,21 +236,29 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                                       ),
                                     ),
                                     const Spacer(),
-                                    Icon(Icons.star_rounded, size: 16, color: Colors.amber.shade600),
+                                    Icon(
+                                      Icons.star_rounded,
+                                      size: 16,
+                                      color: Colors.amber.shade600,
+                                    ),
                                     const SizedBox(width: 3),
                                     Text(
                                       '${widget.product.rating}',
                                       style: GoogleFonts.plusJakartaSans(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w700,
-                                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                                        color: isDark
+                                            ? AppColors.textDarkPrimary
+                                            : AppColors.textPrimary,
                                       ),
                                     ),
                                     Text(
                                       ' (${widget.product.reviewCount})',
                                       style: GoogleFonts.inter(
                                         fontSize: 11,
-                                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                        color: isDark
+                                            ? AppColors.textDarkMuted
+                                            : AppColors.textMuted,
                                       ),
                                     ),
                                   ],
@@ -237,7 +270,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
                                     height: 1.25,
-                                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                                    color: isDark
+                                        ? AppColors.textDarkPrimary
+                                        : AppColors.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -264,7 +299,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                        color: isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -272,7 +309,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                       widget.product.description,
                       style: GoogleFonts.inter(
                         fontSize: 13.5,
-                        color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                        color: isDark
+                            ? AppColors.textDarkSecondary
+                            : AppColors.textSecondary,
                         height: 1.45,
                       ),
                     ),
@@ -297,9 +336,14 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                         runSpacing: 6,
                         children: widget.product.tags.map((tag) {
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+                              color: isDark
+                                  ? const Color(0xFF1E293B)
+                                  : const Color(0xFFF1F5F9),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: borderColor),
                             ),
@@ -308,7 +352,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                               style: GoogleFonts.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                                color: isDark
+                                    ? AppColors.textDarkSecondary
+                                    : AppColors.textSecondary,
                               ),
                             ),
                           );
@@ -321,7 +367,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                        color: isDark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: borderColor),
                       ),
@@ -330,7 +378,11 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                           CircleAvatar(
                             radius: 18,
                             backgroundColor: typeColor.withValues(alpha: 0.2),
-                            child: Icon(Icons.verified_user_rounded, size: 18, color: typeColor),
+                            child: Icon(
+                              Icons.verified_user_rounded,
+                              size: 18,
+                              color: typeColor,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -342,7 +394,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                                   style: GoogleFonts.plusJakartaSans(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                                    color: isDark
+                                        ? AppColors.textDarkPrimary
+                                        : AppColors.textPrimary,
                                   ),
                                 ),
                                 Text(
@@ -357,13 +411,21 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                             ),
                           ),
                           if (widget.product.location != null) ...[
-                            Icon(Icons.location_on_outlined, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 14,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textMuted,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               widget.product.location!,
                               style: GoogleFonts.inter(
                                 fontSize: 11,
-                                color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                color: isDark
+                                    ? AppColors.textDarkMuted
+                                    : AppColors.textMuted,
                               ),
                             ),
                           ],
@@ -375,17 +437,28 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
 
                     // Escrow / Protection Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF059669).withValues(alpha: isDark ? 0.15 : 0.08),
+                        color: const Color(
+                          0xFF059669,
+                        ).withValues(alpha: isDark ? 0.15 : 0.08),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF059669).withValues(alpha: 0.25),
+                          color: const Color(
+                            0xFF059669,
+                          ).withValues(alpha: 0.25),
                         ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.shield_outlined, size: 18, color: Color(0xFF059669)),
+                          const Icon(
+                            Icons.shield_outlined,
+                            size: 18,
+                            color: Color(0xFF059669),
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -419,7 +492,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                   border: Border(top: BorderSide(color: borderColor)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.3 : 0.05,
+                      ),
                       blurRadius: 10,
                       offset: const Offset(0, -2),
                     ),
@@ -430,7 +505,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                     // Quantity / Seat / Unit Stepper
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                        color: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF1F5F9),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: borderColor),
                       ),
@@ -501,7 +578,10 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  const Icon(Icons.arrow_forward_rounded, size: 16),
+                                  const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 16,
+                                  ),
                                 ],
                               ),
                       ),
@@ -516,7 +596,11 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
     );
   }
 
-  Widget _buildRideshareSection(bool isDark, Color borderColor, Color typeColor) {
+  Widget _buildRideshareSection(
+    bool isDark,
+    Color borderColor,
+    Color typeColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -536,7 +620,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -548,9 +634,17 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
             children: [
               Column(
                 children: [
-                  const Icon(Icons.trip_origin_rounded, size: 14, color: Color(0xFF059669)),
+                  const Icon(
+                    Icons.trip_origin_rounded,
+                    size: 14,
+                    color: Color(0xFF059669),
+                  ),
                   Container(width: 2, height: 22, color: borderColor),
-                  const Icon(Icons.location_on_rounded, size: 16, color: Color(0xFFDC2626)),
+                  const Icon(
+                    Icons.location_on_rounded,
+                    size: 16,
+                    color: Color(0xFFDC2626),
+                  ),
                 ],
               ),
               const SizedBox(width: 12),
@@ -563,7 +657,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -572,7 +668,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                       style: GoogleFonts.inter(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -588,14 +686,22 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.access_time_filled_rounded, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                  Icon(
+                    Icons.access_time_filled_rounded,
+                    size: 14,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     widget.product.departureTime ?? 'Departing soon',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -621,14 +727,20 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.directions_car_rounded, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                Icon(
+                  Icons.directions_car_rounded,
+                  size: 14,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     widget.product.vehicleInfo!,
                     style: GoogleFonts.inter(
                       fontSize: 11.5,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                 ),
@@ -660,7 +772,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
             ],
@@ -674,13 +788,19 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle_outline_rounded, size: 14, color: Color(0xFF059669)),
+                    const Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 14,
+                      color: Color(0xFF059669),
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       spec,
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                        color: isDark
+                            ? AppColors.textDarkSecondary
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -694,14 +814,20 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.lock_clock_rounded, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                Icon(
+                  Icons.lock_clock_rounded,
+                  size: 14,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     'Deposit: ${widget.product.depositInfo}',
                     style: GoogleFonts.inter(
                       fontSize: 11.5,
-                      color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                      color: isDark
+                          ? AppColors.textDarkMuted
+                          : AppColors.textMuted,
                     ),
                   ),
                 ),
@@ -713,7 +839,11 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
     );
   }
 
-  Widget _buildEcommerceSection(bool isDark, Color borderColor, Color typeColor) {
+  Widget _buildEcommerceSection(
+    bool isDark,
+    Color borderColor,
+    Color typeColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -733,7 +863,9 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
               ),
               const Spacer(),
@@ -760,14 +892,20 @@ class _ProductDetailModalState extends State<ProductDetailModal> {
             const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.local_shipping_outlined, size: 14, color: isDark ? AppColors.textDarkMuted : AppColors.textMuted),
+                Icon(
+                  Icons.local_shipping_outlined,
+                  size: 14,
+                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     widget.product.shippingOrPickupInfo!,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),

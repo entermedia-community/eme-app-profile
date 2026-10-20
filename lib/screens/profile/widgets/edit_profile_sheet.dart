@@ -57,7 +57,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   }
 
   void _save() {
-    ref.read(profileProvider.notifier).updateProfile(
+    ref
+        .read(profileProvider.notifier)
+        .updateProfile(
           name: _nameController.text.trim(),
           role: _roleController.text.trim(),
           bio: _bioController.text.trim(),
@@ -116,21 +118,25 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
             // Name Field
             Text(
               'Display Name',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Christopher.B',
-              ),
+              decoration: const InputDecoration(hintText: 'e.g. Christopher.B'),
             ),
             const SizedBox(height: 14),
 
             // Role Field
             Text(
               'Title / Role',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
@@ -144,22 +150,26 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
             // Bio Field
             Text(
               'Short Bio',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             TextField(
               controller: _bioController,
               maxLines: 2,
-              decoration: const InputDecoration(
-                hintText: 'e.g. Cool guy',
-              ),
+              decoration: const InputDecoration(hintText: 'e.g. Cool guy'),
             ),
             const SizedBox(height: 14),
 
             // Tags
             Text(
               'Tags / Skills',
-              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 6),
             Wrap(
@@ -213,7 +223,10 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 ),
                 child: Text(
                   'Save Changes',
-                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w700),
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

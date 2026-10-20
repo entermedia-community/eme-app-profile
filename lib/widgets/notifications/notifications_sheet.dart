@@ -105,7 +105,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                         'FCM Notifications & User Chat Deep Links',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
-                          color: isDark ? Colors.white60 : AppColors.textSecondary,
+                          color: isDark
+                              ? Colors.white60
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -139,7 +141,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF282A3A) : const Color(0xFFF1F5F9),
+                    color: isDark
+                        ? const Color(0xFF282A3A)
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isDark ? Colors.white12 : Colors.black12,
@@ -150,7 +154,11 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.link_rounded, size: 18, color: AppColors.primary),
+                          const Icon(
+                            Icons.link_rounded,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
@@ -158,7 +166,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                               style: GoogleFonts.firaCode(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : AppColors.textPrimary,
+                                color: isDark
+                                    ? Colors.white
+                                    : AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -169,7 +179,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                               Clipboard.setData(ClipboardData(text: chatLink));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Chat link copied to clipboard!'),
+                                  content: Text(
+                                    'Chat link copied to clipboard!',
+                                  ),
                                   behavior: SnackBarBehavior.floating,
                                   duration: Duration(seconds: 2),
                                 ),
@@ -191,10 +203,18 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                         controller: _testUsernameController,
                         decoration: InputDecoration(
                           hintText: 'Enter username to test chat...',
-                          prefixIcon: const Icon(Icons.alternate_email_rounded, size: 18),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          prefixIcon: const Icon(
+                            Icons.alternate_email_rounded,
+                            size: 18,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           isDense: true,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
                     ),
@@ -216,7 +236,10 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -265,14 +288,18 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                               style: GoogleFonts.plusJakartaSans(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: isDark ? Colors.white : const Color(0xFF15803D),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF15803D),
                               ),
                             ),
                             Text(
                               'Deep links & FCM notifications will automatically route to chats.',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 12,
-                                color: isDark ? Colors.white70 : const Color(0xFF166534),
+                                color: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF166534),
                               ),
                             ),
                           ],
@@ -322,7 +349,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                   icon: const Icon(Icons.send_rounded, size: 18),
                   label: Text(
                     _isTesting ? 'Sending...' : 'Trigger Test Notification',
-                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+                    style: GoogleFonts.plusJakartaSans(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -386,16 +415,15 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
   }
 
   Widget _buildTokenBox(String? token, bool isDark) {
-    final displayToken = token ?? 'FCM token unavailable (check Firebase configuration)';
+    final displayToken =
+        token ?? 'FCM token unavailable (check Firebase configuration)';
 
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF282A3A) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black12,
-        ),
+        border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,7 +520,8 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
     await service.showLocalNotification(
       id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       title: 'EME World Test Notification',
-      body: 'Firebase Push Notifications are configured and working properly! 🎉',
+      body:
+          'Firebase Push Notifications are configured and working properly! 🎉',
       payload: '{"type":"test","title":"EME World Test"}',
     );
 
@@ -500,7 +529,9 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
       setState(() => _isTesting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Test notification dispatched! Check your notification tray.'),
+          content: Text(
+            'Test notification dispatched! Check your notification tray.',
+          ),
           behavior: SnackBarBehavior.floating,
           duration: Duration(seconds: 2),
         ),

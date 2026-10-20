@@ -38,7 +38,7 @@ class ServerCard extends ConsumerWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: server.isJoined ? () => _openServerScreen(context) : null,
+          onTap: () => joinAndOpen(context, ref),
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -205,23 +205,7 @@ class ServerCard extends ConsumerWidget {
                               ),
                             )
                           : ElevatedButton.icon(
-                              onPressed: () async {
-                                final success = await ref
-                                    .read(serverProvider.notifier)
-                                    .toggleJoin(server.id);
-                                if (!success && context.mounted) {
-                                  final error =
-                                      ref.read(serverProvider).error ??
-                                      'Failed to join server';
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(error),
-                                      backgroundColor: AppColors.redAccent,
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              },
+                              onPressed: () => _join(context, ref),
                               icon: const Icon(
                                 Icons.add_link_rounded,
                                 size: 16,
@@ -377,7 +361,34 @@ class ServerCard extends ConsumerWidget {
     );
   }
 
-  void _openServerScreen(BuildContext context) {
+  /// Joins [server]. On success the chat list picks it up; on failure an
+  /// error is shown. Returns whether the user is now joined.
+  Future<bool> _join(BuildContext context, WidgetRef ref) async {
+    final success = await ref
+        .read(serverProvider.notifier)
+        .toggleJoin(server.id);
+    if (success) {
+      ref.invalidate(userServersProvider);
+    } else if (context.mounted) {
+      final error = ref.read(serverProvider).error ?? 'Failed to join server';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          backgroundColor: AppColors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+    return success;
+  }
+
+  /// Opens the server chat, joining the server first if needed so it shows
+  /// in the main chat list.
+  Future<void> joinAndOpen(BuildContext context, WidgetRef ref) async {
+    if (!server.isJoined) {
+      if (ref.read(serverProvider).isJoining(server.id)) return;
+      if (!await _join(context, ref) || !context.mounted) return;
+    }
     Navigator.of(context).push(ServerChatScreen.route(server));
   }
 }

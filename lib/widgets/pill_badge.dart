@@ -29,7 +29,10 @@ class PillBadge extends StatelessWidget {
     bool isDark = false,
     VoidCallback? onTap,
     double fontSize = 11,
-    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(
+      horizontal: 10,
+      vertical: 4,
+    ),
   }) {
     Color bg;
     Color fg;
@@ -73,8 +76,12 @@ class PillBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final defaultBg = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final defaultFg = isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569);
+    final defaultBg = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
+    final defaultFg = isDark
+        ? const Color(0xFFE2E8F0)
+        : const Color(0xFF475569);
     final effectiveBg = backgroundColor ?? defaultBg;
 
     return InkWell(
@@ -95,10 +102,7 @@ class PillBadge extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
-              icon!,
-              const SizedBox(width: 4),
-            ],
+            if (icon != null) ...[icon!, const SizedBox(width: 4)],
             Flexible(
               child: Text(
                 label,

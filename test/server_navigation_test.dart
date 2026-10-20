@@ -10,23 +10,16 @@ import 'test_helpers.dart';
 
 void main() {
   testWidgets(
-    'Clicking ServerCard opens ServerChatScreen, and top nav button opens ServerDetailScreen',
+    'Joined server in the chat list opens ServerChatScreen, and top nav button opens ServerDetailScreen',
     (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // Open the EME (profile) tab, which lists joined servers
-      await tester.tap(find.text('EME').last);
+      // Joined servers are listed in the chat list under the Servers filter
+      await tester.tap(find.bySemanticsIdentifier('chat_filter_mcp'));
       await tester.pumpAndSettle();
-
-      // Verify ServerCard is present and scroll until visible
-      final serverCardFinder = find.byType(ServerCard).first;
-      expect(serverCardFinder, findsOneWidget);
-      await tester.ensureVisible(serverCardFinder);
-      await tester.pumpAndSettle();
-
-      // Click ServerCard
-      await tester.tap(serverCardFinder);
+      expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
+      await tester.tap(find.text('Lakeview Stays & House Rentals'));
       await tester.pumpAndSettle();
 
       // Verify ServerChatScreen is opened
@@ -80,19 +73,16 @@ void main() {
   );
 
   testWidgets(
-    'ServerDetailScreen Leave Server menu option calls toggleJoin and navigates to Profile tab',
+    'ServerDetailScreen Leave Server menu option calls toggleJoin and returns to Chats',
     (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // Open the EME (profile) tab, which lists joined servers
-      await tester.tap(find.text('EME').last);
+      // Joined servers are listed in the chat list under the Servers filter
+      await tester.tap(find.bySemanticsIdentifier('chat_filter_mcp'));
       await tester.pumpAndSettle();
-
-      // Open ServerCard -> ServerChatScreen
-      final serverCardFinder = find.byType(ServerCard).first;
-      await tester.ensureVisible(serverCardFinder);
-      await tester.tap(serverCardFinder);
+      expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
+      await tester.tap(find.text('Lakeview Stays & House Rentals'));
       await tester.pumpAndSettle();
 
       // Open ServerDetailScreen
@@ -109,9 +99,31 @@ void main() {
       await tester.tap(find.text('Leave Server'));
       await tester.pumpAndSettle();
 
-      // Verify popped back to main app screen (Profile tab is active)
+      // Verify popped back to the main app screen (Chats)
       expect(find.byType(ServerDetailScreen), findsNothing);
       expect(find.byType(ServerChatScreen), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Search (Servers filter) lists servers and tapping a card opens its chat',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.bySemanticsIdentifier('chats_open_search'));
+      await tester.pumpAndSettle();
+
+      // Show only servers so the first result is a server
+    await tester.tap(find.bySemanticsIdentifier('search_type_servers'));
+    await tester.pumpAndSettle();
+
+    final card = find.bySemanticsIdentifier('search_result_0');
+      expect(card, findsOneWidget);
+      await tester.tap(card);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ServerChatScreen), findsOneWidget);
     },
   );
 }

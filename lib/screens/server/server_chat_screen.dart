@@ -211,8 +211,8 @@ class _ServerChatScreenState extends ConsumerState<ServerChatScreen> {
               ),
             ),
           ),
-          // Server Options Menu
 
+          // Server Options Menu
           const SizedBox(width: 4),
         ],
       ),

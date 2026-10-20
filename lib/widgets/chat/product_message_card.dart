@@ -44,7 +44,9 @@ class ProductMessageCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final typeColor = _getTypeColor();
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final borderColor = isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder;
+    final borderColor = isDark
+        ? AppColors.darkCardBorder
+        : AppColors.lightCardBorder;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 320),
@@ -82,7 +84,9 @@ class ProductMessageCard extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                 decoration: BoxDecoration(
                   color: typeColor.withValues(alpha: isDark ? 0.18 : 0.10),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
                   border: Border(
                     bottom: BorderSide(
                       color: typeColor.withValues(alpha: 0.18),
@@ -103,21 +107,29 @@ class ProductMessageCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade600),
+                    Icon(
+                      Icons.star_rounded,
+                      size: 14,
+                      color: Colors.amber.shade600,
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       '${product.rating}',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     Text(
                       ' (${product.reviewCount})',
                       style: GoogleFonts.inter(
                         fontSize: 10,
-                        color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                        color: isDark
+                            ? AppColors.textDarkMuted
+                            : AppColors.textMuted,
                       ),
                     ),
                   ],
@@ -139,18 +151,28 @@ class ProductMessageCard extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         height: 1.25,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
 
                     // Custom Layout according to Product Type
                     if (product.type == ProductType.rideshare) ...[
-                      _buildRideshareCardContent(isDark, borderColor, typeColor),
+                      _buildRideshareCardContent(
+                        isDark,
+                        borderColor,
+                        typeColor,
+                      ),
                     ] else if (product.type == ProductType.rental) ...[
                       _buildRentalCardContent(isDark, borderColor, typeColor),
                     ] else ...[
-                      _buildEcommerceCardContent(isDark, borderColor, typeColor),
+                      _buildEcommerceCardContent(
+                        isDark,
+                        borderColor,
+                        typeColor,
+                      ),
                     ],
 
                     const SizedBox(height: 12),
@@ -169,7 +191,9 @@ class ProductMessageCard extends StatelessWidget {
                                 style: GoogleFonts.inter(
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                                  color: isDark
+                                      ? AppColors.textDarkMuted
+                                      : AppColors.textMuted,
                                   letterSpacing: 0.4,
                                 ),
                               ),
@@ -190,13 +214,17 @@ class ProductMessageCard extends StatelessWidget {
                             backgroundColor: typeColor,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
                             minimumSize: Size.zero,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () => ProductDetailModal.show(context, product),
+                          onPressed: () =>
+                              ProductDetailModal.show(context, product),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -224,7 +252,11 @@ class ProductMessageCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRideshareCardContent(bool isDark, Color borderColor, Color typeColor) {
+  Widget _buildRideshareCardContent(
+    bool isDark,
+    Color borderColor,
+    Color typeColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -240,7 +272,11 @@ class ProductMessageCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.circle, size: 8, color: Color(0xFF059669)),
                   Container(width: 1.5, height: 14, color: borderColor),
-                  const Icon(Icons.location_on, size: 10, color: Color(0xFFDC2626)),
+                  const Icon(
+                    Icons.location_on,
+                    size: 10,
+                    color: Color(0xFFDC2626),
+                  ),
                 ],
               ),
               const SizedBox(width: 8),
@@ -255,7 +291,9 @@ class ProductMessageCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 6),
@@ -266,7 +304,9 @@ class ProductMessageCard extends StatelessWidget {
                       style: GoogleFonts.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                        color: isDark
+                            ? AppColors.textDarkPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                   ],
@@ -285,7 +325,9 @@ class ProductMessageCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.textDarkMuted : AppColors.textMuted,
+                    color: isDark
+                        ? AppColors.textDarkMuted
+                        : AppColors.textMuted,
                   ),
                 ),
               ),
@@ -312,7 +354,11 @@ class ProductMessageCard extends StatelessWidget {
     );
   }
 
-  Widget _buildRentalCardContent(bool isDark, Color borderColor, Color typeColor) {
+  Widget _buildRentalCardContent(
+    bool isDark,
+    Color borderColor,
+    Color typeColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -336,7 +382,9 @@ class ProductMessageCard extends StatelessWidget {
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                      color: isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -360,7 +408,11 @@ class ProductMessageCard extends StatelessWidget {
     );
   }
 
-  Widget _buildEcommerceCardContent(bool isDark, Color borderColor, Color typeColor) {
+  Widget _buildEcommerceCardContent(
+    bool isDark,
+    Color borderColor,
+    Color typeColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -374,13 +426,16 @@ class ProductMessageCard extends StatelessWidget {
           const SizedBox(width: 6),
           Expanded(
             child: Text(
-              product.brandOrOrigin ?? (product.inStock ? 'In Stock' : 'Out of Stock'),
+              product.brandOrOrigin ??
+                  (product.inStock ? 'In Stock' : 'Out of Stock'),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary,
               ),
             ),
           ),

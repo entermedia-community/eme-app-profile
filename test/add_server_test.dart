@@ -10,12 +10,8 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    // Open the EME (profile) tab, which lists joined servers
-    await tester.tap(find.text('EME').last);
-    await tester.pumpAndSettle();
-
-    // Tap the Browse button to open ServerPickerScreen
-    await tester.tap(find.text('Browse'));
+    // Open Search (people + servers)
+    await tester.tap(find.bySemanticsIdentifier('chats_open_search'));
     await tester.pumpAndSettle();
 
     // Tap the Add Custom Server icon in AppBar

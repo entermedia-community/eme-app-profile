@@ -1,37 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eme_app_sdk/eme_app_sdk.dart';
-import '../../theme/app_colors.dart';
+import '../files/files_section.dart';
 import 'widgets/profile_header_card.dart';
-import 'widgets/servers_section.dart';
+import 'widgets/self_chat_composer.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return RefreshIndicator(
-      onRefresh: () => ref.read(serverProvider.notifier).refresh(),
-      color: AppColors.primary,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            // Section 1: Profile Overview Card
-            ProfileHeaderCard(),
+  Widget build(BuildContext context) {
+    return const SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section 1: Profile Overview Card
+          ProfileHeaderCard(),
 
-            SizedBox(height: 28),
+          SizedBox(height: 20),
 
-            // Section 2: Collective Intelligence Servers (Filters, Grid, Subtitle)
-            ServersSection(),
+          // Section 2: Message your own EME chat
+          SelfChatComposer(),
 
-            SizedBox(height: 80), // Extra bottom padding for FAB and bottom nav
-          ],
-        ),
+          SizedBox(height: 28),
+
+          // Section 3: Files
+          FilesSection(),
+
+          SizedBox(height: 40),
+        ],
       ),
     );
   }

@@ -11,10 +11,7 @@ void main() {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // Navigate to Chats tab
-      await tester.tap(find.text('Chats').last);
-      await tester.pumpAndSettle();
-
+      // App opens on Chats (home)
       expect(find.text('Search conversations...'), findsOneWidget);
       expect(find.text('The Administrator'), findsWidgets);
 

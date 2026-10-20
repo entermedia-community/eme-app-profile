@@ -213,8 +213,11 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                     .toggleJoin(currentServer.id);
                 if (!context.mounted) return;
                 if (success) {
+                  ref.invalidate(userServersProvider);
                   if (wasJoined) {
-                    ref.read(navigationProvider.notifier).selectTab(NavTab.profile);
+                    ref
+                        .read(navigationProvider.notifier)
+                        .selectTab(NavTab.chats);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Top-level pages of the main shell. Chats is home; the EME profile is
+/// opened from the app bar profile button.
 enum NavTab {
   chats('Chats'),
-  files('Files'),
-  search('Search'),
   profile('EME');
 
   final String label;
@@ -24,6 +24,8 @@ class NavigationNotifier extends StateNotifier<int> {
   }
 }
 
-final navigationProvider = StateNotifierProvider<NavigationNotifier, int>((ref) {
+final navigationProvider = StateNotifierProvider<NavigationNotifier, int>((
+  ref,
+) {
   return NavigationNotifier();
 });

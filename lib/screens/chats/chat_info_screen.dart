@@ -6,24 +6,22 @@ import '../../theme/app_colors.dart';
 class ChatInfoScreen extends StatelessWidget {
   final ChatModel chat;
 
-  const ChatInfoScreen({
-    super.key,
-    required this.chat,
-  });
+  const ChatInfoScreen({super.key, required this.chat});
 
   /// Custom route builder to animate this screen sliding in from the right like a drawer
   static Route<void> route(ChatModel chat) {
     return PageRouteBuilder<void>(
-      pageBuilder: (context, animation, secondaryAnimation) => ChatInfoScreen(chat: chat),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ChatInfoScreen(chat: chat),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 320),
     );

@@ -23,7 +23,8 @@ class CategoryFilterBar extends ConsumerWidget {
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final category = categories[index];
-          final isSelected = category.id == selectedCategory ||
+          final isSelected =
+              category.id == selectedCategory ||
               category.name == selectedCategory;
 
           return InkWell(
@@ -37,19 +38,26 @@ class CategoryFilterBar extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isDark ? AppColors.primary : const Color(0xFF64748B))
-                    : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
+                    : (isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isSelected
                       ? Colors.transparent
-                      : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+                      : (isDark
+                            ? AppColors.darkCardBorder
+                            : AppColors.lightCardBorder),
                   width: 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: (isDark ? AppColors.primary : const Color(0xFF64748B))
-                              .withValues(alpha: 0.2),
+                          color:
+                              (isDark
+                                      ? AppColors.primary
+                                      : const Color(0xFF64748B))
+                                  .withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -64,7 +72,9 @@ class CategoryFilterBar extends ConsumerWidget {
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
                         ? Colors.white
-                        : (isDark ? AppColors.textDarkSecondary : const Color(0xFF64748B)),
+                        : (isDark
+                              ? AppColors.textDarkSecondary
+                              : const Color(0xFF64748B)),
                   ),
                 ),
               ),

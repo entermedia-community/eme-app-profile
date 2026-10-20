@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
+import '../search/unified_search_screen.dart';
+import '../server/server_chat_screen.dart';
 import 'chat_detail_screen.dart';
 import 'mcp_chat_detail_screen.dart';
 import 'widgets/add_mcp_server_sheet.dart';
@@ -36,6 +38,20 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         ),
         child: Center(
           child: Icon(Icons.hub_rounded, color: item.avatarColor, size: 24),
+        ),
+      );
+    }
+
+    if (item.isServer) {
+      return CircleAvatar(
+        radius: 26,
+        backgroundColor: item.avatarColor.withValues(alpha: 0.15),
+        child: Text(
+          item.avatarInitials,
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: item.avatarColor,
+          ),
         ),
       );
     }
@@ -172,48 +188,54 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
 
     return Column(
       children: [
-        // Top Search Bar & Add MCP Action
+        // Top Search Bar & open Search (people + servers)
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  onChanged: (val) => setState(() => _searchQuery = val),
-                  decoration: InputDecoration(
-                    hintText: 'Search conversations...',
-                    hintStyle: GoogleFonts.inter(fontSize: 13.5),
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
+          // IntrinsicHeight + stretch: the button takes the input's height.
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Semantics(
+                    identifier: 'chats_search_input',
+                    child: TextField(
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      decoration: InputDecoration(
+                        hintText: 'Search conversations...',
+                        hintStyle: GoogleFonts.inter(fontSize: 13.5),
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Tooltip(
-                message: 'Add Remote MCP Server',
-                child: ElevatedButton.icon(
-                  onPressed: () => AddMcpServerSheet.show(context),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('MCP'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 8),
+                Semantics(
+                  identifier: 'chats_open_search',
+                  child: ElevatedButton.icon(
+                    onPressed: () => UnifiedSearchScreen.show(context),
+                    icon: const Icon(Icons.search_rounded, size: 18),
+                    label: const Text('EME Search'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
 
@@ -223,22 +245,22 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
           child: Row(
             children: [
               _buildFilterChip(
-                label: 'All',
-                filter: ChatFilter.all,
-                isDark: isDark,
-              ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'Direct Chats',
+                label: 'People',
                 filter: ChatFilter.users,
                 isDark: isDark,
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
-                label: 'MCP Servers',
+                label: 'Servers',
                 filter: ChatFilter.mcp,
                 isDark: isDark,
                 accentColor: const Color(0xFF6366F1),
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'All',
+                filter: ChatFilter.all,
+                isDark: isDark,
               ),
             ],
           ),
@@ -300,7 +322,9 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                 // 1. Filter by category
                 var filtered = allItems.where((item) {
                   if (_activeFilter == ChatFilter.users) return item.isUser;
-                  if (_activeFilter == ChatFilter.mcp) return item.isMcp;
+                  if (_activeFilter == ChatFilter.mcp) {
+                    return item.isMcp || item.isServer;
+                  }
                   return true;
                 }).toList();
 
@@ -341,7 +365,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               const SizedBox(height: 12),
                               Text(
                                 _activeFilter == ChatFilter.mcp
-                                    ? 'No MCP Servers Configured'
+                                    ? 'No servers yet'
                                     : (_searchQuery.isEmpty
                                           ? 'No conversations yet'
                                           : 'No matching chats found'),
@@ -353,7 +377,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 _activeFilter == ChatFilter.mcp
-                                    ? 'Add a remote Model Context Protocol server to execute tools and prompts.'
+                                    ? 'Find EME Servers in Search, or add a remote MCP server to run tools and prompts.'
                                     : (_searchQuery.isEmpty
                                           ? 'Start a chat from Search or add a remote MCP Server.'
                                           : 'Try searching with a different name or message.'),
@@ -581,6 +605,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                         ),
                       ),
                       onTap: () async {
+                        if (item.isServer) {
+                          Navigator.of(
+                            context,
+                          ).push(ServerChatScreen.route(item.emeServer!));
+                          return;
+                        }
                         if (item.isMcp) {
                           Navigator.of(context).push(
                             McpChatDetailScreen.route(item.mcpConversation!),
@@ -631,29 +661,55 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     final isSelected = _activeFilter == filter;
     final color = accentColor ?? AppColors.primary;
 
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) => setState(() => _activeFilter = filter),
-      labelStyle: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected
-            ? Colors.white
-            : (isDark ? AppColors.textDarkSecondary : AppColors.textSecondary),
+    // Make each chip 20% wider than its natural size by adding the extra
+    // width as horizontal padding (measured with the bold label so the chip
+    // doesn't change size when selected).
+    const basePadding = 4.0;
+    const labelPadding = 8.0; // ChoiceChip default, per side
+    final labelWidth = (TextPainter(
+      text: TextSpan(
+        text: label,
+        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
       ),
-      selectedColor: color,
-      backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout()).width;
+    final naturalWidth = labelWidth + 2 * (labelPadding + basePadding + 1);
+    final extraPerSide = naturalWidth * 0.2 / 2;
+
+    return Semantics(
+      identifier: 'chat_filter_${filter.name}',
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (_) => setState(() => _activeFilter = filter),
+        labelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           color: isSelected
-              ? color
-              : (isDark ? AppColors.darkCardBorder : AppColors.lightCardBorder),
+              ? Colors.white
+              : (isDark
+                    ? AppColors.textDarkSecondary
+                    : AppColors.textSecondary),
+        ),
+        selectedColor: color,
+        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isSelected
+                ? color
+                : (isDark
+                      ? AppColors.darkCardBorder
+                      : AppColors.lightCardBorder),
+          ),
+        ),
+        showCheckmark: false,
+        padding: EdgeInsets.symmetric(
+          horizontal: basePadding + extraPerSide,
+          vertical: 2,
         ),
       ),
-      showCheckmark: false,
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
     );
   }
 }
