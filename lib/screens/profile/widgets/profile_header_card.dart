@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
-import '../../../providers/navigation_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/auth/auth_modal_sheet.dart';
 import '../../../widgets/profile_app_bar_button.dart';
@@ -214,6 +213,18 @@ class ProfileHeaderCard extends ConsumerWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        Semantics(
+                          identifier: 'profile_edit_button',
+                          child: IconButton(
+                            icon: const Icon(Icons.edit_outlined, size: 20),
+                            tooltip: 'Edit Profile',
+                            color: AppColors.primary,
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () =>
+                                _showEditProfileSheet(context, profile, ref),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -395,10 +406,9 @@ class ProfileHeaderCard extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // Action Buttons: self chat ("EME <first name>") & "Edit Profile"
+          // Chat with yourself ("EME <first name>"), green accent as in mockup
           Row(
             children: [
-              // Chat with yourself (Green accent as shown in mockup)
               Expanded(
                 child: SizedBox(
                   height: 44,
@@ -435,42 +445,25 @@ class ProfileHeaderCard extends ConsumerWidget {
                   ),
                 ),
               ),
-
-              const SizedBox(width: 12),
-
-              // Edit Profile button (Blue as shown in mockup)
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _showEditProfileSheet(context, profile, ref);
-                    },
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: Text(
-                      'Edit Profile',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ],
       ),
     );
+  }
+
+  /// Opens a DM with the signed-in user themselves.
+  void _openSelfChat(BuildContext context, EmUser user, ProfileModel profile) {
+    final chat = ChatModel(
+      username: user.username,
+      displayName: emeProfileLabel(user, profile),
+      lastMessage: '',
+      time: '',
+      avatarColor: AppColors.primary,
+      avatarInitials: user.avatarInitials,
+      avatarUrl: user.assetportrait,
+    );
+    Navigator.of(context).push(ChatDetailScreen.route(chat));
   }
 
   String _getAvatarUrl(ProfileModel profile) {

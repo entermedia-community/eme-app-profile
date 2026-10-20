@@ -57,8 +57,9 @@ void main() {
     expect(find.text('ACCOUNT PROFILE'), findsOneWidget);
 
     // Verify Action Buttons
-    expect(find.text('Open Chat'), findsOneWidget);
-    expect(find.text('Edit Profile'), findsOneWidget);
+    // Self-chat button and the app bar profile button both read "EME <first name>"
+    expect(find.text('EME Christopher'), findsNWidgets(2));
+    expect(find.byTooltip('Edit Profile'), findsOneWidget);
 
     // Verify My Joined Servers Section
     expect(find.byType(ServerCard), findsWidgets);
