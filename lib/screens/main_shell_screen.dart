@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/navigation_provider.dart';
 import '../providers/theme_provider.dart';
@@ -7,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../widgets/notifications/notifications_sheet.dart';
+import '../widgets/profile_app_bar_button.dart';
 import '../services/deep_link_handler.dart';
 import 'chats/chats_screen.dart';
 import 'eme_world/eme_world_screen.dart';
@@ -48,27 +50,20 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
         ),
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.language_rounded,
-                size: 20,
-                color: AppColors.primary,
-              ),
-            ),
+            SvgPicture.asset('assets/icon/logo.svg', height: 22),
             const SizedBox(width: 10),
-            Text(
-              NavTab.values[currentTab].label,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: isDark
-                    ? AppColors.textDarkPrimary
-                    : AppColors.textPrimary,
+            Flexible(
+              child: Text(
+                NavTab.values[currentTab].label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
+                ),
               ),
             ),
           ],
@@ -111,7 +106,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
               ),
             ],
           ),
-          const SizedBox(width: 6),
+          const ProfileAppBarButton(),
+          const SizedBox(width: 8),
         ],
       ),
       drawer: const AppDrawer(),
