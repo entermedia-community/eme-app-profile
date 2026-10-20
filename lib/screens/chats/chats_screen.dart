@@ -355,7 +355,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                 _activeFilter == ChatFilter.mcp
                                     ? 'Add a remote Model Context Protocol server to execute tools and prompts.'
                                     : (_searchQuery.isEmpty
-                                          ? 'Start a chat from EME World or add a remote MCP Server.'
+                                          ? 'Start a chat from Search or add a remote MCP Server.'
                                           : 'Try searching with a different name or message.'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(

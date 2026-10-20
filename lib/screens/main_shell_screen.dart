@@ -36,7 +36,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
 
-    final titles = ['EME Profile', 'Chats', 'FIles', 'EME World'];
 
     return Scaffold(
       appBar: AppBar(
@@ -63,7 +62,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             ),
             const SizedBox(width: 10),
             Text(
-              titles[currentTab],
+              NavTab.values[currentTab].label,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
@@ -119,13 +118,13 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
       body: IndexedStack(
         index: currentTab,
         children: const [
-          ProfileScreen(),
           ChatsScreen(),
           FilesScreen(),
           EmeWorldScreen(),
+          ProfileScreen(),
         ],
       ),
-      floatingActionButton: currentTab == 0
+      floatingActionButton: currentTab == NavTab.profile.index
           ? ElevatedButton.icon(
               onPressed: () => _openServerPicker(context),
               icon: const Icon(Icons.add, size: 22),

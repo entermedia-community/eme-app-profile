@@ -214,7 +214,7 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
                 if (!context.mounted) return;
                 if (success) {
                   if (wasJoined) {
-                    ref.read(navigationProvider.notifier).setTab(0);
+                    ref.read(navigationProvider.notifier).selectTab(NavTab.profile);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

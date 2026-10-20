@@ -10,6 +10,10 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
+    // Open the EME (profile) tab, which lists joined servers
+    await tester.tap(find.text('EME').last);
+    await tester.pumpAndSettle();
+
     // Tap the Browse button to open ServerPickerScreen
     await tester.tap(find.text('Browse'));
     await tester.pumpAndSettle();

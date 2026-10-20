@@ -20,11 +20,6 @@ class CustomBottomNav extends StatelessWidget {
 
     final items = [
       const _NavItemData(
-        label: 'Profile',
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-      ),
-      const _NavItemData(
         label: 'Chats',
         icon: Icons.chat_bubble_outline_rounded,
         activeIcon: Icons.chat_bubble_rounded,
@@ -36,9 +31,14 @@ class CustomBottomNav extends StatelessWidget {
         activeIcon: Icons.folder_rounded,
       ),
       const _NavItemData(
-        label: 'EME World',
-        icon: Icons.public_outlined,
-        activeIcon: Icons.public_rounded,
+        label: 'Search',
+        icon: Icons.search_rounded,
+        activeIcon: Icons.search_rounded,
+      ),
+      const _NavItemData(
+        label: 'EME',
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
       ),
     ];
 

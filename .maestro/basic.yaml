@@ -2,6 +2,9 @@ appId: world.eme.main
 ---
 - launchApp
 
+# Joined servers live on the EME (profile) tab; the app opens on Chats
+- tapOn: "EME"
+
 - extendedWaitUntil:
     visible:
       id: "joined_server_list"

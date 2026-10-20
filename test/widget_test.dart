@@ -5,10 +5,50 @@ import 'package:eme_world/screens/profile/widgets/server_card.dart';
 import 'test_helpers.dart';
 
 void main() {
-  testWidgets('Renders Profile screen and navigates bottom bar tabs', (
+  testWidgets('Opens on Chats and navigates bottom bar tabs', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(createTestApp());
+    await tester.pumpAndSettle();
+
+    // Chats is the first and default tab
+    expect(find.text('Search conversations...'), findsOneWidget);
+
+    // Verify Bottom Navigation items
+    expect(find.text('Chats'), findsWidgets);
+    expect(find.text('Files'), findsOneWidget);
+    expect(find.text('Search'), findsWidgets);
+    expect(find.text('EME'), findsWidgets);
+
+    // Tap on Files tab
+    await tester.tap(find.text('Files'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Your Digital Legacy'), findsOneWidget);
+
+    // Tap on Search tab
+    await tester.tap(find.text('Search').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('EME Worldwide'), findsOneWidget);
+    expect(find.text('EME Profiles Directory'), findsOneWidget);
+    // Verify only EME profile cards exist in Search
+    expect(find.byType(EmeProfileCard), findsWidgets);
+    expect(find.text('The Administrator'), findsOneWidget);
+    expect(find.text('Dr. Maya Lin'), findsNothing);
+    expect(find.text('Marcus Chen'), findsNothing);
+
+    // Perform top search in Eme World Screen
+    final searchField = find.byType(TextField).first;
+    await tester.enterText(searchField, 'admin');
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    // Verify search result from /mediadb/services/module/user/usersearch.json
+    expect(find.text('The Administrator'), findsOneWidget);
+
+    // Tap on EME (profile) tab, last in the bar
+    await tester.tap(find.text('EME').last);
     await tester.pumpAndSettle();
 
     // Verify Profile Header elements for authenticated user
@@ -23,45 +63,6 @@ void main() {
     // Verify My Joined Servers Section
     expect(find.byType(ServerCard), findsWidgets);
     expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
-
-    // Verify Bottom Navigation items
-    expect(find.text('Profile'), findsOneWidget);
-    expect(find.text('Chats'), findsWidgets);
-    expect(find.text('Files'), findsOneWidget);
-    expect(find.text('EME World'), findsWidgets);
-
-    // Tap on Chats tab
-    await tester.tap(find.text('Chats').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Search conversations...'), findsOneWidget);
-
-    // Tap on Files tab
-    await tester.tap(find.text('Files'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Your Digital Legacy'), findsOneWidget);
-
-    // Tap on EME World tab
-    await tester.tap(find.text('EME World').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('EME Worldwide'), findsOneWidget);
-    expect(find.text('EME Profiles Directory'), findsOneWidget);
-    // Verify only EME profile cards exist in EME World
-    expect(find.byType(EmeProfileCard), findsWidgets);
-    expect(find.text('The Administrator'), findsOneWidget);
-    expect(find.text('Dr. Maya Lin'), findsNothing);
-    expect(find.text('Marcus Chen'), findsNothing);
-
-    // Perform top search in Eme World Screen
-    final searchField = find.byType(TextField).first;
-    await tester.enterText(searchField, 'admin');
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pumpAndSettle();
-
-    // Verify search result from /mediadb/services/module/user/usersearch.json
-    expect(find.text('The Administrator'), findsOneWidget);
   });
 
   testWidgets('Menu button opens Navigation Drawer', (

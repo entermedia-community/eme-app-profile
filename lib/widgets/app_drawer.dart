@@ -22,7 +22,8 @@ class AppDrawer extends ConsumerWidget {
 
     final displayName = currentUser?.displayName ?? profile.name;
     final displayRole = currentUser != null ? 'AUTHENTICATED' : profile.role;
-    final displayInitials = currentUser?.avatarInitials ??
+    final displayInitials =
+        currentUser?.avatarInitials ??
         (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C');
 
     return Drawer(
@@ -39,7 +40,10 @@ class AppDrawer extends ConsumerWidget {
                 AuthModalSheet.show(context);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -147,15 +151,17 @@ class AppDrawer extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                authState.isAuthenticated ? '• Verified' : '• Guest',
+                                authState.isAuthenticated
+                                    ? '• Verified'
+                                    : '• Guest',
                                 style: GoogleFonts.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                   color: authState.isAuthenticated
                                       ? AppColors.greenAccent
                                       : (isDark
-                                          ? AppColors.textDarkMuted
-                                          : AppColors.textMuted),
+                                            ? AppColors.textDarkMuted
+                                            : AppColors.textMuted),
                                 ),
                               ),
                             ],
@@ -177,40 +183,48 @@ class AppDrawer extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 children: [
                   _DrawerItem(
-                    title: 'EME Profile',
-                    icon: Icons.person_rounded,
-                    isSelected: currentTab == 0,
-                    onTap: () {
-                      Navigator.pop(context);
-                      ref.read(navigationProvider.notifier).setTab(0);
-                    },
-                  ),
-                  _DrawerItem(
                     title: 'Chats',
                     icon: Icons.chat_bubble_rounded,
-                    isSelected: currentTab == 1,
+                    isSelected: currentTab == NavTab.chats.index,
                     badgeCount: 3,
                     onTap: () {
                       Navigator.pop(context);
-                      ref.read(navigationProvider.notifier).setTab(1);
-                    },
-                  ),
-                  _DrawerItem(
-                    title: 'EME World',
-                    icon: Icons.public_rounded,
-                    isSelected: currentTab == 3,
-                    onTap: () {
-                      Navigator.pop(context);
-                      ref.read(navigationProvider.notifier).setTab(3);
+                      ref
+                          .read(navigationProvider.notifier)
+                          .selectTab(NavTab.chats);
                     },
                   ),
                   _DrawerItem(
                     title: 'Drive',
                     icon: Icons.folder_rounded,
-                    isSelected: currentTab == 2,
+                    isSelected: currentTab == NavTab.files.index,
                     onTap: () {
                       Navigator.pop(context);
-                      ref.read(navigationProvider.notifier).setTab(2);
+                      ref
+                          .read(navigationProvider.notifier)
+                          .selectTab(NavTab.files);
+                    },
+                  ),
+                  _DrawerItem(
+                    title: 'Search',
+                    icon: Icons.search_rounded,
+                    isSelected: currentTab == NavTab.search.index,
+                    onTap: () {
+                      Navigator.pop(context);
+                      ref
+                          .read(navigationProvider.notifier)
+                          .selectTab(NavTab.search);
+                    },
+                  ),
+                  _DrawerItem(
+                    title: 'EME',
+                    icon: Icons.person_rounded,
+                    isSelected: currentTab == NavTab.profile.index,
+                    onTap: () {
+                      Navigator.pop(context);
+                      ref
+                          .read(navigationProvider.notifier)
+                          .selectTab(NavTab.profile);
                     },
                   ),
                   _DrawerItem(
@@ -219,7 +233,9 @@ class AppDrawer extends ConsumerWidget {
                     isSelected: false,
                     onTap: () {
                       Navigator.pop(context);
-                      ref.read(navigationProvider.notifier).setTab(1); // navigate to chats
+                      ref
+                          .read(navigationProvider.notifier)
+                          .selectTab(NavTab.chats);
                       AddMcpServerSheet.show(context);
                     },
                   ),

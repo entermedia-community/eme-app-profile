@@ -402,7 +402,7 @@ class ProfileHeaderCard extends ConsumerWidget {
                   height: 44,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      ref.read(navigationProvider.notifier).setTab(1);
+                      ref.read(navigationProvider.notifier).selectTab(NavTab.chats);
                     },
                     icon: const Icon(
                       Icons.chat_bubble_outline_rounded,

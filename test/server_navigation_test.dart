@@ -15,6 +15,10 @@ void main() {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
+      // Open the EME (profile) tab, which lists joined servers
+      await tester.tap(find.text('EME').last);
+      await tester.pumpAndSettle();
+
       // Verify ServerCard is present and scroll until visible
       final serverCardFinder = find.byType(ServerCard).first;
       expect(serverCardFinder, findsOneWidget);
@@ -79,6 +83,10 @@ void main() {
     'ServerDetailScreen Leave Server menu option calls toggleJoin and navigates to Profile tab',
     (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
+      await tester.pumpAndSettle();
+
+      // Open the EME (profile) tab, which lists joined servers
+      await tester.tap(find.text('EME').last);
       await tester.pumpAndSettle();
 
       // Open ServerCard -> ServerChatScreen
