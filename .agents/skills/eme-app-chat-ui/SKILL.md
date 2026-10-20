@@ -20,6 +20,27 @@ be made in both:
 
 MCP chats (`mcp_chat_detail_screen.dart`) use `McpChatMessage`, not `ChatMessage`, and are separate.
 
+## The chat list (`lib/screens/chats/chats_screen.dart`)
+
+- Rows come from `unifiedChatsProvider` (SDK): `UnifiedChatItem.isUser` (DM), `.isMcp` (user-added
+  MCP server) and `.isServer` (joined EME Server, `item.emeServer`). Handle all three when you add
+  per-row behaviour (avatar fallback, tap, long-press).
+- Filter chips are People (`isUser`) / Servers (`isMcp || isServer`) / All — owner's order and
+  labels; enum is still `ChatFilter { all, users, mcp }`.
+- Tapping a server row opens `ServerChatScreen.route(item.emeServer!)`.
+- Top row: conversation search + "EME Search" button (opens `UnifiedSearchScreen`). Keep the button
+  the same height as the input. See `eme-app-ui` for the owner's layout preferences.
+
+## Sending without opening a chat first
+
+Two inline composers send a message, then open the chat:
+- `lib/screens/profile/widgets/self_chat_composer.dart` — to the user's own chat (`connectUser(me, me)`).
+- `_GreetingComposer` in `lib/screens/eme_world/widgets/eme_profile_card.dart` — to another person,
+  pre-filled from `greeting_draft.dart`.
+
+Both connect, check `ChatSocketService().isConnected` and throw if false (because `sendMessage`
+drops messages silently), then show a red SnackBar on failure. Copy that pattern.
+
 Shared widgets: `lib/widgets/delta_viewer.dart` (read-only Quill delta, handles links),
 `lib/widgets/chat/product_message_card.dart`, `send_product_sheet.dart`, `product_detail_modal.dart`.
 
