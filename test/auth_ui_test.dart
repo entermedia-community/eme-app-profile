@@ -251,7 +251,7 @@ void main() {
       (WidgetTester tester) async {
         final mockAuth = MockAuthService();
 
-        // Case 1: Unauthenticated -> shows AuthScreen with EME World branding
+        // Case 1: Unauthenticated -> shows AuthScreen with EME branding
         await tester.pumpWidget(
           ProviderScope(
             overrides: [authServiceProvider.overrideWithValue(mockAuth)],
@@ -260,7 +260,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('EME World'), findsOneWidget);
+        expect(find.text('Collective Intelligence Economy'), findsOneWidget);
         expect(find.text('Sign in to EME World'), findsOneWidget);
         expect(find.byType(MainShellScreen), findsNothing);
 

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -29,30 +31,32 @@ class AuthScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo / Branding Header
+                  // flutter_svg ignores SVG filters, so the logo's drop
+                  // shadow is drawn here from a blurred, darkened copy.
                   Center(
-                    child: SvgPicture.asset(
-                      'assets/icon/logo.svg',
-                      width: 140,
-                      height: 80,
-                      fit: BoxFit.contain,
+                    child: Stack(
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(2, 3),
+                          child: ImageFiltered(
+                            imageFilter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                            child: SvgPicture.asset(
+                              'assets/icon/logo.svg',
+                              width: 240,
+                              colorFilter: ColorFilter.mode(
+                                Colors.black.withValues(alpha: 0.4),
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SvgPicture.asset('assets/icon/logo.svg', width: 240),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   Text(
-                    'EME World',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.5,
-                      color: isDark
-                          ? AppColors.textDarkPrimary
-                          : AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'AI & Media Collaboration Network',
+                    'Collective Intelligence Economy',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
                       fontSize: 13,
