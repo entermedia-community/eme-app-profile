@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "eme_app_profile",
+			"path": ".",
+		},
+		{
+			"name": "eme_app_sdk",
+			"path": "../eme-app-sdk",
+		},
+	],
+	"settings": {},
+}
