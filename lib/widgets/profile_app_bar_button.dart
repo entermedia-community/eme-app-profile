@@ -5,6 +5,14 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../providers/navigation_provider.dart';
 import '../theme/app_colors.dart';
 
+/// "EME" followed by the user's first name, e.g. "EME Christopher".
+String emeProfileLabel(EmUser? user, ProfileModel profile) {
+  final first = user?.firstname?.trim();
+  if (first != null && first.isNotEmpty) return 'EME $first';
+  final name = (user?.displayName ?? profile.name).trim();
+  return name.isEmpty ? 'EME' : 'EME ${name.split(' ').first}';
+}
+
 /// App bar pill showing "EME" plus the user's first name, with a round portrait.
 /// Tapping it switches to the EME profile tab.
 class ProfileAppBarButton extends ConsumerWidget {
@@ -18,7 +26,6 @@ class ProfileAppBarButton extends ConsumerWidget {
     final profile = ref.watch(profileProvider);
     final currentUser = ref.watch(authProvider).user;
 
-    final firstName = _firstName(currentUser, profile);
     final initials =
         currentUser?.avatarInitials ??
         (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'E');
@@ -47,7 +54,7 @@ class ProfileAppBarButton extends ConsumerWidget {
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 120),
                   child: Text(
-                    firstName.isEmpty ? 'EME' : 'EME $firstName',
+                    emeProfileLabel(currentUser, profile),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.plusJakartaSans(
@@ -65,13 +72,6 @@ class ProfileAppBarButton extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _firstName(EmUser? user, ProfileModel profile) {
-    final first = user?.firstname?.trim();
-    if (first != null && first.isNotEmpty) return first;
-    final name = (user?.displayName ?? profile.name).trim();
-    return name.isEmpty ? '' : name.split(' ').first;
   }
 
   Widget _buildAvatar(String? url, String initials, bool isDark) {

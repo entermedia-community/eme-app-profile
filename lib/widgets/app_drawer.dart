@@ -7,6 +7,7 @@ import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
 import '../screens/chats/widgets/add_mcp_server_sheet.dart';
 import 'auth/auth_modal_sheet.dart';
+import 'settings_dialog.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -262,7 +263,7 @@ class AppDrawer extends ConsumerWidget {
                     isSelected: false,
                     onTap: () {
                       Navigator.pop(context);
-                      _showSettingsDialog(context, ref);
+                      SettingsDialog.show(context);
                     },
                   ),
                 ],
@@ -312,50 +313,6 @@ class AppDrawer extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showSettingsDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Settings',
-          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.notifications_active_outlined),
-              title: const Text('Push Notifications'),
-              trailing: Switch(value: true, onChanged: (v) {}),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.security_outlined),
-              title: const Text('Privacy & Security'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.pop(ctx),
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.language_outlined),
-              title: const Text('Language (English)'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }

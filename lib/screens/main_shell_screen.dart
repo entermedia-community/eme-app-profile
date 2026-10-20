@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/navigation_provider.dart';
-import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/app_bar_overflow_menu.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/custom_bottom_nav.dart';
 import '../widgets/notifications/notifications_sheet.dart';
@@ -35,8 +34,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     final currentTab = ref.watch(navigationProvider);
-    final themeMode = ref.watch(themeModeProvider);
-    final isDark = themeMode == ThemeMode.dark;
 
 
     return Scaffold(
@@ -48,39 +45,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             onPressed: () => Scaffold.of(ctx).openDrawer(),
           ),
         ),
-        title: Row(
-          children: [
-            SvgPicture.asset('assets/icon/logo.svg', height: 22),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                NavTab.values[currentTab].label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? AppColors.textDarkPrimary
-                      : AppColors.textPrimary,
-                ),
-              ),
-            ),
-          ],
-        ),
+        title: SvgPicture.asset('assets/icon/logo.svg', height: 22),
         actions: [
-          // Theme Toggle
-          IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              size: 22,
-              color: isDark ? const Color(0xFFFBBF24) : AppColors.textSecondary,
-            ),
-            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-            onPressed: () {
-              ref.read(themeModeProvider.notifier).toggleTheme();
-            },
-          ),
           // Notification Bell
           Stack(
             alignment: Alignment.center,
@@ -107,7 +73,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             ],
           ),
           const ProfileAppBarButton(),
-          const SizedBox(width: 8),
+          const AppBarOverflowMenu(),
         ],
       ),
       drawer: const AppDrawer(),

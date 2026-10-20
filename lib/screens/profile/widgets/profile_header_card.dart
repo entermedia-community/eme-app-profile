@@ -5,6 +5,8 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../providers/navigation_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/auth/auth_modal_sheet.dart';
+import '../../../widgets/profile_app_bar_button.dart';
+import '../../chats/chat_detail_screen.dart';
 import '../../../widgets/pill_badge.dart';
 import 'edit_profile_sheet.dart';
 
@@ -393,23 +395,25 @@ class ProfileHeaderCard extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
-          // Action Buttons: "Open Chat" & "Edit Profile"
+          // Action Buttons: self chat ("EME <first name>") & "Edit Profile"
           Row(
             children: [
-              // Open Chat button (Green accent as shown in mockup)
+              // Chat with yourself (Green accent as shown in mockup)
               Expanded(
                 child: SizedBox(
                   height: 44,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(navigationProvider.notifier).selectTab(NavTab.chats);
-                    },
+                    onPressed: currentUser == null
+                        ? null
+                        : () => _openSelfChat(context, currentUser, profile),
                     icon: const Icon(
                       Icons.chat_bubble_outline_rounded,
                       size: 18,
                     ),
                     label: Text(
-                      'Open Chat',
+                      emeProfileLabel(currentUser, profile),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
