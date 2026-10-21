@@ -10,7 +10,7 @@ import 'mcp_chat_detail_screen.dart';
 import 'widgets/add_mcp_server_sheet.dart';
 import 'widgets/mcp_server_info_sheet.dart';
 
-enum ChatFilter { all, users, mcp }
+enum ChatFilter { all, users, servers, mcp }
 
 class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
@@ -245,6 +245,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
           child: Row(
             children: [
               _buildFilterChip(
+                label: 'All',
+                filter: ChatFilter.all,
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
                 label: 'People',
                 filter: ChatFilter.users,
                 isDark: isDark,
@@ -252,14 +258,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               const SizedBox(width: 8),
               _buildFilterChip(
                 label: 'Servers',
-                filter: ChatFilter.mcp,
+                filter: ChatFilter.servers,
                 isDark: isDark,
-                accentColor: const Color(0xFF6366F1),
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
-                label: 'All',
-                filter: ChatFilter.all,
+                label: 'MCP',
+                filter: ChatFilter.mcp,
                 isDark: isDark,
               ),
             ],
@@ -656,10 +661,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     required String label,
     required ChatFilter filter,
     required bool isDark,
-    Color? accentColor,
   }) {
     final isSelected = _activeFilter == filter;
-    final color = accentColor ?? AppColors.primary;
 
     return Semantics(
       identifier: 'chat_filter_${filter.name}',
@@ -674,12 +677,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
             decoration: BoxDecoration(
               color: isSelected
-                  ? color
+                  ? AppColors.primary
                   : (isDark ? AppColors.darkSurface : AppColors.lightBg),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? color
+                    ? AppColors.primary
                     : (isDark
                           ? AppColors.darkCardBorder
                           : AppColors.lightCardBorder),

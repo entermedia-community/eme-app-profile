@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -226,7 +227,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
             children: [
               _buildSearchField(profileState.isSearching),
               const SizedBox(height: 12),
-              _buildTypeSelector(),
+              _buildTypeSelector(isDark),
               const SizedBox(height: 12),
               _buildCategoryBar(categories, isDark),
               const SizedBox(height: 20),
@@ -302,35 +303,82 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     );
   }
 
-  Widget _buildTypeSelector() {
+  Widget _buildTypeSelector(bool isDark) {
     return Semantics(
       identifier: 'search_type_selector',
-      child: SegmentedButton<SearchResultType>(
-        segments: [
-          ButtonSegment(
-            value: SearchResultType.all,
-            label: Semantics(identifier: 'search_type_all', child: Text('All')),
+      child: Row(
+        children: [
+          _buildFilterChip(
+            label: 'All',
+            type: SearchResultType.all,
+            semanticId: 'search_type_all',
+            isDark: isDark,
           ),
-          ButtonSegment(
-            value: SearchResultType.people,
-            label: Semantics(
-              identifier: 'search_type_people',
-              child: Text('People'),
-            ),
-            icon: Icon(Icons.person_outline_rounded, size: 18),
+          const SizedBox(width: 8),
+          _buildFilterChip(
+            label: 'People',
+            type: SearchResultType.people,
+            semanticId: 'search_type_people',
+            isDark: isDark,
           ),
-          ButtonSegment(
-            value: SearchResultType.servers,
-            label: Semantics(
-              identifier: 'search_type_servers',
-              child: Text('Servers'),
-            ),
-            icon: Icon(Icons.dns_outlined, size: 18),
+          const SizedBox(width: 8),
+          _buildFilterChip(
+            label: 'Servers',
+            type: SearchResultType.servers,
+            semanticId: 'search_type_servers',
+            isDark: isDark,
           ),
         ],
-        selected: {_type},
-        showSelectedIcon: false,
-        onSelectionChanged: (s) => setState(() => _type = s.first),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required SearchResultType type,
+    required String semanticId,
+    required bool isDark,
+  }) {
+    final isSelected = _type == type;
+
+    return Semantics(
+      identifier: semanticId,
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => setState(() => _type = type),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark ? AppColors.darkSurface : AppColors.lightBg),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder),
+              ),
+            ),
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -342,11 +390,20 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       identifier: 'search_category_bar',
       child: SizedBox(
         height: 36,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.trackpad,
+              PointerDeviceKind.stylus,
+            },
+          ),
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
             final name = categories[index];
             final isSelected = _sameName(name, _category);
 
@@ -396,6 +453,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               ),
             );
           },
+        ),
         ),
       ),
     );
