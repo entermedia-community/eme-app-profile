@@ -5,15 +5,16 @@ import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
 import 'settings_dialog.dart';
 
-enum _MenuAction { settings, lightTheme, darkTheme, logout }
+enum _MenuAction { settings, toggleTheme, logout }
 
-/// Three-dot app bar menu: Settings, theme selector and Log out.
+/// Three-dot app bar menu: Settings, theme toggle switch and Log out.
 class AppBarOverflowMenu extends ConsumerWidget {
   const AppBarOverflowMenu({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
     final isAuthenticated = ref.watch(authProvider).isAuthenticated;
 
     return Semantics(
@@ -26,21 +27,18 @@ class AppBarOverflowMenu extends ConsumerWidget {
         onSelected: (action) => _onSelected(context, ref, action),
         itemBuilder: (context) => [
           _item(_MenuAction.settings, Icons.settings_rounded, 'Settings'),
-          const PopupMenuDivider(),
-          _themeItem(
-            _MenuAction.lightTheme,
-            Icons.light_mode_rounded,
-            'Light theme',
-            themeMode == ThemeMode.light,
+          PopupMenuDivider(
+            color: isDark
+                ? AppColors.darkCardBorder
+                : AppColors.lightCardBorder,
           ),
-          _themeItem(
-            _MenuAction.darkTheme,
-            Icons.dark_mode_rounded,
-            'Dark theme',
-            themeMode == ThemeMode.dark,
-          ),
+          _themeSwitchItem(ref: ref, isDark: isDark),
           if (isAuthenticated) ...[
-            const PopupMenuDivider(),
+            PopupMenuDivider(
+              color: isDark
+                  ? AppColors.darkCardBorder
+                  : AppColors.lightCardBorder,
+            ),
             _item(
               _MenuAction.logout,
               Icons.logout_rounded,
@@ -69,25 +67,33 @@ class AppBarOverflowMenu extends ConsumerWidget {
     );
   }
 
-  PopupMenuItem<_MenuAction> _themeItem(
-    _MenuAction value,
-    IconData icon,
-    String label,
-    bool selected,
-  ) {
+  PopupMenuItem<_MenuAction> _themeSwitchItem({
+    required WidgetRef ref,
+    required bool isDark,
+  }) {
     return PopupMenuItem(
-      value: value,
+      value: _MenuAction.toggleTheme,
       child: ListTile(
         contentPadding: EdgeInsets.zero,
-        leading: Icon(icon, size: 20),
-        title: Text(label),
-        trailing: selected
-            ? const Icon(
-                Icons.check_rounded,
-                size: 20,
-                color: AppColors.primary,
-              )
-            : null,
+        leading: Icon(
+          isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+          size: 20,
+          color: isDark ? const Color(0xFFFBBF24) : null,
+        ),
+        title: Text(isDark ? 'Dark mode' : 'Light mode'),
+        trailing: Semantics(
+          identifier: 'overflow_theme_switch',
+          child: Switch(
+            value: isDark,
+            activeColor: AppColors.primary,
+            onChanged: (value) {
+              ref
+                  .read(themeModeProvider.notifier)
+                  .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+              Navigator.of(ref.context).pop();
+            },
+          ),
+        ),
       ),
     );
   }
@@ -100,10 +106,8 @@ class AppBarOverflowMenu extends ConsumerWidget {
     switch (action) {
       case _MenuAction.settings:
         await SettingsDialog.show(context);
-      case _MenuAction.lightTheme:
-        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.light);
-      case _MenuAction.darkTheme:
-        ref.read(themeModeProvider.notifier).setThemeMode(ThemeMode.dark);
+      case _MenuAction.toggleTheme:
+        ref.read(themeModeProvider.notifier).toggleTheme();
       case _MenuAction.logout:
         await ref.read(authProvider.notifier).logout();
     }

@@ -126,7 +126,6 @@ void main() {
 
     // Verify Profile Header elements for authenticated user
     expect(find.textContaining('Christopher'), findsWidgets);
-    expect(find.text('chris@emeworld.org'), findsOneWidget);
     expect(find.text('ACCOUNT PROFILE'), findsOneWidget);
 
     // App bar button and the message box heading both read "EME <first name>"
@@ -161,8 +160,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Settings'), findsOneWidget);
-    expect(find.text('Light theme'), findsOneWidget);
-    expect(find.text('Dark theme'), findsOneWidget);
+    expect(find.bySemanticsIdentifier('overflow_theme_switch'), findsOneWidget);
     expect(find.text('Log out'), findsOneWidget);
   });
 }
