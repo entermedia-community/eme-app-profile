@@ -29,6 +29,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   Widget build(BuildContext context) {
     final currentTab = ref.watch(navigationProvider);
     final onProfile = currentTab == NavTab.profile.index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,7 +47,10 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
                 ),
               )
             : null,
-        title: SvgPicture.asset('assets/icon/logo.svg', height: 22),
+        title: SvgPicture.asset(
+          isDark ? 'assets/icon/logo_dark.svg' : 'assets/icon/logo_light.svg',
+          height: 26,
+        ),
         actions: [
           // Notification Bell
           Stack(

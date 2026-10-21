@@ -225,9 +225,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSearchField(profileState.isSearching),
-              const SizedBox(height: 12),
               _buildTypeSelector(isDark),
+              const SizedBox(height: 12),
+              _buildSearchField(profileState.isSearching),
               const SizedBox(height: 12),
               _buildCategoryBar(categories, isDark),
               const SizedBox(height: 20),
