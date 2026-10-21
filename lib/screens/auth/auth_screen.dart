@@ -1,11 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/auth/auth_modal_sheet.dart';
+import '../../widgets/shadow_logo.dart';
 
 class AuthScreen extends ConsumerWidget {
   const AuthScreen({super.key});
@@ -31,29 +29,7 @@ class AuthScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo / Branding Header
-                  // flutter_svg ignores SVG filters, so the logo's drop
-                  // shadow is drawn here from a blurred, darkened copy.
-                  Center(
-                    child: Stack(
-                      children: [
-                        Transform.translate(
-                          offset: const Offset(2, 3),
-                          child: ImageFiltered(
-                            imageFilter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                            child: SvgPicture.asset(
-                              'assets/icon/logo.svg',
-                              width: 240,
-                              colorFilter: ColorFilter.mode(
-                                Colors.black.withValues(alpha: 0.4),
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SvgPicture.asset('assets/icon/logo.svg', width: 240),
-                      ],
-                    ),
-                  ),
+                  const Center(child: ShadowLogo(width: 240)),
                   const SizedBox(height: 16),
                   Text(
                     'Collective Intelligence Economy',
