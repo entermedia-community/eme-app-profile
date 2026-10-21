@@ -10,11 +10,25 @@ import '../../theme/app_colors.dart';
 class NotificationsSheet extends ConsumerStatefulWidget {
   const NotificationsSheet({super.key});
 
-  /// Opens Notifications as an independent screen.
+  /// Opens Notifications as an independent screen with a bottom-to-top transition.
   static Future<void> show(BuildContext context) {
     return Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const NotificationsSheet(),
+      PageRouteBuilder<void>(
+        fullscreenDialog: true,
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const NotificationsSheet(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeOutCubic;
+          final tween = Tween(begin: begin, end: end).chain(
+            CurveTween(curve: curve),
+          );
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
       ),
     );
   }
