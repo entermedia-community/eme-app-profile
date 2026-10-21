@@ -10,12 +10,12 @@ import '../../theme/app_colors.dart';
 class NotificationsSheet extends ConsumerStatefulWidget {
   const NotificationsSheet({super.key});
 
+  /// Opens Notifications as an independent screen.
   static Future<void> show(BuildContext context) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const NotificationsSheet(),
+    return Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const NotificationsSheet(),
+      ),
     );
   }
 
@@ -43,89 +43,38 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
     final currentUsername = AuthService.userId ?? 'myusername';
     final chatLink = DeepLinkService.generateUserChatLink(currentUsername);
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.82,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
+    return Scaffold(
+      appBar: AppBar(
+        leading: Semantics(
+          identifier: 'notifications_back',
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Back',
+            onPressed: () => Navigator.of(context).pop(),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Drag Handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(2),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Push & Deep Linking',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_active_rounded,
-                    color: AppColors.primary,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Push & Deep Linking',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'FCM Notifications & User Chat Deep Links',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12,
-                          color: isDark
-                              ? Colors.white60
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
+            Text(
+              'FCM Notifications & User Chat Deep Links',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                color: isDark ? Colors.white60 : AppColors.textSecondary,
+              ),
             ),
-          ),
-          const Divider(height: 1),
-
-          // Content
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
+          ],
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
               children: [
                 // Deep Link User Chat Section
                 Text(
@@ -408,9 +357,6 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

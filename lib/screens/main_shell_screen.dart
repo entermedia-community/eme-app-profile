@@ -76,8 +76,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
               ),
             ],
           ),
+          const SizedBox(width: 8),
           const ProfileAppBarButton(),
+          const SizedBox(width: 8),
           const AppBarOverflowMenu(),
+          const SizedBox(width: 8),
         ],
       ),
       body: IndexedStack(
