@@ -276,20 +276,20 @@ class ProfileHeaderCard extends ConsumerWidget {
               ),
             ],
           ),
-
-          const SizedBox(height: 14),
-
-          // Bio text
-          Text(
-            profile.bio,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isDark
-                  ? AppColors.textDarkSecondary
-                  : const Color(0xFF475569),
+          if (profile.bio.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            // Bio text
+            Text(
+              profile.bio,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDark
+                    ? AppColors.textDarkSecondary
+                    : const Color(0xFF475569),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

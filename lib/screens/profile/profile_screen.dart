@@ -17,12 +17,12 @@ class ProfileScreen extends StatelessWidget {
           // Section 1: Profile Overview Card
           ProfileHeaderCard(),
 
-          SizedBox(height: 20),
+          SizedBox(height: 16),
 
           // Section 2: Message your own EME chat
           SelfChatComposer(),
 
-          SizedBox(height: 28),
+          SizedBox(height: 20),
 
           // Section 3: Files
           FilesSection(),
