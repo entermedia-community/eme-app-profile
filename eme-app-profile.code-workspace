@@ -2,12 +2,18 @@
 	"folders": [
 		{
 			"name": "eme_app_profile",
-			"path": ".",
+			"path": "."
 		},
 		{
 			"name": "eme_app_sdk",
-			"path": "../eme-app-sdk",
+			"path": "../eme-app-sdk"
 		},
+		{
+			"path": "../eme-server"
+		},
+		{
+			"path": "../eme-server-world"
+		}
 	],
 	"settings": {},
 }
