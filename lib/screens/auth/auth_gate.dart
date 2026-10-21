@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/shadow_logo.dart';
 import '../main_shell_screen.dart';
 import 'auth_screen.dart';
 
@@ -30,7 +30,11 @@ class AuthGate extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const ShadowLogo(width: 140),
+              SvgPicture.asset(
+                'assets/icon/logo_badge.svg',
+                width: 300,
+                height: 300,
+              ),
               const SizedBox(height: 24),
               Text(
                 'EME World',
