@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/auth/auth_modal_sheet.dart';
-import '../../../widgets/pill_badge.dart';
 import 'edit_profile_sheet.dart';
 
 class ProfileHeaderCard extends ConsumerWidget {
@@ -26,7 +25,6 @@ class ProfileHeaderCard extends ConsumerWidget {
     final displayHandle = currentUser != null
         ? '@${currentUser.username}'
         : null;
-    final displayEmail = currentUser?.email;
     final displayInitials =
         currentUser?.avatarInitials ??
         (profile.name.isNotEmpty ? profile.name.substring(0, 1) : 'C');
@@ -273,75 +271,11 @@ class ProfileHeaderCard extends ConsumerWidget {
                         ),
                       ),
                     const SizedBox(height: 4),
-                    Container(
-                      width: 32,
-                      height: 3.5,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
                   ],
                 ),
               ),
             ],
           ),
-
-          // Logged-in User Email Row
-          if (displayEmail != null && displayEmail.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.mail_outline_rounded,
-                    size: 15,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      displayEmail,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? AppColors.textDarkSecondary
-                            : AppColors.textSecondary,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (currentUser?.screenname != null &&
-                      currentUser!.screenname!.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      '•  ${currentUser.screenname}',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
 
           const SizedBox(height: 14),
 
@@ -355,56 +289,6 @@ class ProfileHeaderCard extends ConsumerWidget {
                   ? AppColors.textDarkSecondary
                   : const Color(0xFF475569),
             ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Tags badges
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (currentUser?.username == 'admin')
-                PillBadge(
-                  label: 'Administrator',
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                  textColor: AppColors.primary,
-                  fontSize: 12,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                ),
-              if (authState.isAuthenticated)
-                PillBadge(
-                  label: 'Verified',
-                  backgroundColor: AppColors.greenAccent.withValues(
-                    alpha: 0.15,
-                  ),
-                  textColor: AppColors.greenAccent,
-                  fontSize: 12,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                ),
-              ...profile.tags.map((tag) {
-                return PillBadge(
-                  label: tag,
-                  backgroundColor: isDark
-                      ? const Color(0xFF334155)
-                      : const Color(0xFFE2E8F0),
-                  textColor: isDark
-                      ? const Color(0xFFE2E8F0)
-                      : const Color(0xFF475569),
-                  fontSize: 12,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                );
-              }),
-            ],
           ),
         ],
       ),
