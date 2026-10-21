@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
-import '../../../theme/app_colors.dart';
-import '../../../widgets/pill_badge.dart';
-import '../../chats/chat_detail_screen.dart';
+import '../../theme/app_colors.dart';
+import '../pill_badge.dart';
+import '../../screens/chats/chat_detail_screen.dart';
 import 'greeting_draft.dart';
 
 class EmeProfileCard extends ConsumerWidget {

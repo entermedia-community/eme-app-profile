@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:eme_world/screens/search/unified_search_screen.dart';
-import 'package:eme_world/screens/files/files_section.dart';
+import 'package:eme_world/widgets/search/unified_search_screen.dart';
+import 'package:eme_world/widgets/files/files_section.dart';
 import 'test_helpers.dart';
 
 void main() {

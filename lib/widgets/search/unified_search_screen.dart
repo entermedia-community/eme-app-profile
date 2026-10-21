@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
-import '../eme_world/widgets/eme_profile_card.dart';
-import '../profile/widgets/add_server_sheet.dart';
-import '../profile/widgets/server_card.dart';
+import '../eme_world/eme_profile_card.dart';
+import '../../screens/profile/widgets/add_server_sheet.dart';
+import '../../screens/profile/widgets/server_card.dart';
 
 enum SearchResultType { all, people, servers }
 
@@ -404,56 +404,56 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
             itemCount: categories.length,
             separatorBuilder: (_, _) => const SizedBox(width: 8),
             itemBuilder: (context, index) {
-            final name = categories[index];
-            final isSelected = _sameName(name, _category);
+              final name = categories[index];
+              final isSelected = _sameName(name, _category);
 
-            return Semantics(
-              identifier: 'search_category_$index',
-              child: InkWell(
-                onTap: () => _selectCategory(name),
-                borderRadius: BorderRadius.circular(18),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? selectedBg
-                        : (isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFF1F5F9)),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.transparent
-                          : (isDark
-                                ? AppColors.darkCardBorder
-                                : AppColors.lightCardBorder),
+              return Semantics(
+                identifier: 'search_category_$index',
+                child: InkWell(
+                  onTap: () => _selectCategory(name),
+                  borderRadius: BorderRadius.circular(18),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 7,
                     ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      name,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? selectedBg
+                          : (isDark
+                                ? const Color(0xFF1E293B)
+                                : const Color(0xFFF1F5F9)),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
                         color: isSelected
-                            ? Colors.white
+                            ? Colors.transparent
                             : (isDark
-                                  ? AppColors.textDarkSecondary
-                                  : const Color(0xFF64748B)),
+                                  ? AppColors.darkCardBorder
+                                  : AppColors.lightCardBorder),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        name,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : (isDark
+                                    ? AppColors.textDarkSecondary
+                                    : const Color(0xFF64748B)),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
         ),
       ),
     );

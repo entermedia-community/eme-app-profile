@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../files/files_section.dart';
+import '../../widgets/files/files_section.dart';
 import 'widgets/profile_header_card.dart';
 import 'widgets/self_chat_composer.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
-import 'package:eme_world/screens/eme_world/widgets/greeting_draft.dart';
+import 'package:eme_world/widgets/eme_world/greeting_draft.dart';
 
 void main() {
   final me = EmUser(
