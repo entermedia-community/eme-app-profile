@@ -85,7 +85,7 @@ class AppBarOverflowMenu extends ConsumerWidget {
           identifier: 'overflow_theme_switch',
           child: Switch(
             value: isDark,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
             onChanged: (value) {
               ref
                   .read(themeModeProvider.notifier)

@@ -926,7 +926,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     );
   }
 
-  _handleLinkTap(String link, Map<String, dynamic> data) async {
+  void _handleLinkTap(String link, Map<String, dynamic> data) async {
     debugPrint(
       "Link: $link",
     ); //e.g.: /site/mediadb/views/modules/emeserver/editors/entitychat/chatterbox/changescenario.html
