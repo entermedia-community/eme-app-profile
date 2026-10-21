@@ -107,6 +107,17 @@ class _SelfChatComposerState extends ConsumerState<SelfChatComposer> {
     final canSend =
         user != null && !_sending && _controller.text.trim().isNotEmpty;
 
+    final authState = ref.watch(authProvider);
+    final isAuthenticated = authState.isAuthenticated;
+    final headingName = (user?.firstname?.trim().isNotEmpty ?? false)
+        ? user!.firstname!.trim()
+        : (profile.name.trim().isNotEmpty
+            ? profile.name.trim().split(' ').first
+            : 'EME');
+    final heading = isAuthenticated
+        ? 'Chat with your EME'
+        : 'Message EME $headingName';
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -120,7 +131,7 @@ class _SelfChatComposerState extends ConsumerState<SelfChatComposer> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            user == null ? 'EME Chat' : emeProfileLabel(user, profile),
+            heading,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 15,
               fontWeight: FontWeight.w800,

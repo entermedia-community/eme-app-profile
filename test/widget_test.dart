@@ -128,8 +128,9 @@ void main() {
     expect(find.textContaining('Christopher'), findsWidgets);
     expect(find.text('ACCOUNT PROFILE'), findsOneWidget);
 
-    // App bar button and the message box heading both read "EME <first name>"
-    expect(find.text('EME Christopher'), findsNWidgets(2));
+    // App bar button reads "EME <first name>" and composer reads "Chat with your EME"
+    expect(find.text('EME Christopher'), findsOneWidget);
+    expect(find.text('Chat with your EME'), findsOneWidget);
     expect(find.byTooltip('Edit Profile'), findsOneWidget);
 
     // Message box for your own chat sits above Files
