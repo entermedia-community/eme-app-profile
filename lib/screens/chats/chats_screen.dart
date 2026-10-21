@@ -661,53 +661,43 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     final isSelected = _activeFilter == filter;
     final color = accentColor ?? AppColors.primary;
 
-    // Make each chip 20% wider than its natural size by adding the extra
-    // width as horizontal padding (measured with the bold label so the chip
-    // doesn't change size when selected).
-    const basePadding = 4.0;
-    const labelPadding = 8.0; // ChoiceChip default, per side
-    final labelWidth = (TextPainter(
-      text: TextSpan(
-        text: label,
-        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-      textDirection: TextDirection.ltr,
-      textScaler: MediaQuery.textScalerOf(context),
-    )..layout()).width;
-    final naturalWidth = labelWidth + 2 * (labelPadding + basePadding + 1);
-    final extraPerSide = naturalWidth * 0.2 / 2;
-
     return Semantics(
       identifier: 'chat_filter_${filter.name}',
-      child: ChoiceChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (_) => setState(() => _activeFilter = filter),
-        labelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          color: isSelected
-              ? Colors.white
-              : (isDark
-                    ? AppColors.textDarkSecondary
-                    : AppColors.textSecondary),
-        ),
-        selectedColor: color,
-        backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightBg,
-        shape: RoundedRectangleBorder(
+      button: true,
+      selected: isSelected,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => setState(() => _activeFilter = filter),
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: isSelected
-                ? color
-                : (isDark
-                      ? AppColors.darkCardBorder
-                      : AppColors.lightCardBorder),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? color
+                  : (isDark ? AppColors.darkSurface : AppColors.lightBg),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? color
+                    : (isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder),
+              ),
+            ),
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark
+                          ? AppColors.textDarkSecondary
+                          : AppColors.textSecondary),
+              ),
+            ),
           ),
-        ),
-        showCheckmark: false,
-        padding: EdgeInsets.symmetric(
-          horizontal: basePadding + extraPerSide,
-          vertical: 2,
         ),
       ),
     );
