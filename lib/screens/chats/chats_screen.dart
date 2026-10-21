@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -185,7 +187,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         : AppColors.lightCardBorder;
 
     final chatsAsync = ref.watch(unifiedChatsProvider);
-
     return Column(
       children: [
         // Top Search Bar & open Search (people + servers)
@@ -197,21 +198,34 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: Semantics(
-                    identifier: 'chats_search_input',
-                    child: TextField(
-                      onChanged: (val) => setState(() => _searchQuery = val),
-                      decoration: InputDecoration(
-                        hintText: 'Search conversations...',
-                        hintStyle: GoogleFonts.inter(fontSize: 13.5),
-                        prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.filter_list, color: Colors.grey),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                        label: 'All',
+                        filter: ChatFilter.all,
+                        isDark: isDark,
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                        label: 'People',
+                        filter: ChatFilter.users,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                        label: 'Servers',
+                        filter: ChatFilter.servers,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                        label: 'MCP',
+                        filter: ChatFilter.mcp,
+                        isDark: isDark,
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -242,32 +256,21 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         // Filter Tabs Row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            children: [
-              _buildFilterChip(
-                label: 'All',
-                filter: ChatFilter.all,
-                isDark: isDark,
+          child: Semantics(
+            identifier: 'chats_search_input',
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              decoration: InputDecoration(
+                hintText: 'Search conversations...',
+                hintStyle: GoogleFonts.inter(fontSize: 13.5),
+                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
               ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'People',
-                filter: ChatFilter.users,
-                isDark: isDark,
-              ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'Servers',
-                filter: ChatFilter.servers,
-                isDark: isDark,
-              ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'MCP',
-                filter: ChatFilter.mcp,
-                isDark: isDark,
-              ),
-            ],
+            ),
           ),
         ),
 
