@@ -11,7 +11,15 @@ import '../../../widgets/chat/send_product_sheet.dart';
 class ServerChatTab extends ConsumerStatefulWidget {
   final ServerModel server;
 
-  const ServerChatTab({super.key, required this.server});
+  /// When set, chat in this project's team channel (the web project chat
+  /// page's channel) instead of the EME Server's channel.
+  final String? projectCollectionId;
+
+  const ServerChatTab({
+    super.key,
+    required this.server,
+    this.projectCollectionId,
+  });
 
   @override
   ConsumerState<ServerChatTab> createState() => _ServerChatTabState();
@@ -25,6 +33,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   StreamSubscription<ChatMessage>? _socketSubscription;
   String _channelId = '';
   bool _isConnecting = false;
+  String? _connectionError;
 
   late List<ChatMessage> _messages;
 
@@ -36,7 +45,33 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   }
 
   Future<void> _initChatConnection() async {
-    setState(() => _isConnecting = true);
+    setState(() {
+      _isConnecting = true;
+      _connectionError = null;
+    });
+
+    final projectId = widget.projectCollectionId;
+    if (projectId != null) {
+      try {
+        final connection = await ref.read(
+          projectChatConnectionProvider(projectId).future,
+        );
+        _channelId = connection.channelId;
+        await _connectSocket(_channelId);
+        await _loadChatHistory(_channelId);
+      } catch (e, stack) {
+        AppErrorHandler.recordNonFatal(
+          e,
+          stack,
+          reason: 'Error connecting project chat in ServerChatTab',
+          customKeys: {'collectionId': projectId},
+        );
+        if (mounted) setState(() => _connectionError = '$e');
+      } finally {
+        if (mounted) setState(() => _isConnecting = false);
+      }
+      return;
+    }
 
     try {
       final serverId = widget.server.id;
@@ -277,6 +312,50 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
                         ),
                       ),
                     ],
+                  ),
+                )
+              : _connectionError != null && _messages.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 40,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Could not open the chat.\n$_connectionError',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: isDark
+                                ? AppColors.textDarkSecondary
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                        Semantics(
+                          identifier: 'server_chat_retry',
+                          child: TextButton(
+                            onPressed: () {
+                              final id = widget.projectCollectionId;
+                              if (id != null) {
+                                ref.invalidate(
+                                  projectChatConnectionProvider(id),
+                                );
+                              }
+                              _initChatConnection();
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 )
               : _messages.isEmpty
@@ -933,6 +1012,13 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     debugPrint(
       "Data: $data",
     ); //e.g.; {targetdiv: changescenario, channel: AaFAj3-udKixTInEx17X, currentscenario: eme_server_search_media, functionname: eme_server_search_media_confirm, oemaxlevel: 1}
+    final projectId = widget.projectCollectionId;
+    if (projectId != null) {
+      await ref
+          .read(apiServiceProvider)
+          .connectProjectChat(projectId, params: data);
+      return;
+    }
     await ChatSocketService().connectChat(widget.server.id, params: data);
   }
 }

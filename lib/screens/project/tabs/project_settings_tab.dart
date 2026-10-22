@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 
-/// Project settings tab displaying project configuration, metadata, and controls.
+/// Project settings view: the project's details and contact links.
 class ProjectSettingsTab extends StatelessWidget {
   final ServerModel server;
   final LibraryCollectionModel? collection;
@@ -93,21 +93,21 @@ class ProjectSettingsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 _buildInfoRow(
-                  label: 'Category',
-                  value: collection?.collectionType ?? server.categoryLabel,
+                  label: 'Type',
+                  value: collection?.isProposal == true
+                      ? 'Proposal'
+                      : server.categoryLabel,
                   isDark: isDark,
                 ),
-                if (collection?.projectStatus != null &&
-                    collection!.projectStatus!.isNotEmpty) ...[
+                if (collection?.urlName != null) ...[
                   const SizedBox(height: 8),
                   _buildInfoRow(
-                    label: 'Status',
-                    value: collection!.projectStatus!,
+                    label: 'URL name',
+                    value: collection!.urlName!,
                     isDark: isDark,
                   ),
                 ],
-                if (collection?.privacyLevel != null &&
-                    collection!.privacyLevel!.isNotEmpty) ...[
+                if (collection?.privacyLevel != null) ...[
                   const SizedBox(height: 8),
                   _buildInfoRow(
                     label: 'Privacy',
@@ -126,55 +126,9 @@ class ProjectSettingsTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Preferences & Notifications Card
-          _buildCard(
-            isDark: isDark,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Notifications & Preferences',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w700,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _buildSwitchRow(
-                  title: 'Project Notifications',
-                  subtitle:
-                      'Receive updates on chat messages, goals, and milestones',
-                  value: true,
-                  identifier: 'project_settings_notifications_switch',
-                  isDark: isDark,
-                  onChanged: (val) {},
-                ),
-                Divider(
-                  height: 1,
-                  color: isDark
-                      ? AppColors.darkCardBorder
-                      : AppColors.lightCardBorder,
-                ),
-                _buildSwitchRow(
-                  title: 'Mute Chat Sounds',
-                  subtitle: 'Silence alerts during group conversations',
-                  value: false,
-                  identifier: 'project_settings_sound_switch',
-                  isDark: isDark,
-                  onChanged: (val) {},
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
           // Contact & Links (if available)
           if (collection?.websiteLink != null ||
-              collection?.contactEmail != null ||
-              collection?.contactName != null) ...[
+              collection?.contactEmail != null) ...[
             _buildCard(
               isDark: isDark,
               child: Column(
@@ -191,24 +145,14 @@ class ProjectSettingsTab extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  if (collection?.contactName != null &&
-                      collection!.contactName!.isNotEmpty)
-                    _buildInfoRow(
-                      label: 'Contact',
-                      value: collection!.contactName!,
-                      isDark: isDark,
-                    ),
-                  if (collection?.contactEmail != null &&
-                      collection!.contactEmail!.isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                  if (collection?.contactEmail != null) ...[
                     _buildInfoRow(
                       label: 'Email',
                       value: collection!.contactEmail!,
                       isDark: isDark,
                     ),
                   ],
-                  if (collection?.websiteLink != null &&
-                      collection!.websiteLink!.isNotEmpty) ...[
+                  if (collection?.websiteLink != null) ...[
                     const SizedBox(height: 8),
                     _buildInfoRow(
                       label: 'Website',
@@ -266,59 +210,6 @@ class ProjectSettingsTab extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSwitchRow({
-    required String title,
-    required String subtitle,
-    required bool value,
-    required String identifier,
-    required bool isDark,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w500,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.inter(
-                    fontSize: 11.5,
-                    color: isDark
-                        ? AppColors.textDarkMuted
-                        : AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Semantics(
-            identifier: identifier,
-            child: Switch(
-              value: value,
-              activeThumbColor: server.primaryColor,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

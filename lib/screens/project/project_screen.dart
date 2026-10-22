@@ -4,13 +4,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
+import '../server/tabs/server_blog_tab.dart';
 import '../server/tabs/server_chat_tab.dart';
 import '../server/tabs/server_finance_tab.dart';
 import '../server/tabs/server_goals_tab.dart';
 import 'tabs/project_settings_tab.dart';
+import 'widgets/project_info_sheet.dart';
 
-/// Available views for [ProjectScreen].
+/// Available views for [ProjectScreen], in the order of the web project menu
+/// (`project/layout/menu-collectives.html`; Referrals and Store are off for
+/// projects).
 enum ProjectView {
+  blog('Blog', Icons.article_outlined),
   chat('Chat', Icons.chat_bubble_outline_rounded),
   goals('Goals', Icons.flag_outlined),
   finances('Finances', Icons.account_balance_wallet_outlined),
@@ -20,10 +25,27 @@ enum ProjectView {
   final IconData icon;
 
   const ProjectView(this.label, this.icon);
+
+  /// Mirrors the web menu's rules: Goals and Settings need edit rights
+  /// (`caneditcollection`), Finances is open unless the project is commercial.
+  bool isVisible({required bool canEdit, required bool isCommercial}) {
+    switch (this) {
+      case ProjectView.goals:
+      case ProjectView.settings:
+        return canEdit;
+      case ProjectView.finances:
+        return canEdit || !isCommercial;
+      case ProjectView.blog:
+      case ProjectView.chat:
+        return true;
+    }
+  }
 }
 
-/// Project screen with multi-participant chat as default view and a top dropdown
-/// to switch between Chat, Goals, Finances, and Settings.
+/// Project screen, the app's version of the web project chat page
+/// (`project/chat/index.html`): team chat as the default view, a top dropdown
+/// for the other menu sections, and an info button that opens the web page's
+/// right sidebar (team, donate, testimonials, links) as a sheet.
 class ProjectScreen extends ConsumerStatefulWidget {
   final ServerModel server;
   final LibraryCollectionModel? collection;
@@ -48,15 +70,23 @@ class ProjectScreen extends ConsumerStatefulWidget {
     );
   }
 
+  static Route<void> routeForCollection(
+    LibraryCollectionModel collection, {
+    ProjectView initialView = ProjectView.chat,
+  }) {
+    return route(
+      server: _serverFromCollection(collection),
+      collection: collection,
+      initialView: initialView,
+    );
+  }
+
   static ServerModel _serverFromCollection(LibraryCollectionModel collection) {
     return ServerModel(
       id: collection.id,
       name: collection.name.isNotEmpty ? collection.name : 'Project',
       description: collection.displayDescription,
-      category: ServerCategoryModel(
-        id: collection.collectionType ?? 'project',
-        name: collection.collectionType ?? 'Project',
-      ),
+      category: const ServerCategoryModel(id: 'project', name: 'Project'),
       primaryColor: const Color(0xFF3B82F6),
       avatarUrl: collection.primaryImageUrl,
       serverMediaDBUrl: '',
@@ -102,6 +132,43 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
     _activeView = widget.initialView;
   }
 
+  /// The project's `librarycollection` id, or null for an EME Server listed
+  /// as a project (no collection behind it).
+  String? get _collectionId {
+    final id = widget.collection?.id;
+    return (id == null || id.isEmpty) ? null : id;
+  }
+
+  /// Key for [projectCollectionProvider], or null without a collection.
+  ProjectCollectionKey? get _collectionKey {
+    final id = _collectionId;
+    if (id == null) return null;
+    return (collectionId: id, baseUrl: widget.server.serverMediaDBUrl);
+  }
+
+  /// Views the user may open. For a collection, edit rights come from the
+  /// chat connection (`caneditcollection`); until it loads, or if it fails,
+  /// only the views open to everyone are shown. An EME Server project has no
+  /// collection permissions, so it shows every view.
+  List<ProjectView> _visibleViews(LibraryCollectionModel? collection) {
+    final id = _collectionId;
+    if (id == null) return ProjectView.values;
+    final canEdit =
+        ref
+            .watch(projectChatConnectionProvider(id))
+            .valueOrNull
+            ?.canEditCollection ??
+        false;
+    return ProjectView.values
+        .where(
+          (v) => v.isVisible(
+            canEdit: canEdit,
+            isCommercial: collection?.isCommercial ?? false,
+          ),
+        )
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
@@ -112,6 +179,16 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
       (s) => s.id == widget.server.id,
       orElse: () => widget.server,
     );
+
+    final key = _collectionKey;
+    final AsyncValue<LibraryCollectionModel>? collectionAsync = key == null
+        ? null
+        : ref.watch(projectCollectionProvider(key));
+    final collection = collectionAsync?.valueOrNull ?? widget.collection;
+    final views = _visibleViews(collection);
+    final activeView = views.contains(_activeView)
+        ? _activeView
+        : ProjectView.chat;
 
     return Scaffold(
       appBar: AppBar(
@@ -189,13 +266,25 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                           : AppColors.textPrimary,
                     ),
                   ),
-                  _buildViewDropdown(isDark),
+                  _buildViewDropdown(isDark, views, activeView),
                 ],
               ),
             ),
           ],
         ),
         actions: [
+          Semantics(
+            identifier: 'project_info_button',
+            child: IconButton(
+              icon: const Icon(Icons.info_outline_rounded, size: 21),
+              tooltip: 'Project info',
+              onPressed: () => ProjectInfoSheet.show(
+                context,
+                server: currentServer,
+                collectionKey: key,
+              ),
+            ),
+          ),
           // Theme Toggle
           Semantics(
             identifier: 'project_theme_toggle',
@@ -218,17 +307,21 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: _buildBody(currentServer),
+        child: _buildBody(currentServer, collection, activeView),
       ),
     );
   }
 
-  Widget _buildViewDropdown(bool isDark) {
+  Widget _buildViewDropdown(
+    bool isDark,
+    List<ProjectView> views,
+    ProjectView activeView,
+  ) {
     return Semantics(
       identifier: 'project_view_dropdown',
       child: DropdownButtonHideUnderline(
         child: DropdownButton<ProjectView>(
-          value: _activeView,
+          value: activeView,
           isDense: true,
           icon: Icon(
             Icons.keyboard_arrow_down_rounded,
@@ -244,7 +337,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
             fontWeight: FontWeight.w600,
             color: widget.server.primaryColor,
           ),
-          items: ProjectView.values.map((view) {
+          items: views.map((view) {
             return DropdownMenuItem<ProjectView>(
               key: ValueKey('project_view_item_${view.name}'),
               value: view,
@@ -254,7 +347,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                   Icon(
                     view.icon,
                     size: 14,
-                    color: _activeView == view
+                    color: activeView == view
                         ? widget.server.primaryColor
                         : (isDark
                               ? AppColors.textDarkSecondary
@@ -265,10 +358,10 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                     view.label,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      fontWeight: _activeView == view
+                      fontWeight: activeView == view
                           ? FontWeight.w700
                           : FontWeight.w500,
-                      color: _activeView == view
+                      color: activeView == view
                           ? widget.server.primaryColor
                           : (isDark
                                 ? AppColors.textDarkPrimary
@@ -280,7 +373,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
             );
           }).toList(),
           onChanged: (newView) {
-            if (newView != null && newView != _activeView) {
+            if (newView != null && newView != activeView) {
               setState(() {
                 _activeView = newView;
               });
@@ -291,12 +384,22 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
     );
   }
 
-  Widget _buildBody(ServerModel server) {
-    switch (_activeView) {
+  Widget _buildBody(
+    ServerModel server,
+    LibraryCollectionModel? collection,
+    ProjectView activeView,
+  ) {
+    switch (activeView) {
+      case ProjectView.blog:
+        return ServerBlogTab(
+          key: ValueKey('project_blog_${server.id}'),
+          server: server,
+        );
       case ProjectView.chat:
         return ServerChatTab(
           key: ValueKey('project_chat_${server.id}'),
           server: server,
+          projectCollectionId: _collectionId,
         );
       case ProjectView.goals:
         return ServerGoalsTab(
@@ -312,7 +415,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         return ProjectSettingsTab(
           key: ValueKey('project_settings_${server.id}'),
           server: server,
-          collection: widget.collection,
+          collection: collection,
         );
     }
   }

@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,9 +45,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     }
 
     if (item.isProject) {
+      final logo = item.avatarUrl;
       return CircleAvatar(
         radius: 26,
         backgroundColor: item.avatarColor.withValues(alpha: 0.15),
+        foregroundImage: logo != null && logo.isNotEmpty
+            ? NetworkImage(logo)
+            : null,
         child: Text(
           item.avatarInitials,
           style: GoogleFonts.plusJakartaSans(
@@ -351,42 +354,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                 ),
               ),
               data: (allItems) {
-                // Ensure the mock project is present for development testing
-                const mockDemoProjectItem = UnifiedChatItem.fromProject(
-                  server: ServerModel(
-                    id: 'mock_proj_eco_app',
-                    name: 'Eco Collective Mobile App',
-                    subtitle: 'FLUTTER & BACKEND DEVELOPMENT',
-                    description:
-                        'Collaborative development of the EME Collective Intelligence platform.',
-                    category: ServerCategoryModel(
-                      id: 'project',
-                      name: 'Project',
-                    ),
-                    primaryColor: Color(0xFF3B82F6),
-                    secondaryColor: Color(0xFFEFF6FF),
-                    memberCount: 8,
-                    isJoined: true,
-                    servicesOffered: [
-                      'Mobile App',
-                      'Dart',
-                      'Flutter',
-                      'Collective Intelligence',
-                    ],
-                    lastNotification:
-                        'Sprint planning and milestone updates available.',
-                    lastNotificationTime: '10:45 AM',
-                    serverFunction: 'project',
-                  ),
-                );
-
-                final effectiveItems = [
-                  if (!allItems.any((it) => it.isProject)) mockDemoProjectItem,
-                  ...allItems,
-                ];
-
                 // 1. Filter by category
-                var filtered = effectiveItems.where((item) {
+                var filtered = allItems.where((item) {
                   if (_activeFilter == ChatFilter.users) {
                     return item.isUser;
                   }
@@ -717,18 +686,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                       ),
                       onTap: () async {
                         if (item.isProject) {
-                          if (item.projectCollection != null) {
-                            Navigator.of(context).push(
-                              ProjectScreen.route(
-                                server: item.emeServer!,
-                                collection: item.projectCollection,
-                              ),
-                            );
-                          } else {
-                            Navigator.of(context).push(
-                              ProjectScreen.route(server: item.emeServer!),
-                            );
-                          }
+                          final collection = item.projectCollection;
+                          Navigator.of(context).push(
+                            collection != null
+                                ? ProjectScreen.routeForCollection(collection)
+                                : ProjectScreen.route(server: item.emeServer!),
+                          );
                           return;
                         }
                         if (item.isServer) {

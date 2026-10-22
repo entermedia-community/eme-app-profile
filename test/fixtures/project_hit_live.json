@@ -1,0 +1,41 @@
+{
+  "id": "AaFhNJ9p3N_9x6csJT9i",
+  "name": {
+    "en": "Claude Web Compare"
+  },
+  "urlname": "claude-web-compare",
+  "collectiontype": {
+    "id": "1",
+    "name": "User Defined"
+  },
+  "priviacylevel": {
+    "id": "community",
+    "name": "Community"
+  },
+  "contactemail": "test@example.com",
+  "proposaltestimonials": "<p><b>Great</b> project</p>",
+  "websitelink": "https://example.com",
+  "facebooklink": "https://facebook.com/x",
+  "team": [
+    {
+      "collectionid": {
+        "id": "AaFhNJ9p3N_9x6csJT9i",
+        "name": "Claude Web Compare"
+      },
+      "ontheteam": "true",
+      "id": "AaFhNJ-X3N_9x6csJT9j",
+      "followeruser": {
+        "id": "admin",
+        "name": "The.A"
+      },
+      "userid": "admin",
+      "screenname": "Admin",
+      "firstName": "The",
+      "lastName": "Administrator"
+    }
+  ],
+  "projectlink": "/claude-web-compare",
+  "followercount": 0,
+  "followedbyuser": false,
+  "description": "test@example.com|AaFhNJ9p3N_9x6csJT9i|Claude Web Compare|The.A|com|9x6csJT9i|The|test|AaFhNJ9p3N|example|"
+}

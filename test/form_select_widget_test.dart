@@ -41,6 +41,20 @@ void main() {
           agentContextValues: AgentContextValues(
             messageRenderType: MessageRenderType.form,
           ),
+          // The form comes with the message; the app has no built-in fields.
+          formFields: [
+            FormField(
+              name: 'category',
+              type: FormFieldType.select,
+              label: 'Category',
+              value: 'technology',
+              options: [
+                FormFieldOption(value: 'technology', label: 'Technology'),
+                FormFieldOption(value: 'design', label: 'Design'),
+                FormFieldOption(value: 'marketing', label: 'Marketing'),
+              ],
+            ),
+          ],
           createdAt: DateTime.now(),
         );
 

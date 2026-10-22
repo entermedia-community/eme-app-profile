@@ -63,6 +63,103 @@ class AuthenticatedMockAuthService implements IAuthService {
 }
 
 class MockApiService implements IApiService {
+  /// `caneditcollection` returned by [connectProjectChat].
+  bool projectCanEdit = true;
+
+  /// `canviewsettings` returned by [connectProjectChat].
+  bool projectCanViewSettings = false;
+  final memberUpdates = <String>[];
+
+  @override
+  Future<List<ProjectTeamRole>> fetchTeamRoles() async => const [
+    ProjectTeamRole(id: 'role_1', name: 'Lead'),
+    ProjectTeamRole(id: 'role_2', name: 'Testing Engineer'),
+  ];
+
+  @override
+  Future<void> updateProjectTeamMember(
+    String collectionId, {
+    required String memberId,
+    bool? onTheTeam,
+    List<String>? roleIds,
+  }) async {
+    memberUpdates.add('$memberId:$onTheTeam:${roleIds?.join(',')}');
+  }
+
+  /// `priviacylevel` returned by [fetchProjectCollection].
+  String projectPrivacy = 'community';
+  int followToggles = 0;
+  final addedTeamMembers = <String>[];
+
+  @override
+  Future<void> addProjectTeamMember(
+    String collectionId, {
+    String? userId,
+    String? email,
+    String? firstName,
+    String? lastName,
+  }) async {
+    addedTeamMembers.add(userId ?? email!);
+  }
+
+  @override
+  Future<List<LibraryCollectionModel>> fetchUserProjects() async => const [];
+
+  @override
+  Future<ProjectChatConnection> connectProjectChat(
+    String collectionId, {
+    Map<String, dynamic>? params,
+  }) async {
+    if (collectionId != 'coll_123') {
+      throw Exception('Project chat $collectionId: not found');
+    }
+    return ProjectChatConnection(
+      channelId: 'ch_$collectionId',
+      topicId: 'topic_general',
+      canEditCollection: projectCanEdit,
+      canViewSettings: projectCanViewSettings,
+    );
+  }
+
+  @override
+  Future<ProjectFollowState> toggleProjectFollow(String collectionId) async {
+    followToggles++;
+    return const ProjectFollowState(following: true, followerCount: 4);
+  }
+
+  @override
+  Future<LibraryCollectionModel> fetchProjectCollection(
+    String collectionId, {
+    String? baseUrl,
+  }) async {
+    if (collectionId != 'coll_123') {
+      throw Exception('Project $collectionId: not found');
+    }
+    return LibraryCollectionModel(
+      id: 'coll_123',
+      name: 'Clean Water Initiative',
+      description: 'Decentralized ecological project',
+      privacyLevel: projectPrivacy,
+      contactEmail: 'water@example.com',
+      projectLink: 'https://water.example.com/clean-water',
+      donateDescription: 'Help us build wells',
+      proposalTestimonials: '<p>Changed our village.</p>',
+      websiteLink: 'https://water.example.com',
+      followerCount: 3,
+      followedByUser: false,
+      team: [
+        ProjectTeamMember(
+          memberId: 'm1',
+          userId: 'u1',
+          firstName: 'Alice',
+          lastName: 'Smith',
+          teamRoles: ['role_1'],
+          teamRoleNames: ['Lead'],
+        ),
+      ],
+    );
+  }
+
   @override
   Future<List<ServerModel>> fetchServers({
     String? query,

@@ -165,11 +165,6 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final profileState = ref.watch(emeProfileProvider);
     final serverState = ref.watch(serverProvider);
 
-    bool isProjServer(ServerModel s) =>
-        s.category.name.trim().toLowerCase() == 'project' ||
-        s.category.id.trim().toLowerCase() == 'project' ||
-        s.serverFunction.trim().toLowerCase() == 'project';
-
     final allFilteredServers = _filterServers(serverState.servers);
 
     final people =
@@ -181,48 +176,33 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final servers =
         (_type == SearchResultType.people || _type == SearchResultType.projects)
         ? const <ServerModel>[]
-        : allFilteredServers.where((s) => !isProjServer(s)).toList();
+        : allFilteredServers;
 
+    // Projects are the user's own (`viewprojects.json`); they have no
+    // category, so a category pill hides them.
+    final projectsAsync = ref.watch(userProjectsProvider);
+    final q = _query.toLowerCase();
     final projects =
-        (_type == SearchResultType.people || _type == SearchResultType.servers)
-        ? const <ServerModel>[]
-        : allFilteredServers.where(isProjServer).toList();
+        (_type == SearchResultType.people ||
+            _type == SearchResultType.servers ||
+            _category != _allCategory)
+        ? const <LibraryCollectionModel>[]
+        : (projectsAsync.valueOrNull ?? const <LibraryCollectionModel>[])
+              .where(
+                (p) =>
+                    q.isEmpty ||
+                    p.name.toLowerCase().contains(q) ||
+                    p.displayDescription.toLowerCase().contains(q),
+              )
+              .toList();
 
     final categories = _categoryNames(serverState.categories);
-
-    // Demo project for development testing if no backend project exists
-    const mockDemoProject = ServerModel(
-      id: 'mock_proj_eco_app',
-      name: 'Eco Collective Mobile App',
-      subtitle: 'FLUTTER & BACKEND DEVELOPMENT',
-      description:
-          'Collaborative development of the EME Collective Intelligence platform.',
-      category: ServerCategoryModel(id: 'project', name: 'Project'),
-      primaryColor: Color(0xFF3B82F6),
-      secondaryColor: Color(0xFFEFF6FF),
-      memberCount: 8,
-      isJoined: true,
-      servicesOffered: [
-        'Mobile App',
-        'Dart',
-        'Flutter',
-        'Collective Intelligence',
-      ],
-      lastNotification: 'Sprint planning and milestone updates available.',
-      lastNotificationTime: '10:45 AM',
-      serverFunction: 'project',
-    );
-
-    final effectiveProjects = [
-      ...projects,
-      if (!projects.any((p) => p.id == mockDemoProject.id)) mockDemoProject,
-    ];
 
     // One combined list, A-Z by name.
     final results = <_SearchResult>[
       for (final p in people) _SearchResult.person(p),
       for (final s in servers) _SearchResult.server(s),
-      for (final pr in effectiveProjects) _SearchResult.project(pr),
+      for (final pr in projects) _SearchResult.project(pr),
     ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     final loading =
@@ -236,6 +216,10 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
         'People: ${profileState.error}',
       if (_type != SearchResultType.people && serverState.error != null)
         'Servers: ${serverState.error}',
+      if ((_type == SearchResultType.all ||
+              _type == SearchResultType.projects) &&
+          projectsAsync.hasError)
+        'Projects: ${projectsAsync.error}',
     ];
 
     return Scaffold(
@@ -283,7 +267,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
 
               _buildResultsHeader(
                 peopleCount: people.length,
-                projectCount: effectiveProjects.length,
+                projectCount: projects.length,
                 serverCount: servers.length,
                 isDark: isDark,
               ),
@@ -616,9 +600,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           if (person != null) {
             EmeProfileCard(profile: person).showDetails(context);
           } else if (r.isProject) {
-            Navigator.of(context).push(
-              ProjectScreen.route(server: server!, collection: r.collection),
-            );
+            Navigator.of(
+              context,
+            ).push(ProjectScreen.routeForCollection(r.collection!));
           } else {
             ServerCard(server: server!).joinAndOpen(context, ref);
           }
@@ -798,9 +782,9 @@ class _SearchResult {
       collection = null,
       isProject = false;
 
-  const _SearchResult.project(ServerModel this.server)
+  const _SearchResult.project(LibraryCollectionModel this.collection)
     : person = null,
-      collection = null,
+      server = null,
       isProject = true;
 
   bool get isServer => server != null && !isProject;
@@ -814,7 +798,7 @@ class _SearchResult {
 
   String get category {
     if (isProject) {
-      return collection?.collectionType ?? server?.category.name ?? 'Project';
+      return collection?.isProposal == true ? 'Proposal' : 'Project';
     }
     return person?.category.label ?? server!.category.name;
   }
@@ -828,7 +812,7 @@ class _SearchResult {
 
   String? get avatarUrl {
     if (isProject) {
-      return collection?.primaryImageUrl ?? server?.avatarUrl;
+      return collection?.primaryImageUrl;
     }
     return isServer ? server!.avatarUrl : person!.avatarUrl;
   }

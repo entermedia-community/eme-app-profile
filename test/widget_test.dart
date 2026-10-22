@@ -15,11 +15,12 @@ void main() {
     expect(find.text('Search conversations...'), findsOneWidget);
     expect(find.byIcon(Icons.menu_rounded), findsNothing);
 
-    // "EME Search" button is as tall as the conversation search input
+    // "EME Search" ends the filter chip row (9e079ff) and is as tall as the
+    // chips beside it
     expect(find.text('EME Search'), findsOneWidget);
     expect(
       tester.getSize(find.bySemanticsIdentifier('chats_open_search')).height,
-      tester.getSize(find.bySemanticsIdentifier('chats_search_input')).height,
+      tester.getSize(find.bySemanticsIdentifier('chat_filter_all')).height,
     );
 
     // Search button opens combined people + servers search, full screen
@@ -96,7 +97,8 @@ void main() {
       findsOneWidget,
     );
 
-    // Tapping a profile card shows the details sheet with a greeting draft
+    // Tapping a profile card shows the details sheet. Its greeting composer
+    // is commented out in EmeProfileCard (e324186), so it is not shown.
     await tester.tap(
       find.descendant(
         of: find.byType(UnifiedSearchScreen),
@@ -104,14 +106,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final greeting = tester.widget<TextField>(
-      find.descendant(
-        of: find.bySemanticsIdentifier('profile_greeting_input'),
-        matching: find.byType(TextField),
-      ),
-    );
-    expect(greeting.controller!.text, startsWith("Hi The, I'm Christopher."));
-    expect(find.bySemanticsIdentifier('profile_greeting_send'), findsOneWidget);
+    expect(find.bySemanticsIdentifier('profile_details_close'), findsOneWidget);
+    expect(find.bySemanticsIdentifier('profile_greeting_input'), findsNothing);
     await tester.tap(find.bySemanticsIdentifier('profile_details_close'));
     await tester.pumpAndSettle();
 
