@@ -7,8 +7,9 @@ import '../../theme/app_colors.dart';
 import '../eme_world/eme_profile_card.dart';
 import '../../screens/profile/widgets/add_server_sheet.dart';
 import '../../screens/profile/widgets/server_card.dart';
+import '../../screens/project/project_screen.dart';
 
-enum SearchResultType { all, people, servers }
+enum SearchResultType { all, people, projects, servers }
 
 /// One search for people and EME Servers: a single query field and a single
 /// category bar, with the two result lists shown in their own sections.
@@ -164,26 +165,74 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final profileState = ref.watch(emeProfileProvider);
     final serverState = ref.watch(serverProvider);
 
-    final people = _type == SearchResultType.servers
+    bool isProjServer(ServerModel s) =>
+        s.category.name.trim().toLowerCase() == 'project' ||
+        s.category.id.trim().toLowerCase() == 'project' ||
+        s.serverFunction.trim().toLowerCase() == 'project';
+
+    final allFilteredServers = _filterServers(serverState.servers);
+
+    final people =
+        (_type == SearchResultType.servers ||
+            _type == SearchResultType.projects)
         ? const <EmeProfileModel>[]
         : profileState.filteredProfiles;
-    final servers = _type == SearchResultType.people
+
+    final servers =
+        (_type == SearchResultType.people || _type == SearchResultType.projects)
         ? const <ServerModel>[]
-        : _filterServers(serverState.servers);
+        : allFilteredServers.where((s) => !isProjServer(s)).toList();
+
+    final projects =
+        (_type == SearchResultType.people || _type == SearchResultType.servers)
+        ? const <ServerModel>[]
+        : allFilteredServers.where(isProjServer).toList();
+
     final categories = _categoryNames(serverState.categories);
+
+    // Demo project for development testing if no backend project exists
+    const mockDemoProject = ServerModel(
+      id: 'mock_proj_eco_app',
+      name: 'Eco Collective Mobile App',
+      subtitle: 'FLUTTER & BACKEND DEVELOPMENT',
+      description:
+          'Collaborative development of the EME Collective Intelligence platform.',
+      category: ServerCategoryModel(id: 'project', name: 'Project'),
+      primaryColor: Color(0xFF3B82F6),
+      secondaryColor: Color(0xFFEFF6FF),
+      memberCount: 8,
+      isJoined: true,
+      servicesOffered: [
+        'Mobile App',
+        'Dart',
+        'Flutter',
+        'Collective Intelligence',
+      ],
+      lastNotification: 'Sprint planning and milestone updates available.',
+      lastNotificationTime: '10:45 AM',
+      serverFunction: 'project',
+    );
+
+    final effectiveProjects = [
+      ...projects,
+      if (!projects.any((p) => p.id == mockDemoProject.id)) mockDemoProject,
+    ];
 
     // One combined list, A-Z by name.
     final results = <_SearchResult>[
       for (final p in people) _SearchResult.person(p),
       for (final s in servers) _SearchResult.server(s),
+      for (final pr in effectiveProjects) _SearchResult.project(pr),
     ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     final loading =
         results.isEmpty &&
-        ((_type != SearchResultType.servers && profileState.isLoading) ||
+        ((_type == SearchResultType.all || _type == SearchResultType.people) &&
+                profileState.isLoading ||
             (_type != SearchResultType.people && serverState.isLoading));
     final errors = [
-      if (_type != SearchResultType.servers && profileState.error != null)
+      if ((_type == SearchResultType.all || _type == SearchResultType.people) &&
+          profileState.error != null)
         'People: ${profileState.error}',
       if (_type != SearchResultType.people && serverState.error != null)
         'Servers: ${serverState.error}',
@@ -232,7 +281,12 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               _buildCategoryBar(categories, isDark),
               const SizedBox(height: 20),
 
-              _buildResultsHeader(people.length, servers.length, isDark),
+              _buildResultsHeader(
+                peopleCount: people.length,
+                projectCount: effectiveProjects.length,
+                serverCount: servers.length,
+                isDark: isDark,
+              ),
               const SizedBox(height: 10),
               for (final e in errors) ...[
                 _buildErrorLine(e),
@@ -306,29 +360,39 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   Widget _buildTypeSelector(bool isDark) {
     return Semantics(
       identifier: 'search_type_selector',
-      child: Row(
-        children: [
-          _buildFilterChip(
-            label: 'All',
-            type: SearchResultType.all,
-            semanticId: 'search_type_all',
-            isDark: isDark,
-          ),
-          const SizedBox(width: 8),
-          _buildFilterChip(
-            label: 'People',
-            type: SearchResultType.people,
-            semanticId: 'search_type_people',
-            isDark: isDark,
-          ),
-          const SizedBox(width: 8),
-          _buildFilterChip(
-            label: 'Servers',
-            type: SearchResultType.servers,
-            semanticId: 'search_type_servers',
-            isDark: isDark,
-          ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _buildFilterChip(
+              label: 'All',
+              type: SearchResultType.all,
+              semanticId: 'search_type_all',
+              isDark: isDark,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: 'People',
+              type: SearchResultType.people,
+              semanticId: 'search_type_people',
+              isDark: isDark,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: 'Projects',
+              type: SearchResultType.projects,
+              semanticId: 'search_type_projects',
+              isDark: isDark,
+            ),
+            const SizedBox(width: 8),
+            _buildFilterChip(
+              label: 'Servers',
+              type: SearchResultType.servers,
+              semanticId: 'search_type_servers',
+              isDark: isDark,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -459,8 +523,22 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     );
   }
 
-  Widget _buildResultsHeader(int peopleCount, int serverCount, bool isDark) {
+  Widget _buildResultsHeader({
+    required int peopleCount,
+    required int projectCount,
+    required int serverCount,
+    required bool isDark,
+  }) {
     final muted = isDark ? AppColors.textDarkMuted : AppColors.textMuted;
+    final counts = <String>[
+      if (_type == SearchResultType.all || _type == SearchResultType.people)
+        '$peopleCount people',
+      if (_type == SearchResultType.all || _type == SearchResultType.projects)
+        '$projectCount projects',
+      if (_type == SearchResultType.all || _type == SearchResultType.servers)
+        '$serverCount servers',
+    ];
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -473,7 +551,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           ),
         ),
         Text(
-          '$peopleCount people · $serverCount servers',
+          counts.join(' · '),
           style: GoogleFonts.inter(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -515,7 +593,14 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final secondary = isDark
         ? AppColors.textDarkSecondary
         : AppColors.textSecondary;
-    final typeColor = r.isServer ? const Color(0xFF6366F1) : AppColors.primary;
+    final Color typeColor;
+    if (r.isProject) {
+      typeColor = const Color(0xFF3B82F6);
+    } else if (r.isServer) {
+      typeColor = const Color(0xFF6366F1);
+    } else {
+      typeColor = AppColors.primary;
+    }
 
     final server = r.server;
     final joining =
@@ -530,6 +615,10 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           final person = r.person;
           if (person != null) {
             EmeProfileCard(profile: person).showDetails(context);
+          } else if (r.isProject) {
+            Navigator.of(context).push(
+              ProjectScreen.route(server: server!, collection: r.collection),
+            );
           } else {
             ServerCard(server: server!).joinAndOpen(context, ref);
           }
@@ -561,7 +650,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                r.isServer ? 'Server' : 'Person',
+                r.isProject ? 'Project' : (r.isServer ? 'Server' : 'Person'),
                 style: GoogleFonts.inter(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w700,
@@ -569,7 +658,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 ),
               ),
             ),
-            if (server != null) ...[
+            if (server != null && !r.isProject) ...[
               const SizedBox(height: 4),
               Text(
                 joining
@@ -592,7 +681,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final fallback = CircleAvatar(
       radius: 22,
       backgroundColor: r.color.withValues(alpha: isDark ? 0.25 : 0.12),
-      child: r.isServer
+      child: (r.isServer || r.isProject)
           ? Text(
               r.initials,
               style: GoogleFonts.plusJakartaSans(
@@ -692,29 +781,73 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   }
 }
 
-/// A row in the combined results: either a person or a server.
+/// A row in the combined results: either a person, a project, or a server.
 class _SearchResult {
   final EmeProfileModel? person;
   final ServerModel? server;
+  final LibraryCollectionModel? collection;
+  final bool isProject;
 
-  const _SearchResult.person(EmeProfileModel this.person) : server = null;
-  const _SearchResult.server(ServerModel this.server) : person = null;
+  const _SearchResult.person(EmeProfileModel this.person)
+    : server = null,
+      collection = null,
+      isProject = false;
 
-  bool get isServer => server != null;
+  const _SearchResult.server(ServerModel this.server)
+    : person = null,
+      collection = null,
+      isProject = false;
 
-  String get name => person?.name ?? server!.name;
+  const _SearchResult.project(ServerModel this.server)
+    : person = null,
+      collection = null,
+      isProject = true;
 
-  String get category => person?.category.label ?? server!.category.name;
+  bool get isServer => server != null && !isProject;
+
+  String get name {
+    if (isProject && collection != null && collection!.name.isNotEmpty) {
+      return collection!.name;
+    }
+    return person?.name ?? server!.name;
+  }
+
+  String get category {
+    if (isProject) {
+      return collection?.collectionType ?? server?.category.name ?? 'Project';
+    }
+    return person?.category.label ?? server!.category.name;
+  }
 
   String get detail {
     final p = person;
     if (p != null) return p.specialistTitle ?? p.location ?? '';
+    if (isProject && collection != null) return collection!.displayDescription;
     return server!.subtitle ?? server!.description;
   }
 
-  String? get avatarUrl => isServer ? server!.avatarUrl : person!.avatarUrl;
+  String? get avatarUrl {
+    if (isProject) {
+      return collection?.primaryImageUrl ?? server?.avatarUrl;
+    }
+    return isServer ? server!.avatarUrl : person!.avatarUrl;
+  }
 
-  Color get color => person?.primaryColor ?? server!.primaryColor;
+  Color get color {
+    if (isProject) return const Color(0xFF3B82F6);
+    return person?.primaryColor ?? server!.primaryColor;
+  }
 
-  String get initials => server?.displayInitials ?? '';
+  String get initials {
+    if (isProject && collection != null && collection!.name.isNotEmpty) {
+      final words = collection!.name.trim().split(RegExp(r'\s+'));
+      if (words.length >= 2 && words[0].isNotEmpty && words[1].isNotEmpty) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+      }
+      return collection!.name
+          .substring(0, collection!.name.length.clamp(1, 2))
+          .toUpperCase();
+    }
+    return server?.displayInitials ?? 'PR';
+  }
 }

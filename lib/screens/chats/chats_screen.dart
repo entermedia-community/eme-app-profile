@@ -6,13 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/search/unified_search_screen.dart';
+import '../project/project_screen.dart';
 import '../server/server_chat_screen.dart';
 import 'chat_detail_screen.dart';
 import 'mcp_chat_detail_screen.dart';
 import 'widgets/add_mcp_server_sheet.dart';
 import 'widgets/mcp_server_info_sheet.dart';
 
-enum ChatFilter { all, users, servers, mcp }
+enum ChatFilter { all, users, projects, servers, mcp }
 
 class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
@@ -40,6 +41,20 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
         ),
         child: Center(
           child: Icon(Icons.hub_rounded, color: item.avatarColor, size: 24),
+        ),
+      );
+    }
+
+    if (item.isProject) {
+      return CircleAvatar(
+        radius: 26,
+        backgroundColor: item.avatarColor.withValues(alpha: 0.15),
+        child: Text(
+          item.avatarInitials,
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: item.avatarColor,
+          ),
         ),
       );
     }
@@ -198,34 +213,43 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  child: Row(
-                    children: [
-                      const Icon(Icons.filter_list, color: Colors.grey),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                        label: 'All',
-                        filter: ChatFilter.all,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                        label: 'People',
-                        filter: ChatFilter.users,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                        label: 'Servers',
-                        filter: ChatFilter.servers,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                        label: 'MCP',
-                        filter: ChatFilter.mcp,
-                        isDark: isDark,
-                      ),
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.filter_list, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          label: 'All',
+                          filter: ChatFilter.all,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          label: 'People',
+                          filter: ChatFilter.users,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          label: 'Projects',
+                          filter: ChatFilter.projects,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          label: 'Servers',
+                          filter: ChatFilter.servers,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildFilterChip(
+                          label: 'MCP',
+                          filter: ChatFilter.mcp,
+                          isDark: isDark,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -327,9 +351,51 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                 ),
               ),
               data: (allItems) {
+                // Ensure the mock project is present for development testing
+                const mockDemoProjectItem = UnifiedChatItem.fromProject(
+                  server: ServerModel(
+                    id: 'mock_proj_eco_app',
+                    name: 'Eco Collective Mobile App',
+                    subtitle: 'FLUTTER & BACKEND DEVELOPMENT',
+                    description:
+                        'Collaborative development of the EME Collective Intelligence platform.',
+                    category: ServerCategoryModel(
+                      id: 'project',
+                      name: 'Project',
+                    ),
+                    primaryColor: Color(0xFF3B82F6),
+                    secondaryColor: Color(0xFFEFF6FF),
+                    memberCount: 8,
+                    isJoined: true,
+                    servicesOffered: [
+                      'Mobile App',
+                      'Dart',
+                      'Flutter',
+                      'Collective Intelligence',
+                    ],
+                    lastNotification:
+                        'Sprint planning and milestone updates available.',
+                    lastNotificationTime: '10:45 AM',
+                    serverFunction: 'project',
+                  ),
+                );
+
+                final effectiveItems = [
+                  if (!allItems.any((it) => it.isProject)) mockDemoProjectItem,
+                  ...allItems,
+                ];
+
                 // 1. Filter by category
-                var filtered = allItems.where((item) {
-                  if (_activeFilter == ChatFilter.users) return item.isUser;
+                var filtered = effectiveItems.where((item) {
+                  if (_activeFilter == ChatFilter.users) {
+                    return item.isUser;
+                  }
+                  if (_activeFilter == ChatFilter.projects) {
+                    return item.isProject;
+                  }
+                  if (_activeFilter == ChatFilter.servers) {
+                    return item.isServer || item.isMcp;
+                  }
                   if (_activeFilter == ChatFilter.mcp) {
                     return item.isMcp || item.isServer;
                   }
@@ -360,11 +426,17 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                _activeFilter == ChatFilter.mcp
-                                    ? Icons.hub_outlined
-                                    : (_searchQuery.isEmpty
-                                          ? Icons.chat_bubble_outline_rounded
-                                          : Icons.search_off_rounded),
+                                _activeFilter == ChatFilter.projects
+                                    ? Icons.folder_special_outlined
+                                    : (_activeFilter == ChatFilter.servers
+                                          ? Icons.dns_outlined
+                                          : (_activeFilter == ChatFilter.mcp
+                                                ? Icons.hub_outlined
+                                                : (_searchQuery.isEmpty
+                                                      ? Icons
+                                                            .chat_bubble_outline_rounded
+                                                      : Icons
+                                                            .search_off_rounded))),
                                 size: 48,
                                 color: isDark
                                     ? AppColors.textDarkMuted
@@ -372,11 +444,15 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                _activeFilter == ChatFilter.mcp
-                                    ? 'No servers yet'
-                                    : (_searchQuery.isEmpty
-                                          ? 'No conversations yet'
-                                          : 'No matching chats found'),
+                                _activeFilter == ChatFilter.projects
+                                    ? 'No projects yet'
+                                    : (_activeFilter == ChatFilter.servers
+                                          ? 'No servers yet'
+                                          : (_activeFilter == ChatFilter.mcp
+                                                ? 'No MCP connections yet'
+                                                : (_searchQuery.isEmpty
+                                                      ? 'No conversations yet'
+                                                      : 'No matching chats found'))),
                                 style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
@@ -384,11 +460,15 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                _activeFilter == ChatFilter.mcp
-                                    ? 'Find EME Servers in Search, or add a remote MCP server to run tools and prompts.'
-                                    : (_searchQuery.isEmpty
-                                          ? 'Start a chat from Search or add a remote MCP Server.'
-                                          : 'Try searching with a different name or message.'),
+                                _activeFilter == ChatFilter.projects
+                                    ? 'Find or join projects in EME Search.'
+                                    : (_activeFilter == ChatFilter.servers
+                                          ? 'Find and join EME Servers in Search.'
+                                          : (_activeFilter == ChatFilter.mcp
+                                                ? 'Add a remote MCP server to run tools and prompts.'
+                                                : (_searchQuery.isEmpty
+                                                      ? 'Start a chat from Search or add a remote MCP Server.'
+                                                      : 'Try searching with a different name or message.'))),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
@@ -500,6 +580,29 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ),
                                   ),
                                 ),
+                                if (item.isProject) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFF3B82F6,
+                                      ).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'PROJECT',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: const Color(0xFF3B82F6),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 if (item.isMcp) ...[
                                   const SizedBox(width: 6),
                                   Container(
@@ -613,6 +716,21 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                         ),
                       ),
                       onTap: () async {
+                        if (item.isProject) {
+                          if (item.projectCollection != null) {
+                            Navigator.of(context).push(
+                              ProjectScreen.route(
+                                server: item.emeServer!,
+                                collection: item.projectCollection,
+                              ),
+                            );
+                          } else {
+                            Navigator.of(context).push(
+                              ProjectScreen.route(server: item.emeServer!),
+                            );
+                          }
+                          return;
+                        }
                         if (item.isServer) {
                           Navigator.of(
                             context,
