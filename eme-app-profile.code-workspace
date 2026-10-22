@@ -9,7 +9,7 @@
 			"path": "../eme-app-sdk",
 		},
 		{
-			"path": "../eme-server-world",
+			"path": "../eme-server",
 		},
 	],
 	"settings": {},
