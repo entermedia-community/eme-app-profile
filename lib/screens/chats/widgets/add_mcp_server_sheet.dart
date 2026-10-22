@@ -68,24 +68,6 @@ class _AddMcpServerSheetState extends ConsumerState<AddMcpServerSheet> {
     super.dispose();
   }
 
-  void _applyPreset(
-    String name,
-    String url,
-    McpTransportType transport,
-    String desc,
-    int color,
-  ) {
-    setState(() {
-      _nameController.text = name;
-      _urlController.text = url;
-      _transportType = transport;
-      _descController.text = desc;
-      _selectedColor = color;
-      _testStatusMessage = null;
-      _testSuccess = null;
-    });
-  }
-
   Future<void> _testConnection() async {
     final url = _urlController.text.trim();
     if (url.isEmpty) return;
@@ -279,64 +261,6 @@ class _AddMcpServerSheetState extends ConsumerState<AddMcpServerSheet> {
                 child: ListView(
                   padding: const EdgeInsets.all(20),
                   children: [
-                    // Quick Presets
-                    Text(
-                      'QUICK PRESETS',
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? AppColors.textDarkMuted
-                            : AppColors.textMuted,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildPresetChip(
-                          label: 'EnterMedia DAM',
-                          icon: Icons.perm_media_outlined,
-                          color: 0xFF0284C7,
-                          onTap: () => _applyPreset(
-                            'EnterMedia EME World MCP',
-                            'https://eme-world-mcp.entermediadb.net/sse',
-                            McpTransportType.sse,
-                            'Access media catalog, assets, and user workflows.',
-                            0xFF0284C7,
-                          ),
-                        ),
-                        _buildPresetChip(
-                          label: 'AI Web & Code Tools',
-                          icon: Icons.smart_toy_outlined,
-                          color: 0xFF8B5CF6,
-                          onTap: () => _applyPreset(
-                            'AI Tools & Web Scraper',
-                            'https://mcp-agent.cloud/v1/sse',
-                            McpTransportType.sse,
-                            'Live weather, calculations, and web browsing.',
-                            0xFF8B5CF6,
-                          ),
-                        ),
-                        _buildPresetChip(
-                          label: 'Localhost SSE',
-                          icon: Icons.laptop_chromebook_rounded,
-                          color: 0xFF10B981,
-                          onTap: () => _applyPreset(
-                            'Local MCP Server',
-                            'http://localhost:8000/sse',
-                            McpTransportType.sse,
-                            'Local development MCP server running on port 8000',
-                            0xFF10B981,
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 20),
-
                     // Server Name
                     Text(
                       'Server Name *',
@@ -620,41 +544,6 @@ class _AddMcpServerSheetState extends ConsumerState<AddMcpServerSheet> {
                     ),
                   ],
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPresetChip({
-    required String label,
-    required IconData icon,
-    required int color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Color(color).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Color(color).withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: Color(color)),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w600,
-                color: Color(color),
               ),
             ),
           ],

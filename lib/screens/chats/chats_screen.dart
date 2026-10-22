@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,7 +11,43 @@ import 'mcp_chat_detail_screen.dart';
 import 'widgets/add_mcp_server_sheet.dart';
 import 'widgets/mcp_server_info_sheet.dart';
 
-enum ChatFilter { all, users, projects, servers, mcp }
+enum ChatFilter {
+  all,
+  users,
+  projects,
+  servers,
+  mcp;
+
+  String get label {
+    switch (this) {
+      case ChatFilter.all:
+        return 'All';
+      case ChatFilter.users:
+        return 'People';
+      case ChatFilter.projects:
+        return 'Projects';
+      case ChatFilter.servers:
+        return 'Servers';
+      case ChatFilter.mcp:
+        return 'MCP';
+    }
+  }
+
+  /// The Search result type matching this filter.
+  SearchResultType get searchType {
+    switch (this) {
+      case ChatFilter.users:
+        return SearchResultType.people;
+      case ChatFilter.projects:
+        return SearchResultType.projects;
+      case ChatFilter.servers:
+        return SearchResultType.servers;
+      case ChatFilter.all:
+      case ChatFilter.mcp:
+        return SearchResultType.all;
+    }
+  }
+}
 
 class ChatsScreen extends ConsumerStatefulWidget {
   const ChatsScreen({super.key});
@@ -259,7 +294,10 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                 Semantics(
                   identifier: 'chats_open_search',
                   child: ElevatedButton.icon(
-                    onPressed: () => UnifiedSearchScreen.show(context),
+                    onPressed: () => UnifiedSearchScreen.show(
+                      context,
+                      initialType: _activeFilter.searchType,
+                    ),
                     icon: const Icon(Icons.search_rounded, size: 18),
                     label: const Text('EME Search'),
                     style: ElevatedButton.styleFrom(
@@ -363,10 +401,10 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                     return item.isProject;
                   }
                   if (_activeFilter == ChatFilter.servers) {
-                    return item.isServer || item.isMcp;
+                    return item.isServer;
                   }
                   if (_activeFilter == ChatFilter.mcp) {
-                    return item.isMcp || item.isServer;
+                    return item.isMcp;
                   }
                   return true;
                 }).toList();
@@ -431,13 +469,15 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               Text(
                                 _activeFilter == ChatFilter.projects
                                     ? 'Find or join projects in EME Search.'
-                                    : (_activeFilter == ChatFilter.servers
-                                          ? 'Find and join EME Servers in Search.'
-                                          : (_activeFilter == ChatFilter.mcp
-                                                ? 'Add a remote MCP server to run tools and prompts.'
-                                                : (_searchQuery.isEmpty
-                                                      ? 'Start a chat from Search or add a remote MCP Server.'
-                                                      : 'Try searching with a different name or message.'))),
+                                    : _activeFilter == ChatFilter.servers
+                                    ? 'Find and join EME Servers in Search.'
+                                    : _activeFilter == ChatFilter.users
+                                    ? 'Start a chat with someone in EME Search.'
+                                    : _activeFilter == ChatFilter.mcp
+                                    ? 'Add a remote MCP server to run tools and prompts.'
+                                    : _searchQuery.isEmpty
+                                    ? 'Start a chat from Search or add a remote MCP Server.'
+                                    : 'Try searching with a different name or message.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
@@ -447,23 +487,49 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              if (_activeFilter == ChatFilter.mcp ||
-                                  _searchQuery.isEmpty) ...[
-                                ElevatedButton.icon(
-                                  onPressed: () =>
-                                      AddMcpServerSheet.show(context),
-                                  icon: const Icon(Icons.add_rounded, size: 18),
-                                  label: const Text('Add Remote MCP Server'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF6366F1),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
+                              if (_searchQuery.isEmpty)
+                                if (_activeFilter == ChatFilter.mcp)
+                                  ElevatedButton.icon(
+                                    onPressed: () =>
+                                        AddMcpServerSheet.show(context),
+                                    icon: const Icon(
+                                      Icons.add_rounded,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Add Remote MCP Server'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF6366F1),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  ElevatedButton.icon(
+                                    onPressed: () => UnifiedSearchScreen.show(
+                                      context,
+                                      initialType: _activeFilter.searchType,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.search_rounded,
+                                      size: 18,
+                                    ),
+                                    label: Text(
+                                      _activeFilter == ChatFilter.all
+                                          ? 'Search EME'
+                                          : 'Search for ${_activeFilter.label}',
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF6366F1),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
                             ],
                           ),
                         ),

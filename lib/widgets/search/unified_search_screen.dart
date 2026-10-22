@@ -8,6 +8,7 @@ import '../eme_world/eme_profile_card.dart';
 import '../../screens/profile/widgets/add_server_sheet.dart';
 import '../../screens/profile/widgets/server_card.dart';
 import '../../screens/project/project_screen.dart';
+import 'preview_cards.dart';
 
 enum SearchResultType { all, people, projects, servers }
 
@@ -20,14 +21,23 @@ enum SearchResultType { all, people, projects, servers }
 /// pills are the backend server categories plus the EME profile categories,
 /// de-duplicated by name; both kinds of result are matched by category name.
 class UnifiedSearchScreen extends ConsumerStatefulWidget {
-  const UnifiedSearchScreen({super.key});
+  const UnifiedSearchScreen({
+    super.key,
+    this.initialType = SearchResultType.all,
+  });
+
+  /// The result type selected when the screen opens.
+  final SearchResultType initialType;
 
   /// Opens Search as a full-screen modal.
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(
+    BuildContext context, {
+    SearchResultType initialType = SearchResultType.all,
+  }) {
     return Navigator.of(context).push(
       MaterialPageRoute<void>(
         fullscreenDialog: true,
-        builder: (_) => const UnifiedSearchScreen(),
+        builder: (_) => UnifiedSearchScreen(initialType: initialType),
       ),
     );
   }
@@ -39,7 +49,7 @@ class UnifiedSearchScreen extends ConsumerStatefulWidget {
 
 class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  SearchResultType _type = SearchResultType.all;
+  late SearchResultType _type = widget.initialType;
   String _category = _allCategory;
 
   static const _allCategory = 'All';
@@ -600,11 +610,21 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           if (person != null) {
             EmeProfileCard(profile: person).showDetails(context);
           } else if (r.isProject) {
-            Navigator.of(
+            final project = r.collection!;
+            ProjectPreviewCard.show(
               context,
-            ).push(ProjectScreen.routeForCollection(r.collection!));
+              project: project,
+              onOpen: () => Navigator.of(
+                context,
+              ).push(ProjectScreen.routeForCollection(project)),
+            );
           } else {
-            ServerCard(server: server!).joinAndOpen(context, ref);
+            ServerPreviewCard.show(
+              context,
+              server: server!,
+              onJoin: () =>
+                  ServerCard(server: server).joinAndOpen(context, ref),
+            );
           }
         },
         leading: _buildResultAvatar(r, isDark),
@@ -647,7 +667,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               Text(
                 joining
                     ? 'Joining...'
-                    : (server.isJoined ? 'Joined' : 'Tap to join'),
+                    : (server.isJoined ? 'Joined' : 'Tap to preview'),
                 style: GoogleFonts.inter(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
