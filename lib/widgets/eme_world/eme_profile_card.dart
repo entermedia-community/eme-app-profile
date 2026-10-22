@@ -130,64 +130,64 @@ class EmeProfileCard extends ConsumerWidget {
                     const SizedBox(height: 10),
 
                     // Rating & Pricing Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (profile.rating != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFF59E0B,
-                              ).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  size: 13,
-                                  color: Color(0xFFD97706),
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${profile.rating} (${profile.reviewsCount ?? 0})',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark
-                                        ? const Color(0xFFFBBF24)
-                                        : const Color(0xFFB45309),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //   children: [
+                    //     if (profile.rating != null)
+                    //       Container(
+                    //         padding: const EdgeInsets.symmetric(
+                    //           horizontal: 6,
+                    //           vertical: 2,
+                    //         ),
+                    //         decoration: BoxDecoration(
+                    //           color: const Color(
+                    //             0xFFF59E0B,
+                    //           ).withValues(alpha: 0.15),
+                    //           borderRadius: BorderRadius.circular(6),
+                    //         ),
+                    //         child: Row(
+                    //           mainAxisSize: MainAxisSize.min,
+                    //           children: [
+                    //             const Icon(
+                    //               Icons.star_rounded,
+                    //               size: 13,
+                    //               color: Color(0xFFD97706),
+                    //             ),
+                    //             const SizedBox(width: 3),
+                    //             Text(
+                    //               '${profile.rating} (${profile.reviewsCount ?? 0})',
+                    //               style: GoogleFonts.inter(
+                    //                 fontSize: 10.5,
+                    //                 fontWeight: FontWeight.w700,
+                    //                 color: isDark
+                    //                     ? const Color(0xFFFBBF24)
+                    //                     : const Color(0xFFB45309),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
 
-                        if (profile.servicePricing != null)
-                          Flexible(
-                            child: Text(
-                              profile.servicePricing!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
-                              style: GoogleFonts.inter(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w700,
-                                color: isDark
-                                    ? AppColors.textDarkSecondary
-                                    : const Color(0xFF475569),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                    //     if (profile.servicePricing != null)
+                    //       Flexible(
+                    //         child: Text(
+                    //           profile.servicePricing!,
+                    //           maxLines: 1,
+                    //           overflow: TextOverflow.ellipsis,
+                    //           textAlign: TextAlign.end,
+                    //           style: GoogleFonts.inter(
+                    //             fontSize: 10.5,
+                    //             fontWeight: FontWeight.w700,
+                    //             color: isDark
+                    //                 ? AppColors.textDarkSecondary
+                    //                 : const Color(0xFF475569),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //   ],
+                    // ),
 
-                    const SizedBox(height: 8),
+                    // const SizedBox(height: 8),
 
                     // Bio Description
                     Text(
@@ -412,97 +412,92 @@ class EmeProfileCard extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                if (profile.location != null || profile.rating != null) ...[
-                  Row(
-                    children: [
-                      if (profile.rating != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFF59E0B,
-                            ).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 15,
-                                color: Color(0xFFD97706),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${profile.rating} (${profile.reviewsCount} reviews)',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (profile.location != null) ...[
-                        const SizedBox(width: 10),
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on_outlined, size: 14),
-                            const SizedBox(width: 3),
-                            Text(
-                              profile.location!,
-                              style: GoogleFonts.inter(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
+                if (profile.description.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    profile.description,
+                    style: GoogleFonts.inter(fontSize: 14, height: 1.5),
                   ),
-                  const SizedBox(height: 14),
                 ],
-                Text(
-                  profile.description,
-                  style: GoogleFonts.inter(fontSize: 14, height: 1.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Services Offered:',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                if (profile.servicesOffered.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Services Offered:',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: profile.servicesOffered.map((srv) {
-                    return PillBadge(
-                      label: srv,
-                      backgroundColor: profile.primaryColor.withValues(
-                        alpha: isDark ? 0.2 : 0.1,
-                      ),
-                      textColor: isDark
-                          ? profile.secondaryColor
-                          : profile.primaryColor,
-                      fontSize: 11.5,
-                    );
-                  }).toList(),
-                ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: profile.servicesOffered.map((srv) {
+                      return PillBadge(
+                        label: srv,
+                        backgroundColor: profile.primaryColor.withValues(
+                          alpha: isDark ? 0.2 : 0.1,
+                        ),
+                        textColor: isDark
+                            ? profile.secondaryColor
+                            : profile.primaryColor,
+                        fontSize: 11.5,
+                      );
+                    }).toList(),
+                  ),
+                ],
                 const SizedBox(height: 20),
-                _GreetingComposer(
-                  profile: profile,
-                  onSend: (text) {
-                    Navigator.pop(ctx);
-                    _handleConnect(context, message: text);
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => _handleConnect(context),
+                      icon: const Icon(Icons.send_rounded, size: 16),
+                      label: Text(
+                        'Send a Message',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.greenAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _shareProfile(context),
+                      icon: const Icon(Icons.share_rounded, size: 16),
+                      label: Text(
+                        'Share',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.blueButtonBg,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                // _GreetingComposer(
+                //   profile: profile,
+                //   onSend: (text) {
+                //     Navigator.pop(ctx);
+                //     _handleConnect(context, message: text);
+                //   },
+                // ),
               ],
             ),
           ),
@@ -654,6 +649,8 @@ class EmeProfileCard extends ConsumerWidget {
       ),
     );
   }
+
+  void _shareProfile(BuildContext context) {}
 }
 
 /// Text area pre-filled with a greeting based on what the signed-in user and
