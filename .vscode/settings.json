@@ -9,5 +9,6 @@
 		"**/html": true,
 		"**/web": true,
 		"**/android": true
-	}
+	},
+	"git.repositoryScanMaxDepth": 3
 }

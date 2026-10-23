@@ -23,6 +23,9 @@ class AuthenticatedMockAuthService implements IAuthService {
   Future<String?> getAuthToken() async => token;
 
   @override
+  Future<bool> refreshToken() async => false;
+
+  @override
   Future<bool> isAuthenticated() async => true;
 
   @override
