@@ -112,8 +112,8 @@ class _SelfChatComposerState extends ConsumerState<SelfChatComposer> {
     final headingName = (user?.firstname?.trim().isNotEmpty ?? false)
         ? user!.firstname!.trim()
         : (profile.name.trim().isNotEmpty
-            ? profile.name.trim().split(' ').first
-            : 'EME');
+              ? profile.name.trim().split(' ').first
+              : 'EME');
     final heading = isAuthenticated
         ? 'Chat with your EME'
         : 'Message EME $headingName';

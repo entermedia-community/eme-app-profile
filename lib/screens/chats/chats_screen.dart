@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -56,9 +57,12 @@ class ChatsScreen extends ConsumerStatefulWidget {
   ConsumerState<ChatsScreen> createState() => _ChatsScreenState();
 }
 
+/// Active chat-list filter, shared so the app bar search opens pre-filtered.
+final chatFilterProvider = StateProvider<ChatFilter>((ref) => ChatFilter.all);
+
 class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   String _searchQuery = '';
-  ChatFilter _activeFilter = ChatFilter.all;
+  ChatFilter get _activeFilter => ref.watch(chatFilterProvider);
 
   Widget _buildAvatarFallback(UnifiedChatItem item) {
     if (item.isMcp) {
@@ -244,82 +248,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
       children: [
         // Top Search Bar & open Search (people + servers)
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          // IntrinsicHeight + stretch: the button takes the input's height.
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Icon(Icons.filter_list, color: Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _buildFilterChip(
-                          label: 'All',
-                          filter: ChatFilter.all,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          label: 'People',
-                          filter: ChatFilter.users,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          label: 'Projects',
-                          filter: ChatFilter.projects,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          label: 'Servers',
-                          filter: ChatFilter.servers,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(width: 8),
-                        _buildFilterChip(
-                          label: 'MCP',
-                          filter: ChatFilter.mcp,
-                          isDark: isDark,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Semantics(
-                  identifier: 'chats_open_search',
-                  child: ElevatedButton.icon(
-                    onPressed: () => UnifiedSearchScreen.show(
-                      context,
-                      initialType: _activeFilter.searchType,
-                    ),
-                    icon: const Icon(Icons.search_rounded, size: 18),
-                    label: const Text('EME Search'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Filter Tabs Row
-        Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Semantics(
             identifier: 'chats_search_input',
@@ -335,6 +263,68 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                   vertical: 10,
                 ),
               ),
+            ),
+          ),
+        ),
+        // Filter Tabs Row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          // IntrinsicHeight + stretch: the button takes the input's height.
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Icon(Icons.filter_list, color: Colors.grey),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(context).copyWith(
+                      dragDevices: {
+                        PointerDeviceKind.touch,
+                        PointerDeviceKind.mouse,
+                        PointerDeviceKind.trackpad,
+                        PointerDeviceKind.stylus,
+                      },
+                    ),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip(
+                            label: 'All',
+                            filter: ChatFilter.all,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildFilterChip(
+                            label: 'People',
+                            filter: ChatFilter.users,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildFilterChip(
+                            label: 'Projects',
+                            filter: ChatFilter.projects,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildFilterChip(
+                            label: 'Servers',
+                            filter: ChatFilter.servers,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildFilterChip(
+                            label: 'MCP',
+                            filter: ChatFilter.mcp,
+                            isDark: isDark,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -821,7 +811,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => setState(() => _activeFilter = filter),
+          onTap: () => ref.read(chatFilterProvider.notifier).state = filter,
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),

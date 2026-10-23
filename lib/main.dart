@@ -72,6 +72,9 @@ Future<void> main() async {
   runApp(const ProviderScope(child: EmeWorldApp()));
 }
 
+/// Keeps the UI from stretching on wide viewports (e.g. Chrome).
+const double _maxAppWidth = 600;
+
 class EmeWorldApp extends ConsumerWidget {
   const EmeWorldApp({super.key});
 
@@ -101,6 +104,20 @@ class EmeWorldApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      builder: (context, child) => ColoredBox(
+        color: Color(
+          ref.watch(themeModeProvider) == ThemeMode.dark
+              ? 0xff1c1c1c
+              : 0xffefefef,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: _maxAppWidth),
+            // Clip so route transitions don't slide outside the max width.
+            child: ClipRect(child: child),
+          ),
+        ),
+      ),
       home: const AuthGate(),
     );
   }

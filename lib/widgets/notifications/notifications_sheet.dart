@@ -21,9 +21,10 @@ class NotificationsSheet extends ConsumerStatefulWidget {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
           const curve = Curves.easeOutCubic;
-          final tween = Tween(begin: begin, end: end).chain(
-            CurveTween(curve: curve),
-          );
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           return SlideTransition(
             position: animation.drive(tween),
             child: child,
@@ -89,288 +90,280 @@ class _NotificationsSheetState extends ConsumerState<NotificationsSheet> {
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
+        children: [
+          // Deep Link User Chat Section
+          Text(
+            'YOUR CHAT DEEP LINK',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF282A3A) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Deep Link User Chat Section
-                Text(
-                  'YOUR CHAT DEEP LINK',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: isDark ? Colors.white54 : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF282A3A)
-                        : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isDark ? Colors.white12 : Colors.black12,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.link_rounded,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              chatLink,
-                              style: GoogleFonts.firaCode(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.copy_rounded, size: 18),
-                            tooltip: 'Copy Chat Link',
-                            onPressed: () {
-                              Clipboard.setData(ClipboardData(text: chatLink));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Chat link copied to clipboard!',
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Test Deep Link Input
                 Row(
                   children: [
+                    const Icon(
+                      Icons.link_rounded,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
-                      child: TextField(
-                        controller: _testUsernameController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter username to test chat...',
-                          prefixIcon: const Icon(
-                            Icons.alternate_email_rounded,
-                            size: 18,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
-                          isDense: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                      child: Text(
+                        chatLink,
+                        style: GoogleFonts.firaCode(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : AppColors.textPrimary,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      tooltip: 'Copy Chat Link',
                       onPressed: () {
-                        final target = _testUsernameController.text.trim();
-                        if (target.isNotEmpty) {
-                          Navigator.of(context).pop();
-                          DeepLinkHandler.instance.handleDeepLink(
-                            DeepLinkPayload(
-                              rawUri: Uri.parse('emeworld://chat/$target'),
-                              type: DeepLinkType.chat,
-                              username: target,
-                            ),
-                          );
-                        }
+                        Clipboard.setData(ClipboardData(text: chatLink));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Chat link copied to clipboard!'),
+                            behavior: SnackBarBehavior.floating,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text('Open Chat'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
 
-                // Push Service Status Card
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDark
-                          ? [const Color(0xFF2A2B3D), const Color(0xFF1F202F)]
-                          : [const Color(0xFFF0FDF4), const Color(0xFFDCFCE7)],
+          // Test Deep Link Input
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _testUsernameController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter username to test chat...',
+                    prefixIcon: const Icon(
+                      Icons.alternate_email_rounded,
+                      size: 18,
                     ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Row(
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () {
+                  final target = _testUsernameController.text.trim();
+                  if (target.isNotEmpty) {
+                    Navigator.of(context).pop();
+                    DeepLinkHandler.instance.handleDeepLink(
+                      DeepLinkPayload(
+                        rawUri: Uri.parse('emeworld://chat/$target'),
+                        type: DeepLinkType.chat,
+                        username: target,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text('Open Chat'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Push Service Status Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF2A2B3D), const Color(0xFF1F202F)]
+                    : [const Color(0xFFF0FDF4), const Color(0xFFDCFCE7)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF22C55E),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF22C55E),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Colors.white,
-                          size: 16,
+                      Text(
+                        'Push & Link Service Active',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF15803D),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Push & Link Service Active',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF15803D),
-                              ),
-                            ),
-                            Text(
-                              'Deep links & FCM notifications will automatically route to chats.',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 12,
-                                color: isDark
-                                    ? Colors.white70
-                                    : const Color(0xFF166534),
-                              ),
-                            ),
-                          ],
+                      Text(
+                        'Deep links & FCM notifications will automatically route to chats.',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF166534),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // FCM Token Card
-                Text(
-                  'DEVICE REGISTRATION TOKEN',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: isDark ? Colors.white54 : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                tokenAsync.when(
-                  data: (token) => _buildTokenBox(token, isDark),
-                  loading: () => const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                  error: (err, _) => _buildTokenBox(null, isDark),
-                ),
-                const SizedBox(height: 20),
-
-                // Test Notification Action
-                Text(
-                  'ACTIONS & TESTING',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: isDark ? Colors.white54 : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: _isTesting ? null : _sendTestNotification,
-                  icon: const Icon(Icons.send_rounded, size: 18),
-                  label: Text(
-                    _isTesting ? 'Sending...' : 'Trigger Test Notification',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Topics Section
-                Text(
-                  'TOPIC SUBSCRIPTIONS',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
-                    color: isDark ? Colors.white54 : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildTopicTile(
-                  title: 'General Updates',
-                  subtitle: 'Topic: all',
-                  value: _subscribedGeneral,
-                  onChanged: (val) async {
-                    setState(() => _subscribedGeneral = val);
-                    final service = ref.read(pushNotificationServiceProvider);
-                    if (val) {
-                      await service.subscribeToTopic('all');
-                    } else {
-                      await service.unsubscribeFromTopic('all');
-                    }
-                  },
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 8),
-                _buildTopicTile(
-                  title: 'System Announcements',
-                  subtitle: 'Topic: announcements',
-                  value: _subscribedAnnouncements,
-                  onChanged: (val) async {
-                    setState(() => _subscribedAnnouncements = val);
-                    final service = ref.read(pushNotificationServiceProvider);
-                    if (val) {
-                      await service.subscribeToTopic('announcements');
-                    } else {
-                      await service.unsubscribeFromTopic('announcements');
-                    }
-                  },
-                  isDark: isDark,
-                ),
               ],
             ),
+          ),
+          const SizedBox(height: 16),
+
+          // FCM Token Card
+          Text(
+            'DEVICE REGISTRATION TOKEN',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          tokenAsync.when(
+            data: (token) => _buildTokenBox(token, isDark),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+            error: (err, _) => _buildTokenBox(null, isDark),
+          ),
+          const SizedBox(height: 20),
+
+          // Test Notification Action
+          Text(
+            'ACTIONS & TESTING',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: _isTesting ? null : _sendTestNotification,
+            icon: const Icon(Icons.send_rounded, size: 18),
+            label: Text(
+              _isTesting ? 'Sending...' : 'Trigger Test Notification',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Topics Section
+          Text(
+            'TOPIC SUBSCRIPTIONS',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+              color: isDark ? Colors.white54 : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildTopicTile(
+            title: 'General Updates',
+            subtitle: 'Topic: all',
+            value: _subscribedGeneral,
+            onChanged: (val) async {
+              setState(() => _subscribedGeneral = val);
+              final service = ref.read(pushNotificationServiceProvider);
+              if (val) {
+                await service.subscribeToTopic('all');
+              } else {
+                await service.unsubscribeFromTopic('all');
+              }
+            },
+            isDark: isDark,
+          ),
+          const SizedBox(height: 8),
+          _buildTopicTile(
+            title: 'System Announcements',
+            subtitle: 'Topic: announcements',
+            value: _subscribedAnnouncements,
+            onChanged: (val) async {
+              setState(() => _subscribedAnnouncements = val);
+              final service = ref.read(pushNotificationServiceProvider);
+              if (val) {
+                await service.subscribeToTopic('announcements');
+              } else {
+                await service.unsubscribeFromTopic('announcements');
+              }
+            },
+            isDark: isDark,
+          ),
+        ],
+      ),
     );
   }
 

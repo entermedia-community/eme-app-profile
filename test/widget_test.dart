@@ -15,13 +15,9 @@ void main() {
     expect(find.text('Search conversations...'), findsOneWidget);
     expect(find.byIcon(Icons.menu_rounded), findsNothing);
 
-    // "EME Search" ends the filter chip row (9e079ff) and is as tall as the
-    // chips beside it
-    expect(find.text('EME Search'), findsOneWidget);
-    expect(
-      tester.getSize(find.bySemanticsIdentifier('chats_open_search')).height,
-      tester.getSize(find.bySemanticsIdentifier('chat_filter_all')).height,
-    );
+    // EME Search is an icon-only button in the app bar
+    expect(find.text('EME Search'), findsNothing);
+    expect(find.byTooltip('EME Search'), findsOneWidget);
 
     // Search button opens combined people + servers search, full screen
     await tester.tap(find.bySemanticsIdentifier('chats_open_search'));
@@ -119,6 +115,8 @@ void main() {
     // Open the EME profile page from the app bar profile button
     await tester.tap(find.bySemanticsIdentifier('app_bar_profile_button'));
     await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsIdentifier('app_bar_menu_profile'));
+    await tester.pumpAndSettle();
 
     // Verify Profile Header elements for authenticated user
     expect(find.textContaining('Christopher'), findsWidgets);
@@ -147,15 +145,23 @@ void main() {
     expect(find.text('Search conversations...'), findsOneWidget);
   });
 
-  testWidgets('Three-dot menu shows Settings, theme and Log out', (
+  testWidgets('Profile menu lists profile, notifications, settings, theme and Log out', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('More options'));
+    await tester.tap(find.bySemanticsIdentifier('app_bar_profile_button'));
     await tester.pumpAndSettle();
 
+    expect(
+      tester.getTopLeft(find.text('My profile')).dy,
+      lessThan(tester.getTopLeft(find.text('Notifications')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('Notifications')).dy,
+      lessThan(tester.getTopLeft(find.text('Settings')).dy),
+    );
     expect(find.text('Settings'), findsOneWidget);
     expect(find.bySemanticsIdentifier('overflow_theme_switch'), findsOneWidget);
     expect(find.text('Log out'), findsOneWidget);

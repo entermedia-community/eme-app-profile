@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import '../providers/navigation_provider.dart';
-import '../widgets/app_bar_overflow_menu.dart';
-import '../widgets/notifications/notifications_sheet.dart';
 import '../widgets/profile_app_bar_button.dart';
 import '../services/deep_link_handler.dart';
+import '../widgets/search/unified_search_screen.dart';
 import 'chats/chats_screen.dart';
 import 'profile/profile_screen.dart';
 
@@ -52,39 +51,20 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           height: 26,
         ),
         actions: [
-          // Notification Bell
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Semantics(
-                identifier: 'app_bar_notifications',
-                child: IconButton(
-                  icon: const Icon(Icons.notifications_outlined, size: 24),
-                  tooltip: 'Notifications',
-                  onPressed: () {
-                    NotificationsSheet.show(context);
-                  },
-                ),
+          Semantics(
+            identifier: 'chats_open_search',
+            child: IconButton(
+              icon: const Icon(Icons.search_rounded),
+              tooltip: 'EME Search',
+              onPressed: () => UnifiedSearchScreen.show(
+                context,
+                initialType: ref.read(chatFilterProvider).searchType,
               ),
-              Positioned(
-                top: 12,
-                right: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEF4444),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(width: 8),
           const ProfileAppBarButton(),
-          const SizedBox(width: 8),
-          const AppBarOverflowMenu(),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
         ],
       ),
       body: IndexedStack(

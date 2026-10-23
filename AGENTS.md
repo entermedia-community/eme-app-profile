@@ -27,3 +27,23 @@ Every button and input you add or touch (`*Button`, `IconButton`, `TextField`/`T
 - Identifiers are `snake_case`, stable, and never localized text.
 - Must be unique on screen: list items append a stable key (`'filter_chip_$idx'`, `'chat_list_item_${tmpl.id}'`).
 - Inside reusable widgets that appear more than once per screen, prefix with the widget's `id` param, and pass a unique `id:` at each call site.
+
+## Project rule: Drag support on horizontal scrollviews
+
+Every horizontally scrolling widget (`ListView`/`SingleChildScrollView`/`CustomScrollView` with `scrollDirection: Axis.horizontal`, `PageView`, carousels, chip rows) MUST support mouse/trackpad dragging, since Flutter web/desktop only drags with touch by default. Wrap it in a `ScrollConfiguration` that enables all drag devices:
+
+```dart
+ScrollConfiguration(
+  behavior: ScrollConfiguration.of(context).copyWith(
+    dragDevices: {
+      PointerDeviceKind.touch,
+      PointerDeviceKind.mouse,
+      PointerDeviceKind.trackpad,
+      PointerDeviceKind.stylus,
+    },
+  ),
+  child: /* horizontal scrollview */,
+)
+```
+
+See `lib/widgets/search/unified_search_screen.dart` for an example.

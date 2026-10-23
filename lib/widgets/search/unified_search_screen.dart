@@ -354,38 +354,48 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   Widget _buildTypeSelector(bool isDark) {
     return Semantics(
       identifier: 'search_type_selector',
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip(
-              label: 'All',
-              type: SearchResultType.all,
-              semanticId: 'search_type_all',
-              isDark: isDark,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              label: 'People',
-              type: SearchResultType.people,
-              semanticId: 'search_type_people',
-              isDark: isDark,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              label: 'Projects',
-              type: SearchResultType.projects,
-              semanticId: 'search_type_projects',
-              isDark: isDark,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              label: 'Servers',
-              type: SearchResultType.servers,
-              semanticId: 'search_type_servers',
-              isDark: isDark,
-            ),
-          ],
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          dragDevices: {
+            PointerDeviceKind.touch,
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.trackpad,
+            PointerDeviceKind.stylus,
+          },
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildFilterChip(
+                label: 'All',
+                type: SearchResultType.all,
+                semanticId: 'search_type_all',
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'People',
+                type: SearchResultType.people,
+                semanticId: 'search_type_people',
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'Projects',
+                type: SearchResultType.projects,
+                semanticId: 'search_type_projects',
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'Servers',
+                type: SearchResultType.servers,
+                semanticId: 'search_type_servers',
+                isDark: isDark,
+              ),
+            ],
+          ),
         ),
       ),
     );
