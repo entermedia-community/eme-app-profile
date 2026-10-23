@@ -12,7 +12,10 @@
 			"path": "../eme-server",
 		},
 	],
-	"settings": {},
+	"settings": {
+		"remoteControl.enable": true,
+		"remoteControl.port": 3709,
+	},
 	"extensions": {
 		"recommendations": [
 			"eliostruyf.vscode-remote-control",
