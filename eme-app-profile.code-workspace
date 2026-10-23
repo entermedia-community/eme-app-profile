@@ -12,5 +12,14 @@
 			"path": "../eme-server",
 		},
 	],
-	"settings": {},
+	"settings": {
+		"remoteControl.enable": true,
+		//Make this port be custom for each workspace file
+		"remoteControl.port": 3709,
+	},
+	"extensions": {
+		"recommendations": [
+			"eliostruyf.vscode-remote-control",
+		],
+	},
 }
