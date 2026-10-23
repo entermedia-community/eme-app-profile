@@ -250,13 +250,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const Icon(Icons.filter_list, color: Colors.grey),
+                const SizedBox(width: 8),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        const Icon(Icons.filter_list, color: Colors.grey),
-                        const SizedBox(width: 8),
                         _buildFilterChip(
                           label: 'All',
                           filter: ChatFilter.all,
