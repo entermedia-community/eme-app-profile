@@ -9,5 +9,7 @@
 		"**/html": true,
 		"**/web": true,
 		"**/android": true
-	}
+	},
+	"remoteControl.enable": true,
+	"remoteControl.port": 3709
 }
