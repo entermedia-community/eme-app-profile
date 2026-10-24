@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pill_badge.dart';
+import '../../event/create_event_screen.dart';
 
 class ServerOverviewTab extends ConsumerWidget {
   final ServerModel server;
@@ -496,6 +497,21 @@ class ServerOverviewTab extends ConsumerWidget {
             ),
           ],
         ),
+        if (server.isOwner) ...[
+          const SizedBox(height: 10),
+          Semantics(
+            identifier: 'server_create_event',
+            child: _buildActionCard(
+              context,
+              title: 'Create Event',
+              subtitle: 'Host a public event',
+              icon: Icons.event_rounded,
+              color: const Color(0xFFEA580C),
+              isDark: isDark,
+              onTap: () => CreateEventScreen.open(context),
+            ),
+          ),
+        ],
       ],
     );
   }

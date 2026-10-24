@@ -108,6 +108,82 @@ class MockApiService implements IApiService {
   @override
   Future<List<LibraryCollectionModel>> fetchUserProjects() async => const [];
 
+  /// Events returned by [fetchEvents]/[fetchEvent]; RSVPs update them.
+  final events = <EventModel>[
+    const EventModel(
+      id: 'evt_1',
+      name: 'Beach Cleanup',
+      description: 'Bring gloves and water.',
+      location: 'Pier 3',
+      hostName: 'Alice Smith',
+      goingCount: 4,
+      interestedCount: 2,
+    ),
+  ];
+  final rsvps = <String>[];
+
+  @override
+  Future<List<EventModel>> fetchEvents({
+    String? query,
+    bool rsvpedOnly = false,
+  }) async => events
+      .where((e) => !rsvpedOnly || e.myRsvp != EventRsvp.none)
+      .where(
+        (e) =>
+            query == null ||
+            query.isEmpty ||
+            e.name.toLowerCase().contains(query.toLowerCase()),
+      )
+      .toList();
+
+  @override
+  Future<EventModel> fetchEvent(String eventId) async =>
+      events.firstWhere((e) => e.id == eventId);
+
+  @override
+  Future<EventRsvpResult> setEventRsvp(String eventId, EventRsvp rsvp) async {
+    rsvps.add('$eventId:${rsvp.name}');
+    final i = events.indexWhere((e) => e.id == eventId);
+    final old = events[i];
+    int delta(EventRsvp which, EventRsvp r) =>
+        (r == which ? 1 : 0) - (old.myRsvp == which ? 1 : 0);
+    events[i] = old.copyWith(
+      goingCount: old.goingCount + delta(EventRsvp.going, rsvp),
+      interestedCount: old.interestedCount + delta(EventRsvp.interested, rsvp),
+      myRsvp: rsvp,
+    );
+    return EventRsvpResult(
+      goingCount: events[i].goingCount,
+      interestedCount: events[i].interestedCount,
+      myRsvp: rsvp,
+    );
+  }
+
+  @override
+  Future<EventModel> createEvent({
+    required String name,
+    required DateTime startDate,
+    DateTime? endDate,
+    String? description,
+    String? location,
+  }) async {
+    final event = EventModel(
+      id: 'evt_${events.length + 1}',
+      name: name,
+      description: description ?? '',
+      location: location ?? '',
+      startDate: startDate,
+      endDate: endDate,
+      goingCount: 1,
+      myRsvp: EventRsvp.going,
+    );
+    events.add(event);
+    return event;
+  }
+
+  @override
+  Future<String> connectEventChat(String eventId) async => 'ch_$eventId';
+
   @override
   Future<ProjectChatConnection> connectProjectChat(
     String collectionId, {

@@ -7,10 +7,11 @@ import '../../theme/app_colors.dart';
 import '../eme_world/eme_profile_card.dart';
 import '../../screens/profile/widgets/add_server_sheet.dart';
 import '../../screens/profile/widgets/server_card.dart';
+import '../../screens/event/event_screen.dart';
 import '../../screens/project/project_screen.dart';
 import 'preview_cards.dart';
 
-enum SearchResultType { all, people, projects, servers }
+enum SearchResultType { all, people, projects, servers, events }
 
 /// One search for people and EME Servers: a single query field and a single
 /// category bar, with the two result lists shown in their own sections.
@@ -179,12 +180,15 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
 
     final people =
         (_type == SearchResultType.servers ||
-            _type == SearchResultType.projects)
+            _type == SearchResultType.projects ||
+            _type == SearchResultType.events)
         ? const <EmeProfileModel>[]
         : profileState.filteredProfiles;
 
     final servers =
-        (_type == SearchResultType.people || _type == SearchResultType.projects)
+        (_type == SearchResultType.people ||
+            _type == SearchResultType.projects ||
+            _type == SearchResultType.events)
         ? const <ServerModel>[]
         : allFilteredServers;
 
@@ -195,6 +199,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final projects =
         (_type == SearchResultType.people ||
             _type == SearchResultType.servers ||
+            _type == SearchResultType.events ||
             _category != _allCategory)
         ? const <LibraryCollectionModel>[]
         : (projectsAsync.valueOrNull ?? const <LibraryCollectionModel>[])
@@ -206,6 +211,15 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               )
               .toList();
 
+    // Events come from the server's event search; like projects they have no
+    // category, so a category pill hides them.
+    final eventsAsync =
+        (_type == SearchResultType.all || _type == SearchResultType.events) &&
+            _category == _allCategory
+        ? ref.watch(eventSearchProvider(_query.trim()))
+        : null;
+    final events = eventsAsync?.valueOrNull ?? const <EventModel>[];
+
     final categories = _categoryNames(serverState.categories);
 
     // One combined list, A-Z by name.
@@ -213,13 +227,15 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       for (final p in people) _SearchResult.person(p),
       for (final s in servers) _SearchResult.server(s),
       for (final pr in projects) _SearchResult.project(pr),
+      for (final ev in events) _SearchResult.event(ev),
     ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     final loading =
         results.isEmpty &&
         ((_type == SearchResultType.all || _type == SearchResultType.people) &&
                 profileState.isLoading ||
-            (_type != SearchResultType.people && serverState.isLoading));
+            (_type != SearchResultType.people && serverState.isLoading) ||
+            (eventsAsync?.isLoading ?? false));
     final errors = [
       if ((_type == SearchResultType.all || _type == SearchResultType.people) &&
           profileState.error != null)
@@ -230,6 +246,8 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               _type == SearchResultType.projects) &&
           projectsAsync.hasError)
         'Projects: ${projectsAsync.error}',
+      if (eventsAsync != null && eventsAsync.hasError)
+        'Events: ${eventsAsync.error}',
     ];
 
     return Scaffold(
@@ -279,6 +297,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 peopleCount: people.length,
                 projectCount: projects.length,
                 serverCount: servers.length,
+                eventCount: events.length,
                 isDark: isDark,
               ),
               const SizedBox(height: 10),
@@ -392,6 +411,13 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 label: 'Servers',
                 type: SearchResultType.servers,
                 semanticId: 'search_type_servers',
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterChip(
+                label: 'Events',
+                type: SearchResultType.events,
+                semanticId: 'search_type_events',
                 isDark: isDark,
               ),
             ],
@@ -531,6 +557,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     required int peopleCount,
     required int projectCount,
     required int serverCount,
+    required int eventCount,
     required bool isDark,
   }) {
     final muted = isDark ? AppColors.textDarkMuted : AppColors.textMuted;
@@ -541,6 +568,8 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
         '$projectCount projects',
       if (_type == SearchResultType.all || _type == SearchResultType.servers)
         '$serverCount servers',
+      if (_type == SearchResultType.all || _type == SearchResultType.events)
+        '$eventCount events',
     ];
 
     return Row(
@@ -554,12 +583,18 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
             color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
           ),
         ),
-        Text(
-          counts.join(' · '),
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: muted,
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            counts.join(' · '),
+            maxLines: 2,
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: muted,
+            ),
           ),
         ),
       ],
@@ -598,7 +633,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
         ? AppColors.textDarkSecondary
         : AppColors.textSecondary;
     final Color typeColor;
-    if (r.isProject) {
+    if (r.isEvent) {
+      typeColor = const Color(0xFFEA580C);
+    } else if (r.isProject) {
       typeColor = const Color(0xFF3B82F6);
     } else if (r.isServer) {
       typeColor = const Color(0xFF6366F1);
@@ -617,7 +654,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         onTap: () {
           final person = r.person;
-          if (person != null) {
+          if (r.event != null) {
+            Navigator.of(context).push(EventScreen.route(r.event!));
+          } else if (person != null) {
             EmeProfileCard(profile: person).showDetails(context);
           } else if (r.isProject) {
             final project = r.collection!;
@@ -664,7 +703,11 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                r.isProject ? 'Project' : (r.isServer ? 'Server' : 'Person'),
+                r.isEvent
+                    ? 'Event'
+                    : (r.isProject
+                          ? 'Project'
+                          : (r.isServer ? 'Server' : 'Person')),
                 style: GoogleFonts.inter(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w700,
@@ -672,7 +715,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 ),
               ),
             ),
-            if (server != null && !r.isProject) ...[
+            if (server != null && !r.isProject && !r.isEvent) ...[
               const SizedBox(height: 4),
               Text(
                 joining
@@ -695,7 +738,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     final fallback = CircleAvatar(
       radius: 22,
       backgroundColor: r.color.withValues(alpha: isDark ? 0.25 : 0.12),
-      child: (r.isServer || r.isProject)
+      child: (r.isServer || r.isProject || r.isEvent)
           ? Text(
               r.initials,
               style: GoogleFonts.plusJakartaSans(
@@ -795,31 +838,43 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   }
 }
 
-/// A row in the combined results: either a person, a project, or a server.
+/// A row in the combined results: a person, a project, a server or an event.
 class _SearchResult {
   final EmeProfileModel? person;
   final ServerModel? server;
   final LibraryCollectionModel? collection;
+  final EventModel? event;
   final bool isProject;
 
   const _SearchResult.person(EmeProfileModel this.person)
     : server = null,
       collection = null,
+      event = null,
       isProject = false;
 
   const _SearchResult.server(ServerModel this.server)
     : person = null,
       collection = null,
+      event = null,
       isProject = false;
 
   const _SearchResult.project(LibraryCollectionModel this.collection)
     : person = null,
       server = null,
+      event = null,
       isProject = true;
 
+  const _SearchResult.event(EventModel this.event)
+    : person = null,
+      server = null,
+      collection = null,
+      isProject = false;
+
+  bool get isEvent => event != null;
   bool get isServer => server != null && !isProject;
 
   String get name {
+    if (isEvent) return event!.name;
     if (isProject && collection != null && collection!.name.isNotEmpty) {
       return collection!.name;
     }
@@ -827,6 +882,7 @@ class _SearchResult {
   }
 
   String get category {
+    if (isEvent) return 'Event';
     if (isProject) {
       return collection?.isProposal == true ? 'Proposal' : 'Project';
     }
@@ -834,6 +890,12 @@ class _SearchResult {
   }
 
   String get detail {
+    if (isEvent) {
+      return [
+        if (event!.startDate != null) formatEventDate(event!.startDate!),
+        event!.location,
+      ].where((t) => t.isNotEmpty).join(' · ');
+    }
     final p = person;
     if (p != null) return p.specialistTitle ?? p.location ?? '';
     if (isProject && collection != null) return collection!.displayDescription;
@@ -841,6 +903,7 @@ class _SearchResult {
   }
 
   String? get avatarUrl {
+    if (isEvent) return event!.imageUrl;
     if (isProject) {
       return collection?.primaryImageUrl;
     }
@@ -848,19 +911,21 @@ class _SearchResult {
   }
 
   Color get color {
+    if (isEvent) return const Color(0xFFEA580C);
     if (isProject) return const Color(0xFF3B82F6);
     return person?.primaryColor ?? server!.primaryColor;
   }
 
   String get initials {
-    if (isProject && collection != null && collection!.name.isNotEmpty) {
-      final words = collection!.name.trim().split(RegExp(r'\s+'));
+    final label = isEvent
+        ? event!.name
+        : (isProject ? collection?.name ?? '' : '');
+    if (label.isNotEmpty) {
+      final words = label.trim().split(RegExp(r'\s+'));
       if (words.length >= 2 && words[0].isNotEmpty && words[1].isNotEmpty) {
         return (words[0][0] + words[1][0]).toUpperCase();
       }
-      return collection!.name
-          .substring(0, collection!.name.length.clamp(1, 2))
-          .toUpperCase();
+      return label.substring(0, label.length.clamp(1, 2)).toUpperCase();
     }
     return server?.displayInitials ?? 'PR';
   }

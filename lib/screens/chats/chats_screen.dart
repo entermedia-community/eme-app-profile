@@ -6,6 +6,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/search/unified_search_screen.dart';
 import '../project/project_screen.dart';
+import '../event/event_screen.dart';
 import '../server/server_detail_screen.dart';
 import 'chat_detail_screen.dart';
 import 'mcp_chat_detail_screen.dart';
@@ -17,6 +18,7 @@ enum ChatFilter {
   users,
   projects,
   servers,
+  events,
   mcp;
 
   String get label {
@@ -29,6 +31,8 @@ enum ChatFilter {
         return 'Projects';
       case ChatFilter.servers:
         return 'Servers';
+      case ChatFilter.events:
+        return 'Events';
       case ChatFilter.mcp:
         return 'MCP';
     }
@@ -43,6 +47,8 @@ enum ChatFilter {
         return SearchResultType.projects;
       case ChatFilter.servers:
         return SearchResultType.servers;
+      case ChatFilter.events:
+        return SearchResultType.events;
       case ChatFilter.all:
       case ChatFilter.mcp:
         return SearchResultType.all;
@@ -83,7 +89,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
       );
     }
 
-    if (item.isProject) {
+    if (item.isProject || item.isEvent) {
       final logo = item.avatarUrl;
       return CircleAvatar(
         radius: 26,
@@ -315,6 +321,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                           ),
                           const SizedBox(width: 8),
                           _buildFilterChip(
+                            label: 'Events',
+                            filter: ChatFilter.events,
+                            isDark: isDark,
+                          ),
+                          const SizedBox(width: 8),
+                          _buildFilterChip(
                             label: 'MCP',
                             filter: ChatFilter.mcp,
                             isDark: isDark,
@@ -393,6 +405,9 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                   if (_activeFilter == ChatFilter.servers) {
                     return item.isServer;
                   }
+                  if (_activeFilter == ChatFilter.events) {
+                    return item.isEvent;
+                  }
                   if (_activeFilter == ChatFilter.mcp) {
                     return item.isMcp;
                   }
@@ -425,6 +440,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               Icon(
                                 _activeFilter == ChatFilter.projects
                                     ? Icons.folder_special_outlined
+                                    : _activeFilter == ChatFilter.events
+                                    ? Icons.event_outlined
                                     : (_activeFilter == ChatFilter.servers
                                           ? Icons.dns_outlined
                                           : (_activeFilter == ChatFilter.mcp
@@ -443,6 +460,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               Text(
                                 _activeFilter == ChatFilter.projects
                                     ? 'No projects yet'
+                                    : _activeFilter == ChatFilter.events
+                                    ? 'No events yet'
                                     : (_activeFilter == ChatFilter.servers
                                           ? 'No servers yet'
                                           : (_activeFilter == ChatFilter.mcp
@@ -459,6 +478,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               Text(
                                 _activeFilter == ChatFilter.projects
                                     ? 'Find or join projects in EME Search.'
+                                    : _activeFilter == ChatFilter.events
+                                    ? 'Mark yourself Interested or Going on an event in EME Search, or create one from your profile.'
                                     : _activeFilter == ChatFilter.servers
                                     ? 'Find and join EME Servers in Search.'
                                     : _activeFilter == ChatFilter.users
@@ -628,6 +649,29 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ),
                                   ),
                                 ],
+                                if (item.isEvent) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 1.5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: item.avatarColor.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Text(
+                                      'EVENT',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: item.avatarColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 if (item.isMcp) ...[
                                   const SizedBox(width: 6),
                                   Container(
@@ -748,6 +792,12 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                 ? ProjectScreen.routeForCollection(collection)
                                 : ProjectScreen.route(server: item.emeServer!),
                           );
+                          return;
+                        }
+                        if (item.isEvent) {
+                          Navigator.of(
+                            context,
+                          ).push(EventScreen.route(item.event!));
                           return;
                         }
                         if (item.isServer) {

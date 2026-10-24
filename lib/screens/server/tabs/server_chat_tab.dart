@@ -15,10 +15,14 @@ class ServerChatTab extends ConsumerStatefulWidget {
   /// page's channel) instead of the EME Server's channel.
   final String? projectCollectionId;
 
+  /// When set, chat in this event's channel.
+  final String? eventId;
+
   const ServerChatTab({
     super.key,
     required this.server,
     this.projectCollectionId,
+    this.eventId,
   });
 
   @override
@@ -49,6 +53,26 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       _isConnecting = true;
       _connectionError = null;
     });
+
+    final eventId = widget.eventId;
+    if (eventId != null) {
+      try {
+        _channelId = await ref.read(eventChatChannelProvider(eventId).future);
+        await _connectSocket(_channelId);
+        await _loadChatHistory(_channelId);
+      } catch (e, stack) {
+        AppErrorHandler.recordNonFatal(
+          e,
+          stack,
+          reason: 'Error connecting event chat in ServerChatTab',
+          customKeys: {'eventId': eventId},
+        );
+        if (mounted) setState(() => _connectionError = '$e');
+      } finally {
+        if (mounted) setState(() => _isConnecting = false);
+      }
+      return;
+    }
 
     final projectId = widget.projectCollectionId;
     if (projectId != null) {
@@ -343,6 +367,12 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
                           identifier: 'server_chat_retry',
                           child: TextButton(
                             onPressed: () {
+                              final eventId = widget.eventId;
+                              if (eventId != null) {
+                                ref.invalidate(
+                                  eventChatChannelProvider(eventId),
+                                );
+                              }
                               final id = widget.projectCollectionId;
                               if (id != null) {
                                 ref.invalidate(
@@ -1012,6 +1042,8 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     debugPrint(
       "Data: $data",
     ); //e.g.; {targetdiv: changescenario, channel: AaFAj3-udKixTInEx17X, currentscenario: eme_server_search_media, functionname: eme_server_search_media_confirm, oemaxlevel: 1}
+    // Event chat has no form callbacks yet.
+    if (widget.eventId != null) return;
     final projectId = widget.projectCollectionId;
     if (projectId != null) {
       await ref
