@@ -6,7 +6,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/search/unified_search_screen.dart';
 import '../project/project_screen.dart';
-import '../server/server_chat_screen.dart';
+import '../server/server_detail_screen.dart';
 import 'chat_detail_screen.dart';
 import 'mcp_chat_detail_screen.dart';
 import 'widgets/add_mcp_server_sheet.dart';
@@ -753,7 +753,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                         if (item.isServer) {
                           Navigator.of(
                             context,
-                          ).push(ServerChatScreen.route(item.emeServer!));
+                          ).push(ServerDetailScreen.route(item.emeServer!));
                           return;
                         }
                         if (item.isMcp) {

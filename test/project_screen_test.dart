@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/project/project_screen.dart';
-import 'package:eme_world/screens/project/tabs/project_settings_tab.dart';
-import 'package:eme_world/screens/server/tabs/server_blog_tab.dart';
+import 'package:eme_world/screens/server/tabs/server_files_tab.dart';
 import 'package:eme_world/screens/server/tabs/server_chat_tab.dart';
 import 'package:eme_world/screens/server/tabs/server_finance_tab.dart';
 import 'package:eme_world/screens/server/tabs/server_goals_tab.dart';
@@ -41,7 +40,7 @@ void main() {
     // Verify Project Name is present
     expect(find.text('Alpha Collective'), findsOneWidget);
 
-    // Verify Dropdown exists and defaults to Chat
+    // Verify the bottom tabs exist and default to Chat
     expect(
       find.byKey(const ValueKey('project_chat_proj_alpha')),
       findsOneWidget,
@@ -50,37 +49,23 @@ void main() {
 
     // Verify Semantics identifiers
     expect(find.bySemanticsIdentifier('project_back_button'), findsOneWidget);
-    expect(find.bySemanticsIdentifier('project_view_dropdown'), findsOneWidget);
+    expect(find.bySemanticsIdentifier('project_nav_chat'), findsOneWidget);
   });
 
-  testWidgets('ProjectScreen can switch views', (tester) async {
-    await tester.pumpWidget(createSubject(initialView: ProjectView.settings));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(ProjectSettingsTab), findsOneWidget);
-    expect(find.text('Project Details'), findsOneWidget);
-    expect(find.byType(Switch), findsNothing);
-  });
-
-  testWidgets('Project menu follows the web order with Chat as default', (
-    tester,
-  ) async {
+  testWidgets('Project tabs are Chat, Files, Goals, Finances', (tester) async {
     await tester.pumpWidget(createSubject());
     await tester.pumpAndSettle();
 
     expect(ProjectView.values.map((v) => v.label).toList(), [
-      'Blog',
       'Chat',
+      'Files',
       'Goals',
       'Finances',
-      'Settings',
     ]);
 
-    await tester.tap(find.text('Chat'));
+    await tester.tap(find.bySemanticsIdentifier('project_nav_files'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('project_view_item_blog')).last);
-    await tester.pumpAndSettle();
-    expect(find.byType(ServerBlogTab), findsOneWidget);
+    expect(find.byType(ServerFilesTab), findsOneWidget);
   });
 
   testWidgets('Info sheet says when no collection is linked', (tester) async {
@@ -93,31 +78,19 @@ void main() {
     expect(find.textContaining('not linked to a collection'), findsOneWidget);
   });
 
-  testWidgets('ProjectScreen switches views using top dropdown', (
+  testWidgets('ProjectScreen switches views using the bottom tabs', (
     tester,
   ) async {
     await tester.pumpWidget(createSubject());
     await tester.pumpAndSettle();
 
-    // Switch to Goals by opening dropdown and tapping Goals
-    await tester.tap(find.text('Chat'));
+    await tester.tap(find.bySemanticsIdentifier('project_nav_goals'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('project_view_item_goals')).last,
-    );
-    await tester.pumpAndSettle();
-
     expect(find.byType(ServerGoalsTab), findsOneWidget);
     expect(find.byType(ServerChatTab), findsNothing);
 
-    // Switch to Finances
-    await tester.tap(find.text('Goals'));
+    await tester.tap(find.bySemanticsIdentifier('project_nav_finances'));
     await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const ValueKey('project_view_item_finances')).last,
-    );
-    await tester.pumpAndSettle();
-
     expect(find.byType(ServerFinanceTab), findsOneWidget);
   });
 
@@ -211,25 +184,15 @@ void main() {
       return mockApi;
     }
 
-    Future<List<String>> openMenu(WidgetTester tester) async {
-      await tester.tap(find.bySemanticsIdentifier('project_view_dropdown'));
-      await tester.pumpAndSettle();
-      final labels = ProjectView.values
-          .where(
-            (v) => find
-                .byKey(ValueKey('project_view_item_${v.name}'))
-                .evaluate()
-                .isNotEmpty,
-          )
-          .map((v) => v.label)
-          .toList();
-      // Close the menu.
-      await tester.tap(
-        find.byKey(const ValueKey('project_view_item_chat')).last,
-      );
-      await tester.pumpAndSettle();
-      return labels;
-    }
+    List<String> visibleTabs() => ProjectView.values
+        .where(
+          (v) => find
+              .bySemanticsIdentifier('project_nav_${v.name}')
+              .evaluate()
+              .isNotEmpty,
+        )
+        .map((v) => v.label)
+        .toList();
 
     testWidgets('chat uses the project team channel', (tester) async {
       await pumpProject(tester);
@@ -238,36 +201,28 @@ void main() {
       expect(find.textContaining('Could not open the chat'), findsNothing);
     });
 
-    testWidgets('editors see every menu item', (tester) async {
+    testWidgets('editors see every tab', (tester) async {
       await pumpProject(tester);
-      expect(await openMenu(tester), [
-        'Blog',
-        'Chat',
-        'Goals',
-        'Finances',
-        'Settings',
-      ]);
+      expect(visibleTabs(), ['Chat', 'Files', 'Goals', 'Finances']);
     });
 
-    testWidgets('non-editors only see Blog, Chat and Finances', (tester) async {
+    testWidgets('non-editors only see Chat, Files and Finances', (
+      tester,
+    ) async {
       await pumpProject(tester, canEdit: false);
-      expect(await openMenu(tester), ['Blog', 'Chat', 'Finances']);
+      expect(visibleTabs(), ['Chat', 'Files', 'Finances']);
     });
 
     testWidgets('non-editors of a commercial project lose Finances', (
       tester,
     ) async {
       await pumpProject(tester, canEdit: false, privacy: 'commercial');
-      expect(await openMenu(tester), ['Blog', 'Chat']);
+      expect(visibleTabs(), ['Chat', 'Files']);
     });
 
     testWidgets('a hidden initial view falls back to Chat', (tester) async {
-      await pumpProject(
-        tester,
-        canEdit: false,
-        initialView: ProjectView.settings,
-      );
-      expect(find.byType(ProjectSettingsTab), findsNothing);
+      await pumpProject(tester, canEdit: false, initialView: ProjectView.goals);
+      expect(find.byType(ServerGoalsTab), findsNothing);
       expect(find.byType(ServerChatTab), findsOneWidget);
     });
 

@@ -496,34 +496,6 @@ class ServerOverviewTab extends ConsumerWidget {
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                context,
-                title: 'Goals',
-                subtitle: 'Milestones & roadmap',
-                icon: Icons.track_changes_rounded,
-                color: const Color(0xFF7C3AED),
-                isDark: isDark,
-                onTap: () => onNavigateToModule('goals'),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildActionCard(
-                context,
-                title: 'Finance',
-                subtitle: 'Treasury & stats',
-                icon: Icons.account_balance_wallet_outlined,
-                color: const Color(0xFFEA580C),
-                isDark: isDark,
-                onTap: () => onNavigateToModule('finance'),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }

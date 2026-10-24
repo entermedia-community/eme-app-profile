@@ -4,46 +4,47 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
-import '../server/tabs/server_blog_tab.dart';
+import '../../widgets/module_bottom_nav.dart';
 import '../server/tabs/server_chat_tab.dart';
+import '../server/tabs/server_files_tab.dart';
 import '../server/tabs/server_finance_tab.dart';
 import '../server/tabs/server_goals_tab.dart';
-import 'tabs/project_settings_tab.dart';
 import 'widgets/project_info_sheet.dart';
 
-/// Available views for [ProjectScreen], in the order of the web project menu
-/// (`project/layout/menu-collectives.html`; Referrals and Store are off for
-/// projects).
+/// Views of [ProjectScreen], shown as bottom tabs in this order.
 enum ProjectView {
-  blog('Blog', Icons.article_outlined),
-  chat('Chat', Icons.chat_bubble_outline_rounded),
-  goals('Goals', Icons.flag_outlined),
-  finances('Finances', Icons.account_balance_wallet_outlined),
-  settings('Settings', Icons.settings_outlined);
+  chat('Chat', Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded),
+  files('Files', Icons.folder_open_rounded, Icons.folder_rounded),
+  goals('Goals', Icons.flag_outlined, Icons.flag_rounded),
+  finances(
+    'Finances',
+    Icons.account_balance_wallet_outlined,
+    Icons.account_balance_wallet_rounded,
+  );
 
   final String label;
   final IconData icon;
+  final IconData activeIcon;
 
-  const ProjectView(this.label, this.icon);
+  const ProjectView(this.label, this.icon, this.activeIcon);
 
-  /// Mirrors the web menu's rules: Goals and Settings need edit rights
+  /// Mirrors the web menu's rules: Goals needs edit rights
   /// (`caneditcollection`), Finances is open unless the project is commercial.
   bool isVisible({required bool canEdit, required bool isCommercial}) {
     switch (this) {
       case ProjectView.goals:
-      case ProjectView.settings:
         return canEdit;
       case ProjectView.finances:
         return canEdit || !isCommercial;
-      case ProjectView.blog:
       case ProjectView.chat:
+      case ProjectView.files:
         return true;
     }
   }
 }
 
 /// Project screen, the app's version of the web project chat page
-/// (`project/chat/index.html`): team chat as the default view, a top dropdown
+/// (`project/chat/index.html`): team chat as the default view, bottom tabs
 /// for the other menu sections, and an info button that opens the web page's
 /// right sidebar (team, donate, testimonials, links) as a sheet.
 class ProjectScreen extends ConsumerStatefulWidget {
@@ -266,7 +267,6 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                           : AppColors.textPrimary,
                     ),
                   ),
-                  _buildViewDropdown(isDark, views, activeView),
                 ],
               ),
             ),
@@ -307,99 +307,39 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
       ),
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: _buildBody(currentServer, collection, activeView),
+        child: _buildBody(currentServer, activeView),
+      ),
+      bottomNavigationBar: ModuleBottomNav(
+        items: [
+          for (final v in views)
+            ModuleNavItem(
+              key: v.name,
+              title: v.label,
+              icon: v.icon,
+              activeIcon: v.activeIcon,
+            ),
+        ],
+        activeKey: activeView.name,
+        color: currentServer.primaryColor,
+        idPrefix: 'project_nav',
+        onSelect: (name) =>
+            setState(() => _activeView = ProjectView.values.byName(name)),
       ),
     );
   }
 
-  Widget _buildViewDropdown(
-    bool isDark,
-    List<ProjectView> views,
-    ProjectView activeView,
-  ) {
-    return Semantics(
-      identifier: 'project_view_dropdown',
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<ProjectView>(
-          value: activeView,
-          isDense: true,
-          icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 16,
-            color: isDark
-                ? AppColors.textDarkSecondary
-                : AppColors.textSecondary,
-          ),
-          dropdownColor: isDark ? AppColors.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          style: GoogleFonts.inter(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-            color: widget.server.primaryColor,
-          ),
-          items: views.map((view) {
-            return DropdownMenuItem<ProjectView>(
-              key: ValueKey('project_view_item_${view.name}'),
-              value: view,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    view.icon,
-                    size: 14,
-                    color: activeView == view
-                        ? widget.server.primaryColor
-                        : (isDark
-                              ? AppColors.textDarkSecondary
-                              : AppColors.textSecondary),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    view.label,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: activeView == view
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: activeView == view
-                          ? widget.server.primaryColor
-                          : (isDark
-                                ? AppColors.textDarkPrimary
-                                : AppColors.textPrimary),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (newView) {
-            if (newView != null && newView != activeView) {
-              setState(() {
-                _activeView = newView;
-              });
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBody(
-    ServerModel server,
-    LibraryCollectionModel? collection,
-    ProjectView activeView,
-  ) {
+  Widget _buildBody(ServerModel server, ProjectView activeView) {
     switch (activeView) {
-      case ProjectView.blog:
-        return ServerBlogTab(
-          key: ValueKey('project_blog_${server.id}'),
-          server: server,
-        );
       case ProjectView.chat:
         return ServerChatTab(
           key: ValueKey('project_chat_${server.id}'),
           server: server,
           projectCollectionId: _collectionId,
+        );
+      case ProjectView.files:
+        return ServerFilesTab(
+          key: ValueKey('project_files_${server.id}'),
+          server: server,
         );
       case ProjectView.goals:
         return ServerGoalsTab(
@@ -410,12 +350,6 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         return ServerFinanceTab(
           key: ValueKey('project_finance_${server.id}'),
           server: server,
-        );
-      case ProjectView.settings:
-        return ProjectSettingsTab(
-          key: ValueKey('project_settings_${server.id}'),
-          server: server,
-          collection: collection,
         );
     }
   }

@@ -145,25 +145,29 @@ void main() {
     expect(find.text('Search conversations...'), findsOneWidget);
   });
 
-  testWidgets('Profile menu lists profile, notifications, settings, theme and Log out', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(createTestApp());
-    await tester.pumpAndSettle();
+  testWidgets(
+    'Profile menu lists profile, notifications, settings, theme and Log out',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(createTestApp());
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsIdentifier('app_bar_profile_button'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('app_bar_profile_button'));
+      await tester.pumpAndSettle();
 
-    expect(
-      tester.getTopLeft(find.text('My profile')).dy,
-      lessThan(tester.getTopLeft(find.text('Notifications')).dy),
-    );
-    expect(
-      tester.getTopLeft(find.text('Notifications')).dy,
-      lessThan(tester.getTopLeft(find.text('Settings')).dy),
-    );
-    expect(find.text('Settings'), findsOneWidget);
-    expect(find.bySemanticsIdentifier('overflow_theme_switch'), findsOneWidget);
-    expect(find.text('Log out'), findsOneWidget);
-  });
+      expect(
+        tester.getTopLeft(find.text('My profile')).dy,
+        lessThan(tester.getTopLeft(find.text('Notifications')).dy),
+      );
+      expect(
+        tester.getTopLeft(find.text('Notifications')).dy,
+        lessThan(tester.getTopLeft(find.text('Settings')).dy),
+      );
+      expect(find.text('Settings'), findsOneWidget);
+      expect(
+        find.bySemanticsIdentifier('overflow_theme_switch'),
+        findsOneWidget,
+      );
+      expect(find.text('Log out'), findsOneWidget);
+    },
+  );
 }

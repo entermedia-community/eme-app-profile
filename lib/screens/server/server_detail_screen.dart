@@ -5,14 +5,10 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
-import 'tabs/server_blog_tab.dart';
 import 'tabs/server_chat_tab.dart';
-import 'tabs/server_files_tab.dart';
-import 'tabs/server_goals_tab.dart';
-import 'tabs/server_finance_tab.dart';
 import 'tabs/server_overview_tab.dart';
 import 'tabs/server_products_tab.dart';
-import 'widgets/server_bottom_nav.dart';
+import '../../widgets/module_bottom_nav.dart';
 
 class ServerDetailScreen extends ConsumerStatefulWidget {
   final ServerModel server;
@@ -21,13 +17,13 @@ class ServerDetailScreen extends ConsumerStatefulWidget {
   const ServerDetailScreen({
     super.key,
     required this.server,
-    this.initialModuleKey = 'overview',
+    this.initialModuleKey = 'chat',
   });
 
   /// Custom route animation for server transition
   static Route<void> route(
     ServerModel server, {
-    String initialModuleKey = 'overview',
+    String initialModuleKey = 'chat',
   }) {
     return PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) =>
@@ -62,18 +58,26 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
     _activeModuleKey = widget.initialModuleKey;
   }
 
-  String _getPrimaryModuleKey(ServerModel server) {
-    final cat = server.categoryLabel.toLowerCase();
-    if (cat.contains('finance')) {
-      return 'finance';
-    } else if (cat.contains('social') ||
-        cat.contains('tool') ||
-        cat.contains('software')) {
-      return 'goals';
-    } else {
-      return 'products';
-    }
-  }
+  static const _modules = [
+    ModuleNavItem(
+      key: 'chat',
+      title: 'Chat',
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+    ),
+    ModuleNavItem(
+      key: 'overview',
+      title: 'Overview',
+      icon: Icons.dashboard_outlined,
+      activeIcon: Icons.dashboard_rounded,
+    ),
+    ModuleNavItem(
+      key: 'products',
+      title: 'Products',
+      icon: Icons.inventory_2_outlined,
+      activeIcon: Icons.inventory_2_rounded,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +90,6 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
       (s) => s.id == widget.server.id,
       orElse: () => widget.server,
     );
-
-    final primaryModuleKey = _getPrimaryModuleKey(currentServer);
 
     return Scaffold(
       appBar: AppBar(
@@ -186,18 +188,6 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
           ],
         ),
         actions: [
-          // Theme Toggle
-          IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-              size: 20,
-              color: isDark ? const Color(0xFFFBBF24) : AppColors.textSecondary,
-            ),
-            tooltip: isDark ? 'Light Mode' : 'Dark Mode',
-            onPressed: () {
-              ref.read(themeModeProvider.notifier).toggleTheme();
-            },
-          ),
           // Server Options Menu
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded, size: 22),
@@ -314,11 +304,12 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
         duration: const Duration(milliseconds: 220),
         child: _buildCurrentModule(currentServer),
       ),
-      bottomNavigationBar: ServerBottomNav(
-        server: currentServer,
-        activeModuleKey: _activeModuleKey,
-        primaryModuleKey: primaryModuleKey,
-        onSelectModule: (moduleKey) {
+      bottomNavigationBar: ModuleBottomNav(
+        items: _modules,
+        activeKey: _activeModuleKey,
+        color: currentServer.primaryColor,
+        idPrefix: 'server_nav',
+        onSelect: (moduleKey) {
           setState(() {
             _activeModuleKey = moduleKey;
           });
@@ -337,26 +328,6 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
       case 'products':
         return ServerProductsTab(
           key: ValueKey('products_${server.id}'),
-          server: server,
-        );
-      case 'goals':
-        return ServerGoalsTab(
-          key: ValueKey('goals_${server.id}'),
-          server: server,
-        );
-      case 'finance':
-        return ServerFinanceTab(
-          key: ValueKey('finance_${server.id}'),
-          server: server,
-        );
-      case 'blog':
-        return ServerBlogTab(
-          key: ValueKey('blog_${server.id}'),
-          server: server,
-        );
-      case 'files':
-        return ServerFilesTab(
-          key: ValueKey('files_${server.id}'),
           server: server,
         );
       case 'overview':

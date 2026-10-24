@@ -36,10 +36,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'Direct');
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('Welcome to EME Direct Messaging.'),
-        findsOneWidget,
-      );
+      expect(find.text('Welcome to EME Direct Messaging.'), findsOneWidget);
 
       // Close search
       await tester.tap(find.byIcon(Icons.search_off_rounded));

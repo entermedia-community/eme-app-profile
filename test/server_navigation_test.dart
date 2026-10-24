@@ -2,43 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/profile/widgets/server_card.dart';
-import 'package:eme_world/screens/server/server_chat_screen.dart';
 import 'package:eme_world/screens/server/server_detail_screen.dart';
+import 'package:eme_world/screens/server/tabs/server_chat_tab.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'test_helpers.dart';
 
 void main() {
   testWidgets(
-    'Joined server in the chat list opens ServerChatScreen, and top nav button opens ServerDetailScreen',
+    'Joined server in the chat list opens ServerDetailScreen on the Chat tab',
     (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
       // Joined servers are listed in the chat list under the Servers filter
-      await tester.tap(find.bySemanticsIdentifier('chat_filter_mcp'));
+      await tester.tap(find.bySemanticsIdentifier('chat_filter_servers'));
       await tester.pumpAndSettle();
       expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
       await tester.tap(find.text('Lakeview Stays & House Rentals'));
       await tester.pumpAndSettle();
 
-      // Verify ServerChatScreen is opened
-      expect(find.byType(ServerChatScreen), findsOneWidget);
-      expect(find.text('Console'), findsOneWidget);
-
-      // Click the Console button in the top nav bar area
-      await tester.tap(find.text('Console'));
-      await tester.pumpAndSettle();
-
-      // Verify ServerDetailScreen is opened
       expect(find.byType(ServerDetailScreen), findsOneWidget);
-
-      // Pop back from ServerDetailScreen
-      await tester.tap(find.byTooltip('Back').first);
-      await tester.pumpAndSettle();
-
-      // Verify we're back on ServerChatScreen
-      expect(find.byType(ServerChatScreen), findsOneWidget);
+      expect(find.byType(ServerChatTab), findsOneWidget);
     },
   );
 
@@ -79,15 +64,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Joined servers are listed in the chat list under the Servers filter
-      await tester.tap(find.bySemanticsIdentifier('chat_filter_mcp'));
+      await tester.tap(find.bySemanticsIdentifier('chat_filter_servers'));
       await tester.pumpAndSettle();
       expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
       await tester.tap(find.text('Lakeview Stays & House Rentals'));
       await tester.pumpAndSettle();
 
-      // Open ServerDetailScreen
-      await tester.tap(find.text('Console'));
-      await tester.pumpAndSettle();
       expect(find.byType(ServerDetailScreen), findsOneWidget);
 
       // Open PopupMenuButton
@@ -101,7 +83,6 @@ void main() {
 
       // Verify popped back to the main app screen (Chats)
       expect(find.byType(ServerDetailScreen), findsNothing);
-      expect(find.byType(ServerChatScreen), findsNothing);
     },
   );
 
@@ -115,15 +96,19 @@ void main() {
       await tester.pumpAndSettle();
 
       // Show only servers so the first result is a server
-    await tester.tap(find.bySemanticsIdentifier('search_type_servers'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('search_type_servers'));
+      await tester.pumpAndSettle();
 
-    final card = find.bySemanticsIdentifier('search_result_0');
+      final card = find.bySemanticsIdentifier('search_result_0');
       expect(card, findsOneWidget);
       await tester.tap(card);
       await tester.pumpAndSettle();
 
-      expect(find.byType(ServerChatScreen), findsOneWidget);
+      // Search shows a preview card first; its primary action opens the server
+      await tester.tap(find.bySemanticsIdentifier('server_preview_primary'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ServerDetailScreen), findsOneWidget);
     },
   );
 }

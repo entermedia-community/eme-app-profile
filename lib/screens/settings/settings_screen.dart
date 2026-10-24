@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../providers/theme_provider.dart';
 
 /// Dedicated app settings screen, opened from the profile app bar menu.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   static Future<void> open(BuildContext context) {
@@ -12,7 +14,9 @@ class SettingsScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -22,6 +26,24 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          Semantics(
+            identifier: 'settings_dark_mode_tile',
+            child: ListTile(
+              leading: Icon(
+                isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+              ),
+              title: Text(isDark ? 'Dark mode' : 'Light mode'),
+              trailing: Semantics(
+                identifier: 'settings_dark_mode_switch',
+                child: Switch(
+                  value: isDark,
+                  onChanged: (value) => ref
+                      .read(themeModeProvider.notifier)
+                      .setThemeMode(value ? ThemeMode.dark : ThemeMode.light),
+                ),
+              ),
+            ),
+          ),
           Semantics(
             identifier: 'settings_push_notifications_tile',
             child: ListTile(
