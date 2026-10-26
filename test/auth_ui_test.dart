@@ -94,7 +94,7 @@ class MockAuthService implements IAuthService {
         lastname: 'Administrator',
         email: 'support@entermediadb.org',
         assetportrait:
-            'http://localhost.com:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
+            'http://localhost:8080/site/mediadb/services/module/asset/generated/Users/The.A/jefferson-santos-9SoCnyQmkzI-unsplash.jpg/image200x200.webp',
       ),
     ];
   }

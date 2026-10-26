@@ -20,7 +20,7 @@ Future<void> main() async {
   const isRelease = kReleaseMode;
   const defaultSiteRoot = isRelease
       ? 'https://eme.world'
-      : 'http://localhost.com:8080';
+      : 'http://localhost:8080';
   const siteRoot = String.fromEnvironment(
     'SITEROOT',
     defaultValue: defaultSiteRoot,

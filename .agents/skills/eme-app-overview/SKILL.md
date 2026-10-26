@@ -25,7 +25,7 @@ the SDK first. See the `eme-sdk-overview` skill there.
 `PushNotificationService` → `DeepLinkService` → `ProviderScope(EmeWorldApp)` →
 `AuthGate` (shows `AuthScreen` until logged in, then `MainShellScreen`).
 
-Backend URL: release builds use `https://eme.world`, debug builds use `http://localhost.com:8080`.
+Backend URL: release builds use `https://eme.world`, debug builds use `http://localhost:8080`.
 Override with `--dart-define=SITEROOT=...` (and optionally `MEDIADB=...`).
 
 ## Layout
@@ -76,7 +76,7 @@ Keep them in step. See the `eme-app-chat-ui` skill.
 
 ```bash
 flutter pub get
-flutter run -d chrome                                   # dev backend at localhost.com:8080
+flutter run -d chrome                                   # dev backend at localhost:8080
 flutter run -d chrome --dart-define=SITEROOT=https://eme.world
 flutter analyze
 flutter test          # test/form_select_widget_test.dart is a known pre-existing failure
