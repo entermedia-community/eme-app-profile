@@ -182,6 +182,12 @@ class MockApiService implements IApiService {
   }
 
   @override
+  Future<String> connectServerChat(
+    String serverId, {
+    Map<String, dynamic>? params,
+  }) async => 'ch_$serverId';
+
+  @override
   Future<String> connectEventChat(String eventId) async => 'ch_$eventId';
 
   @override

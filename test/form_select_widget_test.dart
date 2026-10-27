@@ -95,5 +95,59 @@ void main() {
         expect(find.textContaining('category: design'), findsOneWidget);
       },
     );
+
+    testWidgets('hides hidden fields but still submits their values', (
+      tester,
+    ) async {
+      final formMessage = ChatMessage(
+        messageId: 'msg_form_hidden',
+        channel: 'srv_form_test',
+        userId: 'bot_form',
+        message: 'Search for media',
+        messageType: 'form',
+        agentContextValues: AgentContextValues(
+          messageRenderType: MessageRenderType.form,
+        ),
+        formFields: [
+          FormField(
+            name: 'context_userquery',
+            type: FormFieldType.text,
+            label: 'Search...',
+          ),
+          FormField(
+            name: 'functionname',
+            type: FormFieldType.fromName('hidden'),
+            label: 'functionname',
+            value: 'eme_server_search_media_parse',
+          ),
+        ],
+        createdAt: DateTime.now(),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            apiServiceProvider.overrideWithValue(
+              _MockFormApiService([formMessage]),
+            ),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(body: ServerChatTab(server: testServer)),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('eme_server_search_media_parse'), findsNothing);
+
+      await tester.tap(find.text('Submit'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining('functionname: eme_server_search_media_parse'),
+        findsOneWidget,
+      );
+    });
   });
 }

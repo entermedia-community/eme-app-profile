@@ -15,10 +15,9 @@
 	"settings": {
 		"remoteControl.enable": true,
 		"remoteControl.port": 3709,
+		"cSpell.words": ["entermedia"],
 	},
 	"extensions": {
-		"recommendations": [
-			"eliostruyf.vscode-remote-control",
-		],
+		"recommendations": ["eliostruyf.vscode-remote-control"],
 	},
 }

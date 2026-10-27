@@ -98,37 +98,39 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     }
 
     try {
-      final serverId = widget.server.id;
-      final customBaseUrl = widget.server.serverMediaDBUrl.isNotEmpty
-          ? widget.server.serverMediaDBUrl
-          : null;
-
-      _channelId = await ChatSocketService().connectChat(serverId);
-
-      await _connectSocket(_channelId, baseUrl: customBaseUrl);
-      await _loadChatHistory(_channelId, baseUrl: customBaseUrl);
+      final channelId = await ref
+          .read(apiServiceProvider)
+          .connectServerChat(widget.server.id);
+      await _openChannel(channelId);
     } catch (e, stack) {
-      debugPrint('Error establishing server chat socket: $e');
       AppErrorHandler.recordNonFatal(
         e,
         stack,
-        reason: 'Error establishing server chat socket in ServerChatTab',
+        reason: 'Error connecting server chat in ServerChatTab',
         customKeys: {'serverId': widget.server.id},
       );
-      _channelId = widget.server.id;
-      final fallbackChannel = _channelId;
-      if (fallbackChannel.isNotEmpty) {
-        final customBaseUrl = widget.server.serverMediaDBUrl.isNotEmpty
-            ? widget.server.serverMediaDBUrl
-            : null;
-        await _connectSocket(fallbackChannel, baseUrl: customBaseUrl);
-        await _loadChatHistory(fallbackChannel, baseUrl: customBaseUrl);
-      }
+      if (mounted) setState(() => _connectionError = '$e');
     } finally {
-      if (mounted) {
-        setState(() => _isConnecting = false);
-      }
+      if (mounted) setState(() => _isConnecting = false);
     }
+  }
+
+  // Project and event chats use the app's default server
+  String? get _serverBaseUrl =>
+      widget.projectCollectionId == null &&
+          widget.eventId == null &&
+          widget.server.serverMediaDBUrl.isNotEmpty
+      ? widget.server.serverMediaDBUrl
+      : null;
+
+  /// Points the socket and history at [channelId], reconnecting only when the
+  /// channel changed (the socket ignores connect() while already connected).
+  Future<void> _openChannel(String channelId) async {
+    if (channelId == _channelId && ChatSocketService().isConnected) return;
+    if (_channelId.isNotEmpty) ChatSocketService().disconnect();
+    _channelId = channelId;
+    await _connectSocket(channelId, baseUrl: _serverBaseUrl);
+    await _loadChatHistory(channelId, baseUrl: _serverBaseUrl);
   }
 
   Future<void> _loadChatHistory(String channelId, {String? baseUrl}) async {
@@ -172,7 +174,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       incomingMsg,
     ) {
       debugPrint('ServerChatTab incomingMsg: ${incomingMsg.toJson()}');
-      if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
+      if (incomingMsg.isKeepAlive) return;
       if (!mounted) return;
 
       if (incomingMsg.channel.isNotEmpty &&
@@ -181,11 +183,41 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
         return;
       }
 
-      setState(() {
-        _messages.add(incomingMsg);
-      });
-      _scrollToBottom();
+      final added = _mergeIncoming(incomingMsg);
+      setState(() {});
+      if (added) _scrollToBottom();
     });
+  }
+
+  static const _localIdPrefix = 'local_';
+
+  /// Applies a socket message to [_messages] and returns whether it was new.
+  /// The server re-sends a message under the same id when it changes (agent
+  /// status updates, messagereload), and echoes the ones this device already
+  /// shows locally, so both replace the existing entry instead of adding one.
+  bool _mergeIncoming(ChatMessage msg) {
+    if (msg.isMessageRemoved) {
+      _messages.removeWhere((m) => m.messageId == msg.messageId);
+      return false;
+    }
+    var index = _messages.indexWhere((m) => m.messageId == msg.messageId);
+    if (index < 0) {
+      index = _messages.indexWhere(
+        (m) =>
+            m.messageId.startsWith(_localIdPrefix) &&
+            m.userId == msg.userId &&
+            m.message == msg.message,
+      );
+    }
+    if (index < 0) {
+      _messages.add(msg);
+      return true;
+    }
+    // The echo may not carry the product card the local copy was built with
+    _messages[index] = msg.product == null
+        ? msg.copyWith(product: _messages[index].product)
+        : msg;
+    return false;
   }
 
   void _scrollToBottom() {
@@ -261,7 +293,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     setState(() {
       _messages.add(
         ChatMessage(
-          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          messageId: '$_localIdPrefix${DateTime.now().millisecondsSinceEpoch}',
           channel: targetChannel,
           userId: currentUserId,
           message:
@@ -823,7 +855,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     setState(() {
       _messages.add(
         ChatMessage(
-          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          messageId: '$_localIdPrefix${DateTime.now().millisecondsSinceEpoch}',
           channel: targetChannel,
           userId: currentUserId,
           message: submitText,
@@ -1044,14 +1076,25 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     ); //e.g.; {targetdiv: changescenario, channel: AaFAj3-udKixTInEx17X, currentscenario: eme_server_search_media, functionname: eme_server_search_media_confirm, oemaxlevel: 1}
     // Event chat has no form callbacks yet.
     if (widget.eventId != null) return;
-    final projectId = widget.projectCollectionId;
-    if (projectId != null) {
-      await ref
-          .read(apiServiceProvider)
-          .connectProjectChat(projectId, params: data);
-      return;
+    try {
+      final api = ref.read(apiServiceProvider);
+      final projectId = widget.projectCollectionId;
+      final channelId = projectId != null
+          ? (await api.connectProjectChat(projectId, params: data)).channelId
+          : await api.connectServerChat(widget.server.id, params: data);
+      await _openChannel(channelId);
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error handling chat link tap in ServerChatTab',
+        customKeys: {'serverId': widget.server.id, 'link': link},
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not open: $e')));
     }
-    await ChatSocketService().connectChat(widget.server.id, params: data);
   }
 }
 
@@ -1458,7 +1501,10 @@ class _ChatFormWidgetState extends State<_ChatFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final fields = widget.fields;
+    // Hidden fields keep their value in _controllers and are submitted, but never shown
+    final fields = widget.fields
+        .where((f) => f.type != FormFieldType.hidden)
+        .toList();
     final cardBg = widget.isDark ? AppColors.darkSurface : Colors.white;
 
     return Container(
