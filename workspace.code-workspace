@@ -9,6 +9,7 @@
 			"path": "../eme-app-sdk",
 		},
 		{
+			"name": "eme-server",
 			"path": "../eme-server",
 		},
 	],
