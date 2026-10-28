@@ -17,6 +17,8 @@
 		"remoteControl.enable": true,
 		"remoteControl.port": 3709,
 		"cSpell.words": ["entermedia"],
+		"java.format.settings.url": "../eme-server/formatter.xml",
+		"java.compile.nullAnalysis.mode": "automatic",
 	},
 	"extensions": {
 		"recommendations": ["eliostruyf.vscode-remote-control"],
