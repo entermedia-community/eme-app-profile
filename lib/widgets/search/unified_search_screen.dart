@@ -225,13 +225,15 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
             hideUncategorized)
         ? const <LibraryCollectionModel>[]
         : data.projects;
-    final events =
-        (_type == SearchResultType.people ||
-            _type == SearchResultType.servers ||
-            _type == SearchResultType.projects ||
-            hideUncategorized)
-        ? const <EventModel>[]
-        : data.events;
+    // TODO(events): events are hidden for now; restore data.events later.
+    const events = <EventModel>[];
+    // final events =
+    //     (_type == SearchResultType.people ||
+    //         _type == SearchResultType.servers ||
+    //         _type == SearchResultType.projects ||
+    //         hideUncategorized)
+    //     ? const <EventModel>[]
+    //     : data.events;
 
     final categories = _categoryNames(serverState.categories);
 
@@ -325,7 +327,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           _runSearch();
         },
         decoration: InputDecoration(
-          hintText: 'Search people, projects, servers and events...',
+          hintText: 'Search people, projects and servers...',
           hintStyle: GoogleFonts.inter(
             fontSize: 13,
             color: AppColors.textMuted,
@@ -409,13 +411,14 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 semanticId: 'search_type_servers',
                 isDark: isDark,
               ),
-              const SizedBox(width: 8),
-              _buildFilterChip(
-                label: 'Events',
-                type: SearchResultType.events,
-                semanticId: 'search_type_events',
-                isDark: isDark,
-              ),
+              // TODO(events): hidden for now.
+              // const SizedBox(width: 8),
+              // _buildFilterChip(
+              //   label: 'Events',
+              //   type: SearchResultType.events,
+              //   semanticId: 'search_type_events',
+              //   isDark: isDark,
+              // ),
             ],
           ),
         ),
@@ -564,8 +567,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
         '$projectCount projects',
       if (_type == SearchResultType.all || _type == SearchResultType.servers)
         '$serverCount servers',
-      if (_type == SearchResultType.all || _type == SearchResultType.events)
-        '$eventCount events',
+      // TODO(events): hidden for now.
+      // if (_type == SearchResultType.all || _type == SearchResultType.events)
+      //   '$eventCount events',
     ];
 
     return Row(

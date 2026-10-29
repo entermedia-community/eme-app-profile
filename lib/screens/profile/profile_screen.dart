@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/files/files_section.dart';
-import '../event/create_event_screen.dart';
+// import '../event/create_event_screen.dart'; // TODO(events)
 import 'widgets/profile_header_card.dart';
 import 'widgets/self_chat_composer.dart';
 
@@ -25,10 +25,10 @@ class ProfileScreen extends StatelessWidget {
 
           SizedBox(height: 12),
 
-          // Section 3: Create an event
-          _CreateEventTile(),
-
-          SizedBox(height: 20),
+          // TODO(events): "Create an event" hidden for now.
+          // _CreateEventTile(),
+          // SizedBox(height: 20),
+          SizedBox(height: 8),
 
           // Section 4: Files
           FilesSection(),
@@ -40,23 +40,24 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _CreateEventTile extends StatelessWidget {
-  const _CreateEventTile();
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      identifier: 'profile_create_event',
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: ListTile(
-          leading: const Icon(Icons.event_rounded, color: Color(0xFFEA580C)),
-          title: const Text('Create an event'),
-          subtitle: const Text('Invite people to something you are hosting'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => CreateEventScreen.open(context),
-        ),
-      ),
-    );
-  }
-}
+// TODO(events): hidden for now.
+// class _CreateEventTile extends StatelessWidget {
+//   const _CreateEventTile();
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Semantics(
+//       identifier: 'profile_create_event',
+//       child: Card(
+//         margin: EdgeInsets.zero,
+//         child: ListTile(
+//           leading: const Icon(Icons.event_rounded, color: Color(0xFFEA580C)),
+//           title: const Text('Create an event'),
+//           subtitle: const Text('Invite people to something you are hosting'),
+//           trailing: const Icon(Icons.chevron_right),
+//           onTap: () => CreateEventScreen.open(context),
+//         ),
+//       ),
+//     );
+//   }
+// }

@@ -319,12 +319,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                             filter: ChatFilter.servers,
                             isDark: isDark,
                           ),
-                          const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: 'Events',
-                            filter: ChatFilter.events,
-                            isDark: isDark,
-                          ),
+                          // TODO(events): hidden for now.
+                          // const SizedBox(width: 8),
+                          // _buildFilterChip(
+                          //   label: 'Events',
+                          //   filter: ChatFilter.events,
+                          //   isDark: isDark,
+                          // ),
                           const SizedBox(width: 8),
                           _buildFilterChip(
                             label: 'MCP',
@@ -396,6 +397,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               data: (allItems) {
                 // 1. Filter by category
                 var filtered = allItems.where((item) {
+                  // TODO(events): events are hidden for now.
+                  if (item.isEvent) return false;
                   if (_activeFilter == ChatFilter.users) {
                     return item.isUser;
                   }
