@@ -9,17 +9,21 @@ import '../project/project_screen.dart';
 import '../event/event_screen.dart';
 import '../server/server_detail_screen.dart';
 import 'chat_detail_screen.dart';
-import 'mcp_chat_detail_screen.dart';
-import 'widgets/add_mcp_server_sheet.dart';
-import 'widgets/mcp_server_info_sheet.dart';
+
+// TODO(mcp): hidden for now.
+// import 'mcp_chat_detail_screen.dart';
+// import 'widgets/add_mcp_server_sheet.dart';
+// import 'widgets/mcp_server_info_sheet.dart';
 
 enum ChatFilter {
   all,
   users,
   projects,
   servers,
-  events,
-  mcp;
+  events;
+
+  // TODO(mcp): hidden for now.
+  // mcp;
 
   String get label {
     switch (this) {
@@ -33,8 +37,7 @@ enum ChatFilter {
         return 'Servers';
       case ChatFilter.events:
         return 'Events';
-      case ChatFilter.mcp:
-        return 'MCP';
+      // TODO(mcp): case ChatFilter.mcp: return 'MCP';
     }
   }
 
@@ -50,7 +53,6 @@ enum ChatFilter {
       case ChatFilter.events:
         return SearchResultType.events;
       case ChatFilter.all:
-      case ChatFilter.mcp:
         return SearchResultType.all;
     }
   }
@@ -71,23 +73,24 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
   ChatFilter get _activeFilter => ref.watch(chatFilterProvider);
 
   Widget _buildAvatarFallback(UnifiedChatItem item) {
-    if (item.isMcp) {
-      return Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: item.avatarColor.withValues(alpha: 0.15),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: item.avatarColor.withValues(alpha: 0.35),
-            width: 1.5,
-          ),
-        ),
-        child: Center(
-          child: Icon(Icons.hub_rounded, color: item.avatarColor, size: 24),
-        ),
-      );
-    }
+    // TODO(mcp): hidden for now.
+    // if (item.isMcp) {
+    //   return Container(
+    //     width: 52,
+    //     height: 52,
+    //     decoration: BoxDecoration(
+    //       color: item.avatarColor.withValues(alpha: 0.15),
+    //       shape: BoxShape.circle,
+    //       border: Border.all(
+    //         color: item.avatarColor.withValues(alpha: 0.35),
+    //         width: 1.5,
+    //       ),
+    //     ),
+    //     child: Center(
+    //       child: Icon(Icons.hub_rounded, color: item.avatarColor, size: 24),
+    //     ),
+    //   );
+    // }
 
     if (item.isProject || item.isEvent) {
       final logo = item.avatarUrl;
@@ -143,104 +146,105 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     );
   }
 
-  void _showMcpServerActions(BuildContext context, McpServerModel server) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: server.color.withValues(alpha: 0.2),
-                      child: Text(
-                        server.displayInitials,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 10,
-                          color: server.color,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        server.name,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                leading: const Icon(
-                  Icons.refresh_rounded,
-                  color: AppColors.primary,
-                ),
-                title: const Text('Reconnect & Refresh Tools'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ref
-                      .read(mcpServersProvider.notifier)
-                      .reconnectServer(server.id);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.edit_rounded, color: Colors.blue),
-                title: const Text('Edit Server Configuration'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  AddMcpServerSheet.show(context, server: server);
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.info_outline_rounded,
-                  color: Colors.purple,
-                ),
-                title: const Text('View Capabilities & Tools'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  McpServerInfoSheet.show(context, server);
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.delete_outline_rounded,
-                  color: Colors.red,
-                ),
-                title: const Text(
-                  'Delete Server',
-                  style: TextStyle(color: Colors.red),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ref.read(mcpServersProvider.notifier).deleteServer(server.id);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  // TODO(mcp): hidden for now.
+  // void _showMcpServerActions(BuildContext context, McpServerModel server) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (ctx) {
+  //       final isDark = Theme.of(context).brightness == Brightness.dark;
+  //       return Container(
+  //         decoration: BoxDecoration(
+  //           color: isDark ? AppColors.darkSurface : Colors.white,
+  //           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+  //         ),
+  //         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Padding(
+  //               padding: const EdgeInsets.symmetric(horizontal: 8),
+  //               child: Row(
+  //                 children: [
+  //                   CircleAvatar(
+  //                     radius: 16,
+  //                     backgroundColor: server.color.withValues(alpha: 0.2),
+  //                     child: Text(
+  //                       server.displayInitials,
+  //                       style: GoogleFonts.plusJakartaSans(
+  //                         fontWeight: FontWeight.w800,
+  //                         fontSize: 10,
+  //                         color: server.color,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   const SizedBox(width: 10),
+  //                   Expanded(
+  //                     child: Text(
+  //                       server.name,
+  //                       style: GoogleFonts.plusJakartaSans(
+  //                         fontWeight: FontWeight.w700,
+  //                         fontSize: 15,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             const SizedBox(height: 12),
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.refresh_rounded,
+  //                 color: AppColors.primary,
+  //               ),
+  //               title: const Text('Reconnect & Refresh Tools'),
+  //               onTap: () {
+  //                 Navigator.pop(ctx);
+  //                 ref
+  //                     .read(mcpServersProvider.notifier)
+  //                     .reconnectServer(server.id);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(Icons.edit_rounded, color: Colors.blue),
+  //               title: const Text('Edit Server Configuration'),
+  //               onTap: () {
+  //                 Navigator.pop(ctx);
+  //                 AddMcpServerSheet.show(context, server: server);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.info_outline_rounded,
+  //                 color: Colors.purple,
+  //               ),
+  //               title: const Text('View Capabilities & Tools'),
+  //               onTap: () {
+  //                 Navigator.pop(ctx);
+  //                 McpServerInfoSheet.show(context, server);
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.delete_outline_rounded,
+  //                 color: Colors.red,
+  //               ),
+  //               title: const Text(
+  //                 'Delete Server',
+  //                 style: TextStyle(color: Colors.red),
+  //               ),
+  //               onTap: () {
+  //                 Navigator.pop(ctx);
+  //                 ref.read(mcpServersProvider.notifier).deleteServer(server.id);
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -326,12 +330,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                           //   filter: ChatFilter.events,
                           //   isDark: isDark,
                           // ),
-                          const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: 'MCP',
-                            filter: ChatFilter.mcp,
-                            isDark: isDark,
-                          ),
+                          // TODO(mcp): hidden for now.
+                          // const SizedBox(width: 8),
+                          // _buildFilterChip(
+                          //   label: 'MCP',
+                          //   filter: ChatFilter.mcp,
+                          //   isDark: isDark,
+                          // ),
                         ],
                       ),
                     ),
@@ -411,9 +416,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                   if (_activeFilter == ChatFilter.events) {
                     return item.isEvent;
                   }
-                  if (_activeFilter == ChatFilter.mcp) {
-                    return item.isMcp;
-                  }
+                  // TODO(mcp): MCP conversations are hidden for now.
+                  if (item.isMcp) return false;
                   return true;
                 }).toList();
 
@@ -447,13 +451,10 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? Icons.event_outlined
                                     : (_activeFilter == ChatFilter.servers
                                           ? Icons.dns_outlined
-                                          : (_activeFilter == ChatFilter.mcp
-                                                ? Icons.hub_outlined
-                                                : (_searchQuery.isEmpty
-                                                      ? Icons
-                                                            .chat_bubble_outline_rounded
-                                                      : Icons
-                                                            .search_off_rounded))),
+                                          : (_searchQuery.isEmpty
+                                                ? Icons
+                                                      .chat_bubble_outline_rounded
+                                                : Icons.search_off_rounded)),
                                 size: 48,
                                 color: isDark
                                     ? AppColors.textDarkMuted
@@ -467,11 +468,9 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? 'No events yet'
                                     : (_activeFilter == ChatFilter.servers
                                           ? 'No servers yet'
-                                          : (_activeFilter == ChatFilter.mcp
-                                                ? 'No MCP connections yet'
-                                                : (_searchQuery.isEmpty
-                                                      ? 'No conversations yet'
-                                                      : 'No matching chats found'))),
+                                          : (_searchQuery.isEmpty
+                                                ? 'No conversations yet'
+                                                : 'No matching chats found')),
                                 style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
@@ -487,10 +486,8 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? 'Find and join EME Servers in Search.'
                                     : _activeFilter == ChatFilter.users
                                     ? 'Start a chat with someone in EME Search.'
-                                    : _activeFilter == ChatFilter.mcp
-                                    ? 'Add a remote MCP server to run tools and prompts.'
                                     : _searchQuery.isEmpty
-                                    ? 'Start a chat from Search or add a remote MCP Server.'
+                                    ? 'Start a chat from Search.'
                                     : 'Try searching with a different name or message.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
@@ -502,48 +499,49 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                               ),
                               const SizedBox(height: 16),
                               if (_searchQuery.isEmpty)
-                                if (_activeFilter == ChatFilter.mcp)
-                                  ElevatedButton.icon(
-                                    onPressed: () =>
-                                        AddMcpServerSheet.show(context),
-                                    icon: const Icon(
-                                      Icons.add_rounded,
-                                      size: 18,
-                                    ),
-                                    label: const Text('Add Remote MCP Server'),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF6366F1),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  ElevatedButton.icon(
-                                    onPressed: () => UnifiedSearchScreen.show(
-                                      context,
-                                      initialType: _activeFilter.searchType,
-                                    ),
-                                    icon: const Icon(
-                                      Icons.search_rounded,
-                                      size: 18,
-                                    ),
-                                    label: Text(
-                                      _activeFilter == ChatFilter.all
-                                          ? 'Search EME'
-                                          : 'Search for ${_activeFilter.label}',
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF6366F1),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
+                                // TODO(mcp): Add Remote MCP Server hidden for now.
+                                // if (_activeFilter == ChatFilter.mcp)
+                                //   ElevatedButton.icon(
+                                //     onPressed: () =>
+                                //         AddMcpServerSheet.show(context),
+                                //     icon: const Icon(
+                                //       Icons.add_rounded,
+                                //       size: 18,
+                                //     ),
+                                //     label: const Text('Add Remote MCP Server'),
+                                //     style: ElevatedButton.styleFrom(
+                                //       backgroundColor: const Color(0xFF6366F1),
+                                //       foregroundColor: Colors.white,
+                                //       padding: const EdgeInsets.symmetric(
+                                //         horizontal: 16,
+                                //         vertical: 10,
+                                //       ),
+                                //     ),
+                                //   )
+                                // else
+                                ElevatedButton.icon(
+                                  onPressed: () => UnifiedSearchScreen.show(
+                                    context,
+                                    initialType: _activeFilter.searchType,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.search_rounded,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                    _activeFilter == ChatFilter.all
+                                        ? 'Search EME'
+                                        : 'Search for ${_activeFilter.label}',
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF6366F1),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 10,
                                     ),
                                   ),
+                                ),
                             ],
                           ),
                         ),
@@ -566,10 +564,11 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                         horizontal: 16,
                         vertical: 4,
                       ),
-                      onLongPress: item.isMcp
-                          ? () =>
-                                _showMcpServerActions(context, item.mcpServer!)
-                          : null,
+                      // TODO(mcp): long-press actions hidden for now.
+                      // onLongPress: item.isMcp
+                      //     ? () =>
+                      //           _showMcpServerActions(context, item.mcpServer!)
+                      //     : null,
                       leading: Stack(
                         children: [
                           item.avatarUrl != null && item.avatarUrl!.isNotEmpty
@@ -585,30 +584,31 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                   ),
                                 )
                               : _buildAvatarFallback(item),
-                          if (item.isMcp)
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 14,
-                                height: 14,
-                                decoration: BoxDecoration(
-                                  color: item.isOnline
-                                      ? AppColors.greenAccent
-                                      : (item.mcpServer?.status ==
-                                                McpServerStatus.connecting
-                                            ? Colors.amber
-                                            : Colors.red),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isDark
-                                        ? AppColors.darkSurface
-                                        : Colors.white,
-                                    width: 2.5,
-                                  ),
-                                ),
-                              ),
-                            ),
+                          // TODO(mcp): hidden for now.
+                          // if (item.isMcp)
+                          //   Positioned(
+                          //     right: 0,
+                          //     bottom: 0,
+                          //     child: Container(
+                          //       width: 14,
+                          //       height: 14,
+                          //       decoration: BoxDecoration(
+                          //         color: item.isOnline
+                          //             ? AppColors.greenAccent
+                          //             : (item.mcpServer?.status ==
+                          //                       McpServerStatus.connecting
+                          //                   ? Colors.amber
+                          //                   : Colors.red),
+                          //         shape: BoxShape.circle,
+                          //         border: Border.all(
+                          //           color: isDark
+                          //               ? AppColors.darkSurface
+                          //               : Colors.white,
+                          //           width: 2.5,
+                          //         ),
+                          //       ),
+                          //     ),
+                          //   ),
                         ],
                       ),
                       title: Row(
@@ -675,29 +675,30 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ),
                                   ),
                                 ],
-                                if (item.isMcp) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 1.5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: item.avatarColor.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Text(
-                                      'MCP',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: item.avatarColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                // TODO(mcp): hidden for now.
+                                // if (item.isMcp) ...[
+                                //   const SizedBox(width: 6),
+                                //   Container(
+                                //     padding: const EdgeInsets.symmetric(
+                                //       horizontal: 6,
+                                //       vertical: 1.5,
+                                //     ),
+                                //     decoration: BoxDecoration(
+                                //       color: item.avatarColor.withValues(
+                                //         alpha: 0.15,
+                                //       ),
+                                //       borderRadius: BorderRadius.circular(5),
+                                //     ),
+                                //     child: Text(
+                                //       'MCP',
+                                //       style: GoogleFonts.inter(
+                                //         fontSize: 9.5,
+                                //         fontWeight: FontWeight.w800,
+                                //         color: item.avatarColor,
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ],
                               ],
                             ),
                           ),
@@ -722,32 +723,33 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           children: [
-                            if (item.isMcp &&
-                                item.mcpServer!.tools.isNotEmpty) ...[
-                              Container(
-                                margin: const EdgeInsets.only(right: 6),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 5,
-                                  vertical: 1,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? AppColors.darkBg
-                                      : AppColors.tagBg,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '⚡ ${item.mcpServer!.tools.length}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? AppColors.textDarkMuted
-                                        : AppColors.textMuted,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            // TODO(mcp): hidden for now.
+                            // if (item.isMcp &&
+                            //     item.mcpServer!.tools.isNotEmpty) ...[
+                            //   Container(
+                            //     margin: const EdgeInsets.only(right: 6),
+                            //     padding: const EdgeInsets.symmetric(
+                            //       horizontal: 5,
+                            //       vertical: 1,
+                            //     ),
+                            //     decoration: BoxDecoration(
+                            //       color: isDark
+                            //           ? AppColors.darkBg
+                            //           : AppColors.tagBg,
+                            //       borderRadius: BorderRadius.circular(4),
+                            //     ),
+                            //     child: Text(
+                            //       '⚡ ${item.mcpServer!.tools.length}',
+                            //       style: GoogleFonts.inter(
+                            //         fontSize: 10,
+                            //         fontWeight: FontWeight.w600,
+                            //         color: isDark
+                            //             ? AppColors.textDarkMuted
+                            //             : AppColors.textMuted,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ],
                             Expanded(
                               child: Text(
                                 item.lastMessage,
@@ -809,12 +811,13 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                           ).push(ServerDetailScreen.route(item.emeServer!));
                           return;
                         }
-                        if (item.isMcp) {
-                          Navigator.of(context).push(
-                            McpChatDetailScreen.route(item.mcpConversation!),
-                          );
-                          return;
-                        }
+                        // TODO(mcp): hidden for now.
+                        // if (item.isMcp) {
+                        //   Navigator.of(context).push(
+                        //     McpChatDetailScreen.route(item.mcpConversation!),
+                        //   );
+                        //   return;
+                        // }
 
                         final chat = item.userChat!;
                         if (chat.channelId != null) {
