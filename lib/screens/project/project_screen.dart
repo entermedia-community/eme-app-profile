@@ -8,6 +8,7 @@ import '../server/tabs/server_chat_tab.dart';
 import '../server/tabs/server_files_tab.dart';
 import '../server/tabs/server_finance_tab.dart';
 import '../server/tabs/server_goals_tab.dart';
+import 'entity_assets_screen.dart';
 import 'widgets/project_info_sheet.dart';
 import 'widgets/project_team_sheet.dart';
 
@@ -283,12 +284,18 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                   case 'teams':
                     ProjectTeamSheet.show(context, collectionKey: key);
                   case 'entity_assets':
-                    // TODO: list the entity assets associated with this project.
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Entity Assets is not available yet'),
-                      ),
-                    );
+                    final id = _collectionId;
+                    if (id == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Entity assets are not available: this project is not linked to a collection.',
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.of(context).push(EntityAssetsScreen.route(id));
+                    }
                   case 'settings':
                     ProjectInfoSheet.show(
                       context,

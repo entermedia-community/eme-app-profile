@@ -163,6 +163,16 @@ class MockApiService implements IApiService {
     );
   }
 
+  /// Entity assets returned by [fetchEntityAssets], per project id.
+  final entityAssets = <String, List<EntityAssetModel>>{};
+
+  @override
+  Future<List<EntityAssetModel>> fetchEntityAssets({
+    String? userId,
+    String? collectionId,
+    String? query,
+  }) async => entityAssets[collectionId ?? userId ?? 'me'] ?? const [];
+
   @override
   Future<List<EventModel>> fetchEvents({
     String? query,
