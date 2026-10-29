@@ -51,6 +51,9 @@ class AuthenticatedMockAuthService implements IAuthService {
     user = user.copyWith(
       firstname: value('firstName'),
       lastname: value('lastName'),
+      properties: portrait == null
+          ? null
+          : {...user.properties, 'assetportraitstatus': 'pending'},
     );
   }
 
@@ -190,6 +193,23 @@ class MockApiService implements IApiService {
     String? collectionId,
     String? query,
   }) async => entityAssets[collectionId ?? userId ?? 'me'] ?? const [];
+
+  /// Answers of [fetchAssetPreviewStatus], per asset id, in order; the last repeats.
+  final previewStatuses = <String, List<String>>{};
+
+  @override
+  Future<AssetPreviewStatus> fetchAssetPreviewStatus(
+    String assetId, {
+    String size = 'image200x200',
+  }) async {
+    final answers = previewStatuses[assetId] ?? const ['ready'];
+    final state = answers.length > 1 ? answers.removeAt(0) : answers.first;
+    return AssetPreviewStatus(
+      assetId: assetId,
+      state: state,
+      url: state == 'ready' ? 'http://localhost/$assetId.jpg' : null,
+    );
+  }
 
   /// Files passed to [uploadEntityAsset], as (collectionId, filename).
   final uploadedEntityAssets = <(String?, String?)>[];

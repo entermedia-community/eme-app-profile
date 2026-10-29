@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/entity_asset/entity_asset_viewer_screen.dart';
 import 'package:eme_world/screens/project/project_screen.dart';
+import 'package:eme_world/widgets/entity_assets/entity_asset_list.dart';
 import 'package:eme_world/widgets/entity_assets/entity_asset_upload_button.dart';
 import 'package:eme_world/widgets/files/files_section.dart';
 import 'test_helpers.dart';
@@ -172,5 +173,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.uploadedEntityAssets, isEmpty);
+  });
+
+  testWidgets('polls the asset status alone until the thumbnail is ready', (
+    tester,
+  ) async {
+    assetPreviewPollInterval = const Duration(milliseconds: 100);
+    final api = MockApiService()
+      ..entityAssets['coll_123'] = [
+        const EntityAssetModel(
+          id: 'ea_p',
+          name: 'Scan',
+          thumbStatus: 'pending',
+          imageAssetId: 'img_1',
+        ),
+      ]
+      ..previewStatuses['img_1'] = ['pending', 'pending', 'ready'];
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiServiceProvider.overrideWithValue(api)],
+        child: const MaterialApp(
+          home: Scaffold(body: EntityAssetList(collectionId: 'coll_123')),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(Image), findsOneWidget);
   });
 }

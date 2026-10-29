@@ -76,6 +76,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(auth.user.firstname, 'Chris');
+    expect(auth.user.portraitStatus, 'pending');
     expect(auth.savedPortrait, 'me.png');
     expect(
       auth.savedFields.map((e) => '${e.key}=${e.value}'),

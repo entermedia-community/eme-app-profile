@@ -93,14 +93,7 @@ class EntityAssetList extends ConsumerWidget {
                         child: SizedBox(
                           width: 48,
                           height: 48,
-                          child: a.imageUrl == null
-                              ? const Icon(Icons.perm_media_outlined)
-                              : Image.network(
-                                  a.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) =>
-                                      const Icon(Icons.perm_media_outlined),
-                                ),
+                          child: _Thumb(asset: a),
                         ),
                       ),
                       const SizedBox(width: 14),
@@ -138,6 +131,43 @@ class EntityAssetList extends ConsumerWidget {
           },
         );
       },
+    );
+  }
+}
+
+/// A row's thumbnail. While the server is still converting the image it
+/// polls that one asset's status and shows the thumbnail once it is ready.
+class _Thumb extends ConsumerWidget {
+  final EntityAssetModel asset;
+
+  const _Thumb({required this.asset});
+
+  static const _placeholder = Icon(Icons.perm_media_outlined);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    var url = asset.imageUrl;
+    final assetId = asset.imageAssetId;
+    if (asset.thumbPending && assetId != null) {
+      final status = ref.watch(assetPreviewProvider(assetId)).valueOrNull;
+      if (status == null || status.isPending) {
+        return const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        );
+      }
+      if (!status.isReady) return _placeholder;
+      url = status.url ?? url;
+    }
+    if (url == null) return _placeholder;
+    return Image.network(
+      url,
+      key: ValueKey('${asset.id}-$url'),
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _placeholder,
     );
   }
 }

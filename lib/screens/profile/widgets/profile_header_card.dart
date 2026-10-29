@@ -113,10 +113,15 @@ class ProfileHeaderCard extends ConsumerWidget {
                             );
                           },
                         )
-                      : (currentUser?.assetportrait != null &&
-                                currentUser!.assetportrait!.isNotEmpty
+                      : (currentUser?.portraitStatus == 'pending'
+                            ? _PendingPortrait(
+                                assetId: currentUser!.portraitAssetId,
+                              )
+                            : currentUser?.assetportrait != null &&
+                                  currentUser!.assetportrait!.isNotEmpty
                             ? Image.network(
                                 currentUser.assetportrait!,
+                                key: ValueKey(currentUser.portraitStatus),
                                 width: 88,
                                 height: 88,
                                 fit: BoxFit.cover,
@@ -284,6 +289,35 @@ class ProfileHeaderCard extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => EditProfileSheet(user: user),
+    );
+  }
+}
+
+/// Shown while the server converts a new portrait: polls that one asset and,
+/// once it is ready (or failed), reloads the user so the header swaps in the
+/// portrait.
+class _PendingPortrait extends ConsumerWidget {
+  final String? assetId;
+
+  const _PendingPortrait({required this.assetId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = assetId;
+    if (id != null) {
+      ref.listen(assetPreviewProvider(id), (_, next) {
+        final status = next.valueOrNull;
+        if (status != null && !status.isPending) {
+          ref.read(authProvider.notifier).refreshUser();
+        }
+      });
+    }
+    return const Center(
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
     );
   }
 }

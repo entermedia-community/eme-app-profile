@@ -227,10 +227,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
             if (widget.user.email != null && widget.user.email!.isNotEmpty) ...[
               const SizedBox(height: 14),
               _label('Email'),
-              TextFormField(
-                initialValue: widget.user.email,
-                enabled: false,
-              ),
+              TextFormField(initialValue: widget.user.email, enabled: false),
             ],
             const SizedBox(height: 24),
 
