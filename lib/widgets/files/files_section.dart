@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../entity_assets/entity_asset_list.dart';
+import '../entity_assets/entity_asset_upload_button.dart';
 
 /// Digital legacy area of the EME profile page: the signed-in user's entity
 /// assets.
@@ -15,14 +16,21 @@ class FilesSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Your Digital Legacy',
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Your Digital Legacy',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            EntityAssetUploadButton(userId: userId),
+          ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         EntityAssetList(userId: userId),
       ],
     );

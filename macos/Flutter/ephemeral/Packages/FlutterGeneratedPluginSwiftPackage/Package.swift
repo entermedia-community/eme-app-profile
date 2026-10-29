@@ -16,6 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "app_links", path: "../.packages/app_links-6.4.1"),
+        .package(name: "file_picker_darwin", path: "../.packages/file_picker_darwin-2.4.0"),
         .package(name: "file_selector_macos", path: "../.packages/file_selector_macos-0.9.5+1"),
         .package(name: "firebase_analytics", path: "../.packages/firebase_analytics-12.6.1"),
         .package(name: "firebase_auth", path: "../.packages/firebase_auth-6.7.1"),
@@ -37,6 +38,7 @@ let package = Package(
             name: "FlutterGeneratedPluginSwiftPackage",
             dependencies: [
                 .product(name: "app-links", package: "app_links"),
+                .product(name: "file-picker-darwin", package: "file_picker_darwin"),
                 .product(name: "file-selector-macos", package: "file_selector_macos"),
                 .product(name: "firebase-analytics", package: "firebase_analytics"),
                 .product(name: "firebase-auth", package: "firebase_auth"),

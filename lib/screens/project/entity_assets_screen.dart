@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../widgets/entity_assets/entity_asset_list.dart';
+import '../../widgets/entity_assets/entity_asset_upload_button.dart';
 
 /// Entity assets of a project, opened from the project's 3-dot menu.
 class EntityAssetsScreen extends StatelessWidget {
@@ -24,6 +25,7 @@ class EntityAssetsScreen extends StatelessWidget {
           ),
         ),
         title: const Text('Entity Assets'),
+        actions: [EntityAssetUploadButton(collectionId: collectionId)],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

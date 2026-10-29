@@ -1,11 +1,41 @@
+import 'dart:typed_data';
+// ignore: depend_on_referenced_packages
+import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/entity_asset/entity_asset_viewer_screen.dart';
 import 'package:eme_world/screens/project/project_screen.dart';
+import 'package:eme_world/widgets/entity_assets/entity_asset_upload_button.dart';
 import 'package:eme_world/widgets/files/files_section.dart';
 import 'test_helpers.dart';
+
+final class _FakeFile extends PlatformFile {
+  _FakeFile(this.name);
+
+  @override
+  final String name;
+
+  @override
+  Uri get uri => Uri.parse('memory:$name');
+
+  @override
+  XFile get xFile => XFile.fromData(Uint8List(3), name: name);
+
+  @override
+  Future<int?> length() async => 3;
+
+  @override
+  int? lengthSync() => 3;
+
+  @override
+  Future<Uint8List> readAsBytes() async => Uint8List.fromList([1, 2, 3]);
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream.value(Uint8List(3));
+}
 
 void main() {
   const asset = EntityAssetModel(id: 'ea_1', name: 'Land Deed');
@@ -102,5 +132,45 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.bySemanticsIdentifier('entity_asset_download'), findsOneWidget);
+  });
+
+  testWidgets('uploading a file adds it to the project', (tester) async {
+    final api = MockApiService();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiServiceProvider.overrideWithValue(api)],
+        child: MaterialApp(
+          home: Scaffold(
+            body: EntityAssetUploadButton(
+              collectionId: 'coll_123',
+              pickFile: () async => _FakeFile('deed.pdf'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_button'));
+    await tester.pumpAndSettle();
+
+    expect(api.uploadedEntityAssets, [('coll_123', 'deed.pdf')]);
+    expect(find.text('Uploaded deed.pdf'), findsOneWidget);
+  });
+
+  testWidgets('cancelling the picker uploads nothing', (tester) async {
+    final api = MockApiService();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiServiceProvider.overrideWithValue(api)],
+        child: MaterialApp(
+          home: Scaffold(
+            body: EntityAssetUploadButton(pickFile: () async => null),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_button'));
+    await tester.pumpAndSettle();
+
+    expect(api.uploadedEntityAssets, isEmpty);
   });
 }

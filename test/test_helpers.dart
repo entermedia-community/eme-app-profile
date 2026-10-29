@@ -173,6 +173,17 @@ class MockApiService implements IApiService {
     String? query,
   }) async => entityAssets[collectionId ?? userId ?? 'me'] ?? const [];
 
+  /// Files passed to [uploadEntityAsset], as (collectionId, filename).
+  final uploadedEntityAssets = <(String?, String?)>[];
+
+  @override
+  Future<void> uploadEntityAsset(
+    MultipartFile file, {
+    String? collectionId,
+    String? name,
+    String? description,
+  }) async => uploadedEntityAssets.add((collectionId, file.filename));
+
   @override
   Future<List<EventModel>> fetchEvents({
     String? query,

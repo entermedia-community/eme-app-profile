@@ -142,75 +142,18 @@ class ProfileHeaderCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Eyebrow & Auth status
-                    Row(
-                      children: [
-                        Text(
-                          currentUser != null
-                              ? 'ACCOUNT PROFILE'
-                              : profile.portfolioLabel.toUpperCase(),
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.5,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                        const Spacer(),
-                        InkWell(
-                          onTap: () => AuthModalSheet.show(context),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: authState.isAuthenticated
-                                  ? AppColors.greenAccent.withValues(
-                                      alpha: 0.15,
-                                    )
-                                  : AppColors.primary.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: authState.isAuthenticated
-                                    ? AppColors.greenAccent.withValues(
-                                        alpha: 0.4,
-                                      )
-                                    : AppColors.primary.withValues(alpha: 0.3),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  authState.isAuthenticated
-                                      ? Icons.verified_user_rounded
-                                      : Icons.login_rounded,
-                                  size: 13,
-                                  color: authState.isAuthenticated
-                                      ? AppColors.greenAccent
-                                      : AppColors.primary,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  authState.isAuthenticated
-                                      ? 'Verified'
-                                      : 'Sign In',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    color: authState.isAuthenticated
-                                        ? AppColors.greenAccent
-                                        : AppColors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      currentUser != null
+                          ? 'ACCOUNT PROFILE'
+                          : profile.portfolioLabel.toUpperCase(),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        color: AppColors.primary,
+                      ),
                     ),
+
                     const SizedBox(height: 4),
 
                     // User Name with edit pencil
