@@ -19,6 +19,7 @@
 		"cSpell.words": ["entermedia"],
 		"java.format.settings.url": "../eme-server/formatter.xml",
 		"java.compile.nullAnalysis.mode": "automatic",
+		"java.configuration.updateBuildConfiguration": "interactive",
 	},
 	"extensions": {
 		"recommendations": ["eliostruyf.vscode-remote-control"],

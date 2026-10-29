@@ -395,9 +395,7 @@ void main() {
     });
   });
 
-  testWidgets('Search lists the user\'s projects and opens one', (
-    tester,
-  ) async {
+  testWidgets('Search lists matching projects and opens one', (tester) async {
     const project = LibraryCollectionModel(
       id: 'coll_123',
       name: 'Clean Water Initiative',
@@ -405,8 +403,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          apiServiceProvider.overrideWithValue(MockApiService()),
-          userProjectsProvider.overrideWith((ref) async => const [project]),
+          apiServiceProvider.overrideWithValue(
+            MockApiService()..searchableProjects.add(project),
+          ),
         ],
         child: const MaterialApp(home: UnifiedSearchScreen()),
       ),
@@ -419,6 +418,8 @@ void main() {
     expect(find.text('Eco Collective Mobile App'), findsNothing);
 
     await tester.tap(find.bySemanticsIdentifier('search_result_0'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.bySemanticsIdentifier('project_preview_primary'));
     await tester.pumpAndSettle();
     expect(find.byType(ProjectScreen), findsOneWidget);
   });

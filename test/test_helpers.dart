@@ -23,6 +23,9 @@ class AuthenticatedMockAuthService implements IAuthService {
   Future<String?> getAuthToken() async => token;
 
   @override
+  Future<FirebaseCredentials?> getFirebaseCredentials() async => null;
+
+  @override
   Future<bool> refreshToken() async => false;
 
   @override
@@ -66,6 +69,9 @@ class AuthenticatedMockAuthService implements IAuthService {
 }
 
 class MockApiService implements IApiService {
+  /// Projects returned by [search].
+  final searchableProjects = <LibraryCollectionModel>[];
+
   /// `caneditcollection` returned by [connectProjectChat].
   bool projectCanEdit = true;
 
@@ -121,6 +127,35 @@ class MockApiService implements IApiService {
     ),
   ];
   final rsvps = <String>[];
+
+  @override
+  Future<SearchResults> search({
+    String? query,
+    Set<SearchType>? types,
+    String? category,
+  }) async {
+    bool wants(SearchType t) =>
+        types == null || types.isEmpty || types.contains(t);
+    final q = (query ?? '').toLowerCase();
+    return SearchResults(
+      people: wants(SearchType.people)
+          ? (await fetchUsers())
+                .where((p) => p.name.toLowerCase().contains(q))
+                .toList()
+          : const [],
+      servers: wants(SearchType.servers)
+          ? await fetchServers(query: query, category: category)
+          : const [],
+      projects: wants(SearchType.projects)
+          ? searchableProjects
+                .where((p) => p.name.toLowerCase().contains(q))
+                .toList()
+          : const [],
+      events: wants(SearchType.events)
+          ? await fetchEvents(query: query)
+          : const [],
+    );
+  }
 
   @override
   Future<List<EventModel>> fetchEvents({

@@ -10,5 +10,7 @@
 		"**/web": true,
 		"**/android": true
 	},
-	"git.repositoryScanMaxDepth": 3
+	"git.repositoryScanMaxDepth": 3,
+	"java.autobuild.enabled": true,
+	"java.debug.settings.hotCodeReplace": "auto"
 }

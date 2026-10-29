@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,14 +14,13 @@ import 'preview_cards.dart';
 
 enum SearchResultType { all, people, projects, servers, events }
 
-/// One search for people and EME Servers: a single query field and a single
-/// category bar, with the two result lists shown in their own sections.
+/// One search across people, projects, EME Servers and events: a single
+/// query field and a single category bar, with the results in one list.
 ///
-/// Until the backend has a combined search, the query and category are sent
-/// to both the people search (`emeProfileProvider`) and the server search
-/// (`serverProvider`), and the results are merged into one list. The category
-/// pills are the backend server categories plus the EME profile categories,
-/// de-duplicated by name; both kinds of result are matched by category name.
+/// The query and category go to the backend's unified search
+/// (`searchProvider`) in one request. The category pills are the backend
+/// server categories plus the EME profile categories, de-duplicated by name;
+/// servers are matched by category name, and people by their profile category.
 class UnifiedSearchScreen extends ConsumerStatefulWidget {
   const UnifiedSearchScreen({
     super.key,
@@ -54,36 +54,39 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   String _category = _allCategory;
 
   static const _allCategory = 'All';
+  static const _debounce = Duration(milliseconds: 300);
+
+  Timer? _debounceTimer;
+
+  /// The query last sent to the backend; trails the text field by [_debounce].
+  String _searchedQuery = '';
+
+  /// The previous results, shown while a new search loads.
+  SearchResults? _lastResults;
 
   String get _query => _searchController.text.trim();
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(emeProfileProvider.notifier)
-        ..clearSearch()
-        ..setCategory('All')
-        ..loadUsers();
-      ref.read(serverProvider.notifier).loadServersFromApi();
-    });
+    // The server store holds the categories and the joined state of servers.
+    Future.microtask(
+      () => ref.read(serverProvider.notifier).loadServersFromApi(),
+    );
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   void _runSearch() {
-    final q = _query;
-    ref.read(emeProfileProvider.notifier).searchUsers(q);
-    ref
-        .read(serverProvider.notifier)
-        .loadServersFromApi(
-          query: q.isEmpty ? null : q,
-          category: _serverCategoryId(),
-        );
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(_debounce, () {
+      if (mounted) setState(() => _searchedQuery = _query);
+    });
   }
 
   bool _sameName(String a, String b) =>
@@ -92,7 +95,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   /// Backend id of the selected category for the server search, if the
   /// servers have a category by that name.
   String? _serverCategoryId() {
-    if (_category == _allCategory) return ServerCategoryModel.all.id;
+    if (_category == _allCategory) return null;
     for (final c in ref.read(serverProvider).categories) {
       if (_sameName(c.name, _category)) return c.id;
     }
@@ -118,34 +121,31 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
 
   void _selectCategory(String name) {
     setState(() => _category = name);
-    ref.read(emeProfileProvider.notifier).setCategory(name);
-    ref
-        .read(serverProvider.notifier)
-        .loadServersFromApi(
-          query: _query.isEmpty ? null : _query,
-          category: _serverCategoryId(),
-        );
   }
 
   void _resetFilters() {
+    _debounceTimer?.cancel();
     _searchController.clear();
-    setState(() => _type = SearchResultType.all);
-    _selectCategory(_allCategory);
-    ref.read(emeProfileProvider.notifier).clearSearch();
+    setState(() {
+      _type = SearchResultType.all;
+      _searchedQuery = '';
+      _category = _allCategory;
+    });
   }
 
   Future<void> _refresh() async {
+    final key = _searchKey();
+    ref.invalidate(searchProvider(key));
     await Future.wait([
-      ref.read(emeProfileProvider.notifier).loadUsers(),
+      ref.read(searchProvider(key).future),
       ref
           .read(serverProvider.notifier)
-          .loadServersFromApi(
-            query: _query.isEmpty ? null : _query,
-            category: _serverCategoryId(),
-            forceRefreshCategories: true,
-          ),
+          .loadServersFromApi(forceRefreshCategories: true),
     ]);
   }
+
+  SearchKey _searchKey() =>
+      SearchKey(query: _searchedQuery, category: _serverCategoryId());
 
   void _openAddServerSheet() {
     showModalBottomSheet(
@@ -156,69 +156,82 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     );
   }
 
-  List<ServerModel> _filterServers(List<ServerModel> servers) {
-    final q = _query.toLowerCase();
-    return servers.where((s) {
-      if (_category != _allCategory && !_sameName(s.category.name, _category)) {
-        return false;
-      }
-      if (q.isEmpty) return true;
-      return s.name.toLowerCase().contains(q) ||
-          (s.subtitle?.toLowerCase().contains(q) ?? false) ||
-          s.description.toLowerCase().contains(q) ||
-          s.servicesOffered.any((x) => x.toLowerCase().contains(q));
-    }).toList();
+  /// The searched servers plus servers only the local store has (custom
+  /// servers added on this device), narrowed to the selected category by
+  /// name. The store's joined state wins over the search's, which can be
+  /// older.
+  List<ServerModel> _filterServers(
+    List<ServerModel> searched,
+    List<ServerModel> known,
+  ) {
+    final q = _searchedQuery.toLowerCase();
+    final knownById = {for (final s in known) s.id: s};
+    final searchedIds = {for (final s in searched) s.id};
+    final localOnly = known.where(
+      (s) =>
+          !searchedIds.contains(s.id) &&
+          (q.isEmpty ||
+              s.name.toLowerCase().contains(q) ||
+              (s.subtitle?.toLowerCase().contains(q) ?? false) ||
+              s.description.toLowerCase().contains(q) ||
+              s.servicesOffered.any((x) => x.toLowerCase().contains(q))),
+    );
+    return [
+      for (final s in [...searched, ...localOnly])
+        if (_category == _allCategory || _sameName(s.category.name, _category))
+          knownById.containsKey(s.id)
+              ? s.copyWith(isJoined: knownById[s.id]!.isJoined)
+              : s,
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final profileState = ref.watch(emeProfileProvider);
     final serverState = ref.watch(serverProvider);
 
-    final allFilteredServers = _filterServers(serverState.servers);
+    final searchAsync = ref.watch(searchProvider(_searchKey()));
+    final fetched = searchAsync.valueOrNull;
+    if (fetched != null) _lastResults = fetched;
+    final data = fetched ?? _lastResults ?? const SearchResults();
 
     final people =
         (_type == SearchResultType.servers ||
             _type == SearchResultType.projects ||
             _type == SearchResultType.events)
         ? const <EmeProfileModel>[]
-        : profileState.filteredProfiles;
+        : data.people
+              .where(
+                (p) =>
+                    _category == _allCategory ||
+                    p.category.label == _category ||
+                    p.tags.contains(_category),
+              )
+              .toList();
 
     final servers =
         (_type == SearchResultType.people ||
             _type == SearchResultType.projects ||
             _type == SearchResultType.events)
         ? const <ServerModel>[]
-        : allFilteredServers;
+        : _filterServers(data.servers, serverState.servers);
 
-    // Projects are the user's own (`viewprojects.json`); they have no
-    // category, so a category pill hides them.
-    final projectsAsync = ref.watch(userProjectsProvider);
-    final q = _query.toLowerCase();
+    // Projects and events have no category, so a category pill hides them.
+    final hideUncategorized = _category != _allCategory;
     final projects =
         (_type == SearchResultType.people ||
             _type == SearchResultType.servers ||
             _type == SearchResultType.events ||
-            _category != _allCategory)
+            hideUncategorized)
         ? const <LibraryCollectionModel>[]
-        : (projectsAsync.valueOrNull ?? const <LibraryCollectionModel>[])
-              .where(
-                (p) =>
-                    q.isEmpty ||
-                    p.name.toLowerCase().contains(q) ||
-                    p.displayDescription.toLowerCase().contains(q),
-              )
-              .toList();
-
-    // Events come from the server's event search; like projects they have no
-    // category, so a category pill hides them.
-    final eventsAsync =
-        (_type == SearchResultType.all || _type == SearchResultType.events) &&
-            _category == _allCategory
-        ? ref.watch(eventSearchProvider(_query.trim()))
-        : null;
-    final events = eventsAsync?.valueOrNull ?? const <EventModel>[];
+        : data.projects;
+    final events =
+        (_type == SearchResultType.people ||
+            _type == SearchResultType.servers ||
+            _type == SearchResultType.projects ||
+            hideUncategorized)
+        ? const <EventModel>[]
+        : data.events;
 
     final categories = _categoryNames(serverState.categories);
 
@@ -230,25 +243,8 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       for (final ev in events) _SearchResult.event(ev),
     ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-    final loading =
-        results.isEmpty &&
-        ((_type == SearchResultType.all || _type == SearchResultType.people) &&
-                profileState.isLoading ||
-            (_type != SearchResultType.people && serverState.isLoading) ||
-            (eventsAsync?.isLoading ?? false));
-    final errors = [
-      if ((_type == SearchResultType.all || _type == SearchResultType.people) &&
-          profileState.error != null)
-        'People: ${profileState.error}',
-      if (_type != SearchResultType.people && serverState.error != null)
-        'Servers: ${serverState.error}',
-      if ((_type == SearchResultType.all ||
-              _type == SearchResultType.projects) &&
-          projectsAsync.hasError)
-        'Projects: ${projectsAsync.error}',
-      if (eventsAsync != null && eventsAsync.hasError)
-        'Events: ${eventsAsync.error}',
-    ];
+    final loading = results.isEmpty && searchAsync.isLoading;
+    final errors = [if (searchAsync.hasError) 'Search: ${searchAsync.error}'];
 
     return Scaffold(
       appBar: AppBar(
@@ -288,7 +284,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
             children: [
               _buildTypeSelector(isDark),
               const SizedBox(height: 12),
-              _buildSearchField(profileState.isSearching),
+              _buildSearchField(searchAsync.isLoading && _lastResults != null),
               const SizedBox(height: 12),
               _buildCategoryBar(categories, isDark),
               const SizedBox(height: 20),
@@ -329,7 +325,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           _runSearch();
         },
         decoration: InputDecoration(
-          hintText: 'Search people and servers by name, skill, or topic...',
+          hintText: 'Search people, projects, servers and events...',
           hintStyle: GoogleFonts.inter(
             fontSize: 13,
             color: AppColors.textMuted,

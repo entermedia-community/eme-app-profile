@@ -22,6 +22,9 @@ class MockAuthService implements IAuthService {
   Future<String?> getAuthToken() async => mockToken;
 
   @override
+  Future<FirebaseCredentials?> getFirebaseCredentials() async => null;
+
+  @override
   Future<bool> refreshToken() async => false;
 
   @override
