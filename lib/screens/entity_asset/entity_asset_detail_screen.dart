@@ -136,11 +136,7 @@ class EntityAssetDetailScreen extends ConsumerWidget {
             if (asset.tags.isEmpty)
               Text('No tags', style: GoogleFonts.inter(fontSize: 13))
             else
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [for (final t in asset.tags) Chip(label: Text(t))],
-              ),
+              _TagWrap(tags: asset.tags),
           ],
         ),
       ),
@@ -158,6 +154,68 @@ class EntityAssetDetailScreen extends ConsumerWidget {
           Text(value, style: GoogleFonts.inter(fontSize: 14)),
         ],
       ),
+    );
+  }
+}
+
+/// Tags as chips; past [limit] the rest hide behind an "x more..." button.
+class _TagWrap extends StatefulWidget {
+  final List<String> tags;
+
+  const _TagWrap({required this.tags});
+
+  static const limit = 5;
+
+  @override
+  State<_TagWrap> createState() => _TagWrapState();
+}
+
+class _TagWrapState extends State<_TagWrap> {
+  bool _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final tags = widget.tags;
+    final hidden = _expanded ? 0 : tags.length - _TagWrap.limit;
+    final shown = hidden > 0 ? tags.take(_TagWrap.limit) : tags;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (final t in shown)
+          Chip(
+            label: Text(t),
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            side: const BorderSide(color: Colors.transparent),
+            backgroundColor: AppColors.greenAccent,
+            labelStyle: GoogleFonts.inter(
+              fontSize: 14,
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        if (hidden > 0) ...[
+          const SizedBox(width: 4),
+          Semantics(
+            identifier: 'entity_asset_tags_more',
+            child: TextButton(
+              onPressed: () => setState(() => _expanded = true),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                '+$hidden more',
+                style: TextStyle(color: AppColors.greenAccent),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
