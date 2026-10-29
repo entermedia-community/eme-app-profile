@@ -1,3 +1,4 @@
+import 'package:eme_world/theme/app_colors.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -67,7 +68,10 @@ class _DeltaViewerState extends State<DeltaViewer> {
         //   return TextStyle();
         // },
         customStyles: DefaultStyles(
-          link: TextStyle(decoration: TextDecoration.none),
+          link: TextStyle(
+            decoration: TextDecoration.none,
+            color: AppColors.greenAccent,
+          ),
           // paragraph: DefaultTextBlockStyle(
           //   TextStyle(fontSize: 14),
           //   HorizontalSpacing.zero,
