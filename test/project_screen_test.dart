@@ -5,13 +5,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'package:eme_world/screens/project/project_screen.dart';
-import 'package:eme_world/screens/server/tabs/server_files_tab.dart';
+import 'package:eme_world/screens/project/widgets/project_info_sheet.dart';
 import 'package:eme_world/screens/server/tabs/server_chat_tab.dart';
-import 'package:eme_world/screens/server/tabs/server_finance_tab.dart';
 import 'package:eme_world/screens/server/tabs/server_goals_tab.dart';
 import 'package:eme_world/widgets/delta_viewer.dart';
 import 'package:eme_world/widgets/search/unified_search_screen.dart';
 import 'test_helpers.dart';
+
+Future<void> openInfoSheet(WidgetTester tester) async {
+  final screen = tester.widget<ProjectScreen>(find.byType(ProjectScreen));
+  final id = screen.collection?.id;
+  ProjectInfoSheet.show(
+    tester.element(find.byType(ProjectScreen)),
+    server: screen.server,
+    collectionKey: id == null
+        ? null
+        : (collectionId: id, baseUrl: screen.server.serverMediaDBUrl),
+  );
+}
 
 void main() {
   const testServer = ServerModel(
@@ -49,49 +60,21 @@ void main() {
 
     // Verify Semantics identifiers
     expect(find.bySemanticsIdentifier('project_back_button'), findsOneWidget);
-    expect(find.bySemanticsIdentifier('project_nav_chat'), findsOneWidget);
-  });
-
-  testWidgets('Project tabs are Chat, Files, Goals, Finances', (tester) async {
-    await tester.pumpWidget(createSubject());
-    await tester.pumpAndSettle();
-
-    expect(ProjectView.values.map((v) => v.label).toList(), [
-      'Chat',
-      'Files',
-      'Goals',
-      'Finances',
-    ]);
-
-    await tester.tap(find.bySemanticsIdentifier('project_nav_files'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ServerFilesTab), findsOneWidget);
+    expect(find.bySemanticsIdentifier('project_menu_button'), findsOneWidget);
+    expect(find.byType(BottomNavigationBar), findsNothing);
+    expect(find.bySemanticsIdentifier('project_nav_chat'), findsNothing);
+    expect(find.bySemanticsIdentifier('project_info_button'), findsNothing);
+    expect(find.bySemanticsIdentifier('project_theme_toggle'), findsNothing);
   });
 
   testWidgets('Info sheet says when no collection is linked', (tester) async {
     await tester.pumpWidget(createSubject());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+    await openInfoSheet(tester);
     await tester.pumpAndSettle();
 
     expect(find.textContaining('not linked to a collection'), findsOneWidget);
-  });
-
-  testWidgets('ProjectScreen switches views using the bottom tabs', (
-    tester,
-  ) async {
-    await tester.pumpWidget(createSubject());
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.bySemanticsIdentifier('project_nav_goals'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ServerGoalsTab), findsOneWidget);
-    expect(find.byType(ServerChatTab), findsNothing);
-
-    await tester.tap(find.bySemanticsIdentifier('project_nav_finances'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ServerFinanceTab), findsOneWidget);
   });
 
   testWidgets('ProjectScreen can be created from LibraryCollectionModel', (
@@ -116,7 +99,7 @@ void main() {
     expect(find.byType(ServerChatTab), findsOneWidget);
 
     // Info sheet shows the web sidebar sections from the fetched collection.
-    await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+    await openInfoSheet(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Agents'), findsOneWidget);
@@ -143,7 +126,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+    await openInfoSheet(tester);
     await tester.pumpAndSettle();
 
     expect(
@@ -184,40 +167,11 @@ void main() {
       return mockApi;
     }
 
-    List<String> visibleTabs() => ProjectView.values
-        .where(
-          (v) => find
-              .bySemanticsIdentifier('project_nav_${v.name}')
-              .evaluate()
-              .isNotEmpty,
-        )
-        .map((v) => v.label)
-        .toList();
-
     testWidgets('chat uses the project team channel', (tester) async {
       await pumpProject(tester);
       final chat = tester.widget<ServerChatTab>(find.byType(ServerChatTab));
       expect(chat.projectCollectionId, 'coll_123');
       expect(find.textContaining('Could not open the chat'), findsNothing);
-    });
-
-    testWidgets('editors see every tab', (tester) async {
-      await pumpProject(tester);
-      expect(visibleTabs(), ['Chat', 'Files', 'Goals', 'Finances']);
-    });
-
-    testWidgets('non-editors only see Chat, Files and Finances', (
-      tester,
-    ) async {
-      await pumpProject(tester, canEdit: false);
-      expect(visibleTabs(), ['Chat', 'Files', 'Finances']);
-    });
-
-    testWidgets('non-editors of a commercial project lose Finances', (
-      tester,
-    ) async {
-      await pumpProject(tester, canEdit: false, privacy: 'commercial');
-      expect(visibleTabs(), ['Chat', 'Files']);
     });
 
     testWidgets('a hidden initial view falls back to Chat', (tester) async {
@@ -231,7 +185,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final api = await pumpProject(tester);
-      await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+      await openInfoSheet(tester);
       await tester.pumpAndSettle();
 
       expect(find.text('3 Followers'), findsOneWidget);
@@ -249,6 +203,72 @@ void main() {
       );
       expect(find.textContaining('Could not open the chat'), findsOneWidget);
       expect(find.bySemanticsIdentifier('server_chat_retry'), findsOneWidget);
+    });
+  });
+
+  group('Project 3-dot menu', () {
+    const collection = LibraryCollectionModel(
+      id: 'coll_123',
+      name: 'Clean Water Initiative',
+    );
+
+    Future<MockApiService> pumpMenu(
+      WidgetTester tester, {
+      bool canEdit = true,
+    }) async {
+      tester.view.physicalSize = const Size(800, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final mockApi = MockApiService()..projectCanEdit = canEdit;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [apiServiceProvider.overrideWithValue(mockApi)],
+          child: MaterialApp(home: ProjectScreen.fromCollection(collection)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('project_menu_button'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('project_menu_teams'));
+      await tester.pumpAndSettle();
+      return mockApi;
+    }
+
+    testWidgets('Teams lists the members', (tester) async {
+      await pumpMenu(tester);
+      expect(find.text('Alice Smith'), findsOneWidget);
+      expect(find.bySemanticsIdentifier('project_team_add'), findsOneWidget);
+    });
+
+    testWidgets('non-editors cannot add members', (tester) async {
+      await pumpMenu(tester, canEdit: false);
+      expect(find.text('Alice Smith'), findsOneWidget);
+      expect(find.bySemanticsIdentifier('project_team_add'), findsNothing);
+    });
+
+    testWidgets('add dialog adds a new user by name and email', (tester) async {
+      final api = await pumpMenu(tester);
+      await tester.tap(find.bySemanticsIdentifier('project_team_add'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('team_add_mode_new'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.bySemanticsIdentifier('team_add_first_name'),
+          matching: find.byType(TextField),
+        ),
+        'Bob',
+      );
+      await tester.enterText(
+        find.descendant(
+          of: find.bySemanticsIdentifier('team_add_email'),
+          matching: find.byType(TextField),
+        ),
+        'bob@example.com',
+      );
+      await tester.tap(find.bySemanticsIdentifier('team_add_submit'));
+      await tester.pumpAndSettle();
+      expect(api.addedTeamMembers, isNotEmpty);
     });
   });
 
@@ -298,7 +318,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+      await openInfoSheet(tester);
       await tester.pumpAndSettle();
       return mockApi;
     }
@@ -451,7 +471,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.bySemanticsIdentifier('project_info_button'));
+    await openInfoSheet(tester);
     await tester.pumpAndSettle();
 
     expect(find.text('Claude Web Compare'), findsWidgets);

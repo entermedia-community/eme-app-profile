@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../widgets/files/files_section.dart';
 // import '../event/create_event_screen.dart'; // TODO(events)
 import 'widgets/profile_header_card.dart';
+import 'widgets/profile_projects_section.dart';
 import 'widgets/self_chat_composer.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -29,6 +30,11 @@ class ProfileScreen extends StatelessWidget {
           // _CreateEventTile(),
           // SizedBox(height: 20),
           SizedBox(height: 8),
+
+          // Section 3: Projects you own or are on the team of
+          ProfileProjectsSection(),
+
+          SizedBox(height: 20),
 
           // Section 4: Files
           FilesSection(),

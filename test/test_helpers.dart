@@ -101,6 +101,12 @@ class MockApiService implements IApiService {
   final addedTeamMembers = <String>[];
 
   @override
+  Future<List<EmeProfileModel>> fetchTeamCandidates(
+    String collectionId, {
+    String? query,
+  }) async => const [];
+
+  @override
   Future<void> addProjectTeamMember(
     String collectionId, {
     String? userId,

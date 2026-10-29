@@ -4,12 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/module_bottom_nav.dart';
 import '../server/tabs/server_chat_tab.dart';
 import '../server/tabs/server_files_tab.dart';
 import '../server/tabs/server_finance_tab.dart';
 import '../server/tabs/server_goals_tab.dart';
 import 'widgets/project_info_sheet.dart';
+import 'widgets/project_team_sheet.dart';
 
 /// Views of [ProjectScreen], shown as bottom tabs in this order.
 enum ProjectView {
@@ -274,32 +274,42 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         ),
         actions: [
           Semantics(
-            identifier: 'project_info_button',
-            child: IconButton(
-              icon: const Icon(Icons.info_outline_rounded, size: 21),
-              tooltip: 'Project info',
-              onPressed: () => ProjectInfoSheet.show(
-                context,
-                server: currentServer,
-                collectionKey: key,
-              ),
-            ),
-          ),
-          // Theme Toggle
-          Semantics(
-            identifier: 'project_theme_toggle',
-            child: IconButton(
-              icon: Icon(
-                isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                size: 20,
-                color: isDark
-                    ? const Color(0xFFFBBF24)
-                    : AppColors.textSecondary,
-              ),
-              tooltip: isDark ? 'Light Mode' : 'Dark Mode',
-              onPressed: () {
-                ref.read(themeModeProvider.notifier).toggleTheme();
+            identifier: 'project_menu_button',
+            child: PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              tooltip: 'More',
+              onSelected: (value) {
+                switch (value) {
+                  case 'teams':
+                    ProjectTeamSheet.show(context, collectionKey: key);
+                  case 'entity_assets':
+                    // TODO: list the entity assets associated with this project.
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Entity Assets is not available yet'),
+                      ),
+                    );
+                  case 'settings':
+                    ProjectInfoSheet.show(
+                      context,
+                      server: currentServer,
+                      collectionKey: key,
+                    );
+                }
               },
+              itemBuilder: (_) => [
+                _menuItem('teams', 'Teams', Icons.groups_rounded),
+                _menuItem(
+                  'entity_assets',
+                  'Entity Assets',
+                  Icons.perm_media_outlined,
+                ),
+                _menuItem(
+                  'settings',
+                  'Project Settings',
+                  Icons.settings_outlined,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 4),
@@ -309,21 +319,22 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
         duration: const Duration(milliseconds: 200),
         child: _buildBody(currentServer, activeView),
       ),
-      bottomNavigationBar: ModuleBottomNav(
-        items: [
-          for (final v in views)
-            ModuleNavItem(
-              key: v.name,
-              title: v.label,
-              icon: v.icon,
-              activeIcon: v.activeIcon,
-            ),
-        ],
-        activeKey: activeView.name,
-        color: currentServer.primaryColor,
-        idPrefix: 'project_nav',
-        onSelect: (name) =>
-            setState(() => _activeView = ProjectView.values.byName(name)),
+    );
+  }
+
+  PopupMenuItem<String> _menuItem(String value, String label, IconData icon) {
+    return PopupMenuItem<String>(
+      value: value,
+      child: Semantics(
+        identifier: 'project_menu_$value',
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 12),
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+          ],
+        ),
       ),
     );
   }
