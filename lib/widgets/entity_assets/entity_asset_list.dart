@@ -72,7 +72,7 @@ class EntityAssetList extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => Navigator.of(
                   context,
-                ).push(EntityAssetDetailScreen.route(a)),
+                ).push(EntityAssetDetailScreen.route(a, key)),
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

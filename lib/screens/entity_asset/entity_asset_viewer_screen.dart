@@ -24,10 +24,25 @@ class EntityAssetViewerScreen extends StatelessWidget {
     };
   }
 
+  static Future<void> download(BuildContext context, String url) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Could not open the file')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final mediaUrl = asset.mediaUrl;
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: mediaUrl == null ? null : 96,
         leading: Semantics(
           identifier: 'entity_asset_viewer_back_button',
           child: IconButton(
@@ -36,6 +51,18 @@ class EntityAssetViewerScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
+        actions: mediaUrl == null
+            ? null
+            : [
+                Semantics(
+                  identifier: 'entity_asset_viewer_download_button',
+                  child: IconButton(
+                    icon: const Icon(Icons.download_rounded),
+                    tooltip: 'Download',
+                    onPressed: () => download(context, mediaUrl),
+                  ),
+                ),
+              ],
         title: Text(
           asset.fileName ?? asset.name,
           maxLines: 1,
@@ -179,18 +206,7 @@ class _DownloadPrompt extends StatelessWidget {
               child: FilledButton.icon(
                 icon: const Icon(Icons.download_rounded),
                 label: const Text('Download to device'),
-                onPressed: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  final ok = await launchUrl(
-                    Uri.parse(url),
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!ok) {
-                    messenger.showSnackBar(
-                      const SnackBar(content: Text('Could not open the file')),
-                    );
-                  }
-                },
+                onPressed: () => EntityAssetViewerScreen.download(context, url),
               ),
             ),
           ],
