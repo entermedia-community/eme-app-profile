@@ -6,31 +6,22 @@ import '../../providers/navigation_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
 import 'tabs/server_chat_tab.dart';
-import 'tabs/server_overview_tab.dart';
-import 'tabs/server_products_tab.dart';
-import '../../widgets/module_bottom_nav.dart';
+
+// TODO(server-tabs): Overview and Products tabs are removed; everything
+// happens through the chat.
+// import 'tabs/server_overview_tab.dart';
+// import 'tabs/server_products_tab.dart';
 
 class ServerDetailScreen extends ConsumerStatefulWidget {
   final ServerModel server;
-  final String initialModuleKey;
 
-  const ServerDetailScreen({
-    super.key,
-    required this.server,
-    this.initialModuleKey = 'chat',
-  });
+  const ServerDetailScreen({super.key, required this.server});
 
   /// Custom route animation for server transition
-  static Route<void> route(
-    ServerModel server, {
-    String initialModuleKey = 'chat',
-  }) {
+  static Route<void> route(ServerModel server) {
     return PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          ServerDetailScreen(
-            server: server,
-            initialModuleKey: initialModuleKey,
-          ),
+          ServerDetailScreen(server: server),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -50,35 +41,6 @@ class ServerDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
-  late String _activeModuleKey;
-
-  @override
-  void initState() {
-    super.initState();
-    _activeModuleKey = widget.initialModuleKey;
-  }
-
-  static const _modules = [
-    ModuleNavItem(
-      key: 'chat',
-      title: 'Chat',
-      icon: Icons.chat_bubble_outline_rounded,
-      activeIcon: Icons.chat_bubble_rounded,
-    ),
-    ModuleNavItem(
-      key: 'overview',
-      title: 'Overview',
-      icon: Icons.dashboard_outlined,
-      activeIcon: Icons.dashboard_rounded,
-    ),
-    ModuleNavItem(
-      key: 'products',
-      title: 'Products',
-      icon: Icons.inventory_2_outlined,
-      activeIcon: Icons.inventory_2_rounded,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final serverState = ref.watch(serverProvider);
@@ -300,47 +262,10 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
           const SizedBox(width: 4),
         ],
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        child: _buildCurrentModule(currentServer),
-      ),
-      bottomNavigationBar: ModuleBottomNav(
-        items: _modules,
-        activeKey: _activeModuleKey,
-        color: currentServer.primaryColor,
-        idPrefix: 'server_nav',
-        onSelect: (moduleKey) {
-          setState(() {
-            _activeModuleKey = moduleKey;
-          });
-        },
+      body: ServerChatTab(
+        key: ValueKey('chat_${currentServer.id}'),
+        server: currentServer,
       ),
     );
-  }
-
-  Widget _buildCurrentModule(ServerModel server) {
-    switch (_activeModuleKey) {
-      case 'chat':
-        return ServerChatTab(
-          key: ValueKey('chat_${server.id}'),
-          server: server,
-        );
-      case 'products':
-        return ServerProductsTab(
-          key: ValueKey('products_${server.id}'),
-          server: server,
-        );
-      case 'overview':
-      default:
-        return ServerOverviewTab(
-          key: ValueKey('overview_${server.id}'),
-          server: server,
-          onNavigateToModule: (moduleKey) {
-            setState(() {
-              _activeModuleKey = moduleKey;
-            });
-          },
-        );
-    }
   }
 }
