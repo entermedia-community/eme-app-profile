@@ -3,6 +3,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_colors.dart';
+import 'entity_asset_upload_dialog.dart';
 
 /// Picks a file and uploads it as a new entity asset of a project
 /// ([collectionId]) or, without one, of the signed-in user's profile.
@@ -39,16 +40,28 @@ class _EntityAssetUploadButtonState
       final picked = await widget.pickFile();
       if (picked == null) return;
 
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      final details = await EntityAssetUploadDialog.show(
+        context,
+        fileName: picked.name,
+        bytes: bytes,
+      );
+      if (details == null) return;
+
       final path = picked.path;
       final file = path != null
           ? await MultipartFile.fromFile(path, filename: picked.name)
-          : MultipartFile.fromBytes(
-              await picked.readAsBytes(),
-              filename: picked.name,
-            );
+          : MultipartFile.fromBytes(bytes, filename: picked.name);
       await ref
           .read(apiServiceProvider)
-          .uploadEntityAsset(file, collectionId: widget.collectionId);
+          .uploadEntityAsset(
+            file,
+            collectionId: widget.collectionId,
+            name: details.name,
+            description: details.description,
+            tags: details.tags,
+          );
       ref.invalidate(
         entityAssetsProvider((
           collectionId: widget.collectionId,

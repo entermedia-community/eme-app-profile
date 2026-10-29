@@ -89,6 +89,22 @@ class AuthenticatedMockAuthService implements IAuthService {
   }
 }
 
+class UploadedEntityAsset {
+  final String? collectionId;
+  final String? filename;
+  final String? name;
+  final String? description;
+  final List<String> tags;
+
+  const UploadedEntityAsset(
+    this.collectionId,
+    this.filename,
+    this.name,
+    this.description,
+    this.tags,
+  );
+}
+
 class MockApiService implements IApiService {
   /// Projects returned by [search].
   final searchableProjects = <LibraryCollectionModel>[];
@@ -211,8 +227,8 @@ class MockApiService implements IApiService {
     );
   }
 
-  /// Files passed to [uploadEntityAsset], as (collectionId, filename).
-  final uploadedEntityAssets = <(String?, String?)>[];
+  /// What was passed to [uploadEntityAsset].
+  final uploadedEntityAssets = <UploadedEntityAsset>[];
 
   @override
   Future<void> uploadEntityAsset(
@@ -220,7 +236,10 @@ class MockApiService implements IApiService {
     String? collectionId,
     String? name,
     String? description,
-  }) async => uploadedEntityAssets.add((collectionId, file.filename));
+    List<String> tags = const [],
+  }) async => uploadedEntityAssets.add(
+    UploadedEntityAsset(collectionId, file.filename, name, description, tags),
+  );
 
   @override
   Future<List<EventModel>> fetchEvents({

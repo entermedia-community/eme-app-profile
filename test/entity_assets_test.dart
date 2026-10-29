@@ -151,10 +151,64 @@ void main() {
       ),
     );
     await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_button'));
+    // The button's spinner never settles while the dialog is open.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // The name starts as the file name without its extension.
+    expect(find.widgetWithText(TextFormField, 'deed'), findsOneWidget);
+    await tester.enterText(
+      find.bySemanticsIdentifier('entity_asset_upload_description'),
+      'Land deed',
+    );
+    await tester.enterText(
+      find.bySemanticsIdentifier('entity_asset_upload_tags'),
+      'legal,land,',
+    );
+    await tester.pump();
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_confirm'));
     await tester.pumpAndSettle();
 
-    expect(api.uploadedEntityAssets, [('coll_123', 'deed.pdf')]);
+    final uploaded = api.uploadedEntityAssets.single;
+    expect(uploaded.collectionId, 'coll_123');
+    expect(uploaded.filename, 'deed.pdf');
+    expect(uploaded.name, 'deed');
+    expect(uploaded.description, 'Land deed');
+    expect(uploaded.tags, ['legal', 'land']);
     expect(find.text('Uploaded deed.pdf'), findsOneWidget);
+  });
+
+  testWidgets('name is required and cancelling uploads nothing', (
+    tester,
+  ) async {
+    final api = MockApiService();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [apiServiceProvider.overrideWithValue(api)],
+        child: MaterialApp(
+          home: Scaffold(
+            body: EntityAssetUploadButton(
+              pickFile: () async => _FakeFile('deed.pdf'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_button'));
+    // The button's spinner never settles while the dialog is open.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.enterText(
+      find.bySemanticsIdentifier('entity_asset_upload_name'),
+      '  ',
+    );
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_confirm'));
+    await tester.pump();
+    expect(find.text('Name is required'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsIdentifier('entity_asset_upload_cancel'));
+    await tester.pumpAndSettle();
+    expect(api.uploadedEntityAssets, isEmpty);
   });
 
   testWidgets('cancelling the picker uploads nothing', (tester) async {
