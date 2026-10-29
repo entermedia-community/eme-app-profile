@@ -181,8 +181,12 @@ class ProfileHeaderCard extends ConsumerWidget {
                             tooltip: 'Edit Profile',
                             color: AppColors.primary,
                             visualDensity: VisualDensity.compact,
-                            onPressed: () =>
-                                _showEditProfileSheet(context, profile, ref),
+                            onPressed: currentUser == null
+                                ? () => AuthModalSheet.show(context)
+                                : () => _showEditProfileSheet(
+                                    context,
+                                    currentUser,
+                                  ),
                           ),
                         ),
                       ],
@@ -274,16 +278,12 @@ class ProfileHeaderCard extends ConsumerWidget {
     );
   }
 
-  void _showEditProfileSheet(
-    BuildContext context,
-    ProfileModel profile,
-    WidgetRef ref,
-  ) {
+  void _showEditProfileSheet(BuildContext context, EmUser user) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => EditProfileSheet(profile: profile),
+      builder: (ctx) => EditProfileSheet(user: user),
     );
   }
 }

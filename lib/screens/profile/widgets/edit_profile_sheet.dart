@@ -1,77 +1,146 @@
+import 'dart:typed_data';
+import 'package:eme_app_sdk/eme_app_sdk.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
-import '../../../widgets/pill_badge.dart';
 
+/// Edits the signed-in user's account: first and last name and the portrait.
+/// The fields start with what the server has for the user.
 class EditProfileSheet extends ConsumerStatefulWidget {
-  final ProfileModel profile;
+  final EmUser user;
 
-  const EditProfileSheet({super.key, required this.profile});
+  /// Chooses the new portrait; replaced in tests.
+  final Future<PlatformFile?> Function() pickImage;
+
+  const EditProfileSheet({
+    super.key,
+    required this.user,
+    this.pickImage = _pickAnyImage,
+  });
+
+  static Future<PlatformFile?> _pickAnyImage() =>
+      FilePicker.pickFile(type: FileType.image);
 
   @override
   ConsumerState<EditProfileSheet> createState() => _EditProfileSheetState();
 }
 
 class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
-  late final TextEditingController _nameController;
-  late final TextEditingController _roleController;
-  late final TextEditingController _bioController;
-  late final TextEditingController _tagInputController;
-  late List<String> _tags;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  PlatformFile? _portrait;
+  Uint8List? _portraitPreview;
+  bool _busy = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.profile.name);
-    _roleController = TextEditingController(text: widget.profile.role);
-    _bioController = TextEditingController(text: widget.profile.bio);
-    _tagInputController = TextEditingController();
-    _tags = List.from(widget.profile.tags);
+    _firstNameController = TextEditingController(
+      text: widget.user.firstname ?? '',
+    );
+    _lastNameController = TextEditingController(
+      text: widget.user.lastname ?? '',
+    );
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _roleController.dispose();
-    _bioController.dispose();
-    _tagInputController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     super.dispose();
   }
 
-  void _addTag() {
-    final text = _tagInputController.text.trim();
-    if (text.isNotEmpty && !_tags.contains(text)) {
+  Future<void> _choosePortrait() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picked = await widget.pickImage();
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
       setState(() {
-        _tags.add(text);
-        _tagInputController.clear();
+        _portrait = picked;
+        _portraitPreview = bytes;
       });
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.redAccent,
+          content: Text('Could not open the picture: $e'),
+        ),
+      );
     }
   }
 
-  void _removeTag(String tag) {
-    setState(() {
-      _tags.remove(tag);
-    });
+  Future<void> _save() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _busy = true);
+    try {
+      final portrait = _portrait;
+      await ref
+          .read(authProvider.notifier)
+          .updateAccount(
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            portrait: portrait == null
+                ? null
+                : MultipartFile.fromBytes(
+                    _portraitPreview!,
+                    filename: portrait.name,
+                  ),
+          );
+      navigator.pop();
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Profile updated successfully!'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.redAccent,
+          content: Text('Could not update profile: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
-  void _save() {
-    ref
-        .read(profileProvider.notifier)
-        .updateProfile(
-          name: _nameController.text.trim(),
-          role: _roleController.text.trim(),
-          bio: _bioController.text.trim(),
-          tags: _tags,
-        );
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile updated successfully!'),
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+    ),
+  );
+
+  Widget _avatar() {
+    final portraitUrl = widget.user.assetportrait;
+    final ImageProvider? image = _portraitPreview != null
+        ? MemoryImage(_portraitPreview!)
+        : (portraitUrl != null && portraitUrl.isNotEmpty
+              ? NetworkImage(portraitUrl)
+              : null);
+    return CircleAvatar(
+      radius: 44,
+      backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+      backgroundImage: image,
+      onBackgroundImageError: image == null ? null : (_, _) {},
+      child: image == null
+          ? Text(
+              widget.user.avatarInitials,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppColors.primary,
+              ),
+            )
+          : null,
     );
   }
 
@@ -96,7 +165,6 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Bar
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -107,126 +175,95 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
+                Semantics(
+                  identifier: 'edit_profile_close',
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Name Field
-            Text(
-              'Display Name',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(hintText: 'e.g. Christopher.B'),
-            ),
-            const SizedBox(height: 14),
-
-            // Role Field
-            Text(
-              'Title / Role',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _roleController,
-              decoration: const InputDecoration(
-                hintText: 'e.g. CEO / Lead Architect',
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Bio Field
-            Text(
-              'Short Bio',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _bioController,
-              maxLines: 2,
-              decoration: const InputDecoration(hintText: 'e.g. Cool guy'),
-            ),
-            const SizedBox(height: 14),
-
-            // Tags
-            Text(
-              'Tags / Skills',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _tags.map((tag) {
-                return PillBadge(
-                  label: tag,
-                  icon: const Icon(Icons.close_rounded, size: 14),
-                  onTap: () => _removeTag(tag),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _tagInputController,
-                    decoration: const InputDecoration(
-                      hintText: 'Add a tag (e.g. Founder)',
-                      isDense: true,
+            Center(
+              child: Column(
+                children: [
+                  _avatar(),
+                  const SizedBox(height: 8),
+                  Semantics(
+                    identifier: 'edit_profile_change_picture',
+                    child: TextButton.icon(
+                      onPressed: _busy ? null : _choosePortrait,
+                      icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                      label: const Text('Change picture'),
                     ),
-                    onSubmitted: (_) => _addTag(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _addTag,
-                  icon: const Icon(Icons.add),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
+            const SizedBox(height: 8),
+
+            _label('First Name'),
+            Semantics(
+              identifier: 'edit_profile_first_name',
+              child: TextField(
+                controller: _firstNameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(hintText: 'First name'),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            _label('Last Name'),
+            Semantics(
+              identifier: 'edit_profile_last_name',
+              child: TextField(
+                controller: _lastNameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(hintText: 'Last name'),
+              ),
+            ),
+            if (widget.user.email != null && widget.user.email!.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              _label('Email'),
+              TextFormField(
+                initialValue: widget.user.email,
+                enabled: false,
+              ),
+            ],
             const SizedBox(height: 24),
 
-            // Save Button
             SizedBox(
               width: double.infinity,
               height: 48,
-              child: ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              child: Semantics(
+                identifier: 'edit_profile_save',
+                child: ElevatedButton(
+                  onPressed: _busy ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                ),
-                child: Text(
-                  'Save Changes',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Save Changes',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
               ),
             ),

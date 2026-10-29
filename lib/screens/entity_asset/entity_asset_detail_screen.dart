@@ -60,33 +60,40 @@ class EntityAssetDetailScreen extends StatelessWidget {
                       context,
                     ).push(EntityAssetViewerScreen.route(asset))
                   : null,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: SizedBox(
-                  height: 220,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      asset.imageUrl == null
-                          ? const ColoredBox(
-                              color: Colors.black12,
-                              child: Icon(Icons.perm_media_outlined, size: 56),
-                            )
-                          : Image.network(
-                              asset.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) =>
-                                  const Icon(Icons.perm_media_outlined),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: SizedBox(
+                    height: 200,
+                    width: 200,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        asset.imageUrl == null
+                            ? const ColoredBox(
+                                color: Colors.black12,
+                                child: Icon(
+                                  Icons.perm_media_outlined,
+                                  size: 56,
+                                ),
+                              )
+                            : Image.network(
+                                asset.imageUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    const Icon(Icons.perm_media_outlined),
+                              ),
+                        if (canOpen)
+                          const Center(
+                            child: Icon(
+                              Icons.open_in_full_rounded,
+                              color: Colors.white,
+                              size: 32,
                             ),
-                      if (canOpen)
-                        const Center(
-                          child: Icon(
-                            Icons.open_in_full_rounded,
-                            color: Colors.white,
-                            size: 32,
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

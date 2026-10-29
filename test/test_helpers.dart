@@ -38,7 +38,25 @@ class AuthenticatedMockAuthService implements IAuthService {
   Future<void> saveUserFields(
     List<MapEntry<String, String>> fields, {
     MultipartFile? portrait,
-  }) async {}
+  }) async {
+    savedFields = fields;
+    savedPortrait = portrait?.filename;
+    String? value(String key) {
+      for (final e in fields) {
+        if (e.key == '$key.value') return e.value;
+      }
+      return null;
+    }
+
+    user = user.copyWith(
+      firstname: value('firstName'),
+      lastname: value('lastName'),
+    );
+  }
+
+  /// What the last [saveUserFields] was given.
+  List<MapEntry<String, String>> savedFields = const [];
+  String? savedPortrait;
 
   @override
   Future<SendUserCodeResult> sendUserCode({
