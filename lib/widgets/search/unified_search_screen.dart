@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../eme_world/eme_profile_card.dart';
-import '../../screens/profile/widgets/add_server_sheet.dart';
 import '../../screens/profile/widgets/server_card.dart';
 import '../../screens/event/event_screen.dart';
 import '../../screens/project/project_screen.dart';
@@ -147,15 +146,6 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   SearchKey _searchKey() =>
       SearchKey(query: _searchedQuery, category: _serverCategoryId());
 
-  void _openAddServerSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const AddServerSheet(),
-    );
-  }
-
   /// The searched servers plus servers only the local store has (custom
   /// servers added on this device), narrowed to the selected category by
   /// name. The store's joined state wins over the search's, which can be
@@ -260,18 +250,6 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
           ),
         ),
         title: const Text('Search'),
-        actions: [
-          Semantics(
-            identifier: 'add_custom_server',
-            child: IconButton(
-              icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
-              tooltip: 'Add Custom Server',
-              color: AppColors.primary,
-              onPressed: _openAddServerSheet,
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: RefreshIndicator(
         onRefresh: _refresh,

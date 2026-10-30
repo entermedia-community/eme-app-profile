@@ -7,8 +7,11 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/chat/product_message_card.dart';
 import '../../widgets/chat/send_product_sheet.dart';
-import 'chat_info_screen.dart';
+import '../../providers/navigation_provider.dart';
+import '../../widgets/eme_world/eme_profile_card.dart';
 import 'widgets/qr_connect_modal.dart';
+
+enum _ChatMenuAction { search, qr }
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatModel chat;
@@ -266,6 +269,38 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
+  /// Header tap: shows the other user's profile (your own EME profile page
+  /// for the self chat).
+  Future<void> _openProfile() async {
+    final username = widget.chat.username;
+    if (username == AuthService.userId) {
+      if (!widget.embedded) Navigator.of(context).pop();
+      ref.read(navigationProvider.notifier).selectTab(NavTab.profile);
+      return;
+    }
+    try {
+      final results = await ref.read(apiServiceProvider).searchUsers(username);
+      final matches = results.where((p) => p.username == username);
+      if (matches.isEmpty) throw StateError('Profile not found for $username');
+      if (!mounted) return;
+      EmeProfileCard(profile: matches.first).showDetails(context);
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Failed to load profile in ChatDetailScreen',
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load this profile'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -303,10 +338,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               ),
         // Chat Nav Header: Avatar & Name
         title: InkWell(
-          onTap: () {
-            // Open info drawer screen on tapping header
-            Navigator.of(context).push(ChatInfoScreen.route(widget.chat));
-          },
+          onTap: _openProfile,
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
@@ -389,41 +421,62 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             ),
           ),
         ),
-        // Action icons: Search, QR code, Info
+        // Overflow menu: Search, QR code, Info
         actions: [
-          // 1. Search Icon
-          IconButton(
-            icon: Icon(
-              _isSearchOpen ? Icons.search_off_rounded : Icons.search_rounded,
-              color: _isSearchOpen ? AppColors.primary : null,
-              size: 22,
-            ),
-            tooltip: _isSearchOpen ? 'Close Search' : 'Search in Conversation',
-            onPressed: () {
-              setState(() {
-                _isSearchOpen = !_isSearchOpen;
-                if (!_isSearchOpen) {
-                  _searchQuery = '';
-                  _searchController.clear();
+          Semantics(
+            identifier: 'chat_overflow_menu',
+            child: PopupMenuButton<_ChatMenuAction>(
+              icon: const Icon(Icons.more_vert_rounded),
+              tooltip: 'More',
+              onSelected: (action) {
+                switch (action) {
+                  case _ChatMenuAction.search:
+                    setState(() {
+                      _isSearchOpen = !_isSearchOpen;
+                      if (!_isSearchOpen) {
+                        _searchQuery = '';
+                        _searchController.clear();
+                      }
+                    });
+                  case _ChatMenuAction.qr:
+                    QrConnectModal.show(context, widget.chat);
                 }
-              });
-            },
-          ),
-          // 2. QR Code Icon
-          IconButton(
-            icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-            tooltip: 'Show QR Code',
-            onPressed: () {
-              QrConnectModal.show(context, widget.chat);
-            },
-          ),
-          // 3. Info Icon (opens screen animated from the right like a drawer)
-          IconButton(
-            icon: const Icon(Icons.info_outline_rounded, size: 22),
-            tooltip: 'Chat Details & Info',
-            onPressed: () {
-              Navigator.of(context).push(ChatInfoScreen.route(widget.chat));
-            },
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: _ChatMenuAction.search,
+                  child: Semantics(
+                    identifier: 'chat_menu_search',
+                    child: ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        _isSearchOpen
+                            ? Icons.search_off_rounded
+                            : Icons.search_rounded,
+                      ),
+                      title: Text(
+                        _isSearchOpen
+                            ? 'Close Search'
+                            : 'Search in Conversation',
+                      ),
+                    ),
+                  ),
+                ),
+                PopupMenuItem(
+                  value: _ChatMenuAction.qr,
+                  child: Semantics(
+                    identifier: 'chat_menu_qr',
+                    child: const ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.qr_code_2_rounded),
+                      title: Text('Show QR Code'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(width: 4),
         ],
