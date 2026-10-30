@@ -134,6 +134,9 @@ class MockApiService implements IApiService {
 
   /// `priviacylevel` returned by [fetchProjectCollection].
   String projectPrivacy = 'community';
+
+  /// `owner` returned by [fetchProjectCollection].
+  String? projectOwner;
   int followToggles = 0;
   final addedTeamMembers = <String>[];
 
@@ -305,6 +308,21 @@ class MockApiService implements IApiService {
     return project;
   }
 
+  /// `name:description:urlName:tags` of each [updateProject] call.
+  final projectUpdates = <String>[];
+
+  @override
+  Future<LibraryCollectionModel> updateProject(
+    String collectionId, {
+    required String name,
+    String? description,
+    String? urlName,
+    List<String> tags = const [],
+  }) async {
+    projectUpdates.add('$name:$description:$urlName:${tags.join(',')}');
+    return LibraryCollectionModel(id: collectionId, name: name);
+  }
+
   @override
   Future<EventModel> createEvent({
     required String name,
@@ -371,6 +389,7 @@ class MockApiService implements IApiService {
       name: 'Clean Water Initiative',
       description: 'Decentralized ecological project',
       privacyLevel: projectPrivacy,
+      ownerId: projectOwner,
       contactEmail: 'water@example.com',
       projectLink: 'https://water.example.com/clean-water',
       donateDescription: 'Help us build wells',

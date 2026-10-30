@@ -7,13 +7,21 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_colors.dart';
 import '../project/project_screen.dart';
 
-/// Form for creating a project. Only the name is required. The creator
-/// ends up on the team and the new project opens on success.
+/// Form for creating a project, or with [project] for editing the details of
+/// one the user owns (the logo is not editable yet). Only the name is
+/// required. A created project opens on success.
 class CreateProjectScreen extends ConsumerStatefulWidget {
   /// Chooses the logo; replaced in tests.
   final Future<PlatformFile?> Function() pickImage;
 
-  const CreateProjectScreen({super.key, this.pickImage = _pickAnyImage});
+  /// The project to edit; null creates a new one.
+  final LibraryCollectionModel? project;
+
+  const CreateProjectScreen({
+    super.key,
+    this.pickImage = _pickAnyImage,
+    this.project,
+  });
 
   static Future<PlatformFile?> _pickAnyImage() =>
       FilePicker.pickFile(type: FileType.image);
@@ -21,6 +29,13 @@ class CreateProjectScreen extends ConsumerStatefulWidget {
   static Future<void> open(BuildContext context) {
     return Navigator.of(context).push(
       MaterialPageRoute<void>(builder: (_) => const CreateProjectScreen()),
+    );
+  }
+
+  /// Opens the edit form; completes with true when the details were saved.
+  static Future<bool?> edit(BuildContext context, LibraryCollectionModel p) {
+    return Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => CreateProjectScreen(project: p)),
     );
   }
 
@@ -43,6 +58,20 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
   bool _slugEdited = false;
   bool _saving = false;
   String? _error;
+
+  bool get _editing => widget.project != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final project = widget.project;
+    if (project == null) return;
+    _name.text = project.name;
+    _description.text = project.displayDescription;
+    _slug.text = project.urlName ?? '';
+    _slugEdited = true;
+    _tags.addAll(project.tags);
+  }
 
   @override
   void dispose() {
@@ -103,6 +132,23 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
       _error = null;
     });
     try {
+      final existing = widget.project;
+      if (existing != null) {
+        await ref
+            .read(apiServiceProvider)
+            .updateProject(
+              existing.id,
+              name: _name.text.trim(),
+              description: _description.text.trim(),
+              urlName: _slug.text.trim(),
+              tags: List.of(_tags),
+            );
+        ref.invalidate(userProjectsProvider);
+        ref.invalidate(projectCollectionProvider);
+        if (!mounted) return;
+        Navigator.of(context).pop(true);
+        return;
+      }
       final logo = _logo;
       final project = await ref
           .read(apiServiceProvider)
@@ -180,7 +226,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'New project',
+          _editing ? 'Edit project' : 'New project',
           style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
         ),
       ),
@@ -189,8 +235,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _logoPicker(),
-            const SizedBox(height: 16),
+            if (!_editing) ...[_logoPicker(), const SizedBox(height: 16)],
             Semantics(
               identifier: 'create_project_name',
               child: TextFormField(
@@ -299,7 +344,7 @@ class _CreateProjectScreenState extends ConsumerState<CreateProjectScreen> {
                         height: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Create project'),
+                    : Text(_editing ? 'Save changes' : 'Create project'),
               ),
             ),
           ],

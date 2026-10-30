@@ -6,6 +6,7 @@ import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart
 import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/delta_viewer.dart';
+import '../../projects/create_project_screen.dart';
 import 'add_team_member_sheet.dart';
 import 'edit_team_member_sheet.dart';
 
@@ -137,9 +138,27 @@ class ProjectInfoSheet extends ConsumerWidget {
     final canEdit = connection?.canEditCollection ?? false;
     final canEditMembers = connection?.canViewSettings ?? false;
     final donateUrl = collection.webUrl(_siteRoot, 'donate/index.html');
+    final isOwner = collection.isOwnedBy(
+      ref.watch(authProvider).user?.username,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Only the owner may change the project's details.
+        if (isOwner) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Semantics(
+              identifier: 'project_edit_details',
+              child: OutlinedButton.icon(
+                onPressed: () => CreateProjectScreen.edit(context, collection),
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text('Edit details'),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         if (collection.displayDescription.isNotEmpty) ...[
           _bodyText(collection.displayDescription, isDark),
           const SizedBox(height: 16),
@@ -184,7 +203,7 @@ class ProjectInfoSheet extends ConsumerWidget {
                             mode: AddTeamMemberMode.search,
                           ),
                           icon: const Icon(Icons.search_rounded, size: 16),
-                          label: const Text('Add Agent'),
+                          label: const Text('Add Existing User'),
                         ),
                       ),
                       Semantics(

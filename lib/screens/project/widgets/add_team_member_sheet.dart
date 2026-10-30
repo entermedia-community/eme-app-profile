@@ -6,7 +6,7 @@ import '../../../theme/app_colors.dart';
 
 enum AddTeamMemberMode { search, newUser }
 
-/// The web sidebar's "Add Agent" (search existing users) and "New User"
+/// The web sidebar's "Add Existing User" (search existing users) and "New User"
 /// (add by email) dialogs. Puts the user on the project's team.
 class AddTeamMemberSheet extends ConsumerStatefulWidget {
   final ProjectCollectionKey collectionKey;
@@ -124,7 +124,7 @@ class _AddTeamMemberSheetState extends ConsumerState<AddTeamMemberSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                isSearch ? 'Add Agent' : 'Add New User to Team',
+                isSearch ? 'Add Existing User' : 'Add New User to Team',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,

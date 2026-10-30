@@ -109,6 +109,39 @@ void main() {
     expect(find.byType(CreateProjectScreen), findsOneWidget);
   });
 
+  testWidgets('editing prefills, hides the logo and saves the changes', (
+    tester,
+  ) async {
+    final api = MockApiService();
+    const project = LibraryCollectionModel(
+      id: 'c1',
+      name: 'Reef',
+      description: 'Coral work',
+      urlName: 'reef',
+      tags: ['ocean'],
+    );
+    await tester.pumpWidget(
+      subject(api, home: const CreateProjectScreen(project: project)),
+    );
+
+    expect(find.text('Edit project'), findsOneWidget);
+    expect(find.bySemanticsIdentifier('create_project_logo'), findsNothing);
+    expect(find.widgetWithText(TextFormField, 'Reef'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'reef'), findsOneWidget);
+    expect(find.widgetWithText(InputChip, 'ocean'), findsOneWidget);
+
+    // Renaming does not rewrite the slug of an existing project.
+    await tester.enterText(
+      find.bySemanticsIdentifier('create_project_name'),
+      'Reef Two',
+    );
+    await tester.tap(find.bySemanticsIdentifier('create_project_submit'));
+    await tester.pumpAndSettle();
+
+    expect(api.projectUpdates, ['Reef Two:Coral work:reef:ocean']);
+    expect(api.createdProjects, isEmpty);
+  });
+
   testWidgets('My Projects has a button that opens the form', (tester) async {
     await tester.pumpWidget(
       subject(MockApiService(), home: const MyProjectsScreen()),

@@ -336,6 +336,49 @@ void main() {
       );
     });
 
+    Future<void> openInfoAs(
+      WidgetTester tester, {
+      required String? owner,
+    }) async {
+      tester.view.physicalSize = const Size(800, 1800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final mockAuth = AuthenticatedMockAuthService();
+      final mockApi = MockApiService()..projectOwner = owner;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            apiServiceProvider.overrideWithValue(mockApi),
+            authProvider.overrideWith(
+              (ref) => AuthNotifier(authService: mockAuth)
+                ..state = AuthState(
+                  status: AuthStatus.authenticated,
+                  user: mockAuth.user,
+                  token: mockAuth.token,
+                ),
+            ),
+          ],
+          child: MaterialApp(home: ProjectScreen.fromCollection(collection)),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await openInfoSheet(tester);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('owner can edit the project details', (tester) async {
+      await openInfoAs(tester, owner: 'usr_test_1');
+      expect(
+        find.bySemanticsIdentifier('project_edit_details'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('others cannot edit the project details', (tester) async {
+      await openInfoAs(tester, owner: 'someone_else');
+      expect(find.bySemanticsIdentifier('project_edit_details'), findsNothing);
+    });
+
     testWidgets('edit pencil only with canviewsettings', (tester) async {
       await openInfo(tester);
       expect(find.bySemanticsIdentifier('project_edit_member_0'), findsNothing);
@@ -371,7 +414,7 @@ void main() {
       expect(find.bySemanticsIdentifier('project_new_user'), findsNothing);
     });
 
-    testWidgets('Add Agent searches people and adds one to the team', (
+    testWidgets('Add Existing User searches people and adds one to the team', (
       tester,
     ) async {
       final api = await openInfo(tester);
@@ -449,7 +492,7 @@ void main() {
   ) async {
     // Captured from GET librarycollection/data/{id} on a local
     // eme-server-world; the web project chat page for the same project
-    // showed: Agents (Admin, Add Agent, New User), Donate, 0 Followers /
+    // showed: Agents (Admin, Add Existing User, New User), Donate, 0 Followers /
     // Follow, Testimonials, then the website and Facebook links.
     final hit =
         jsonDecode(
