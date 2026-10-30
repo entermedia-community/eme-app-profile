@@ -522,6 +522,26 @@ class MockApiService implements IApiService {
     ];
   }
 
+  /// Sessions returned by [fetchChatSessions].
+  final chatSessions = <ChatSession>[];
+
+  @override
+  Future<List<ChatSession>> fetchChatSessions({
+    String? toUser,
+    String? serverId,
+    String? collectionId,
+    String? baseUrl,
+  }) async => chatSessions;
+
+  @override
+  Future<ChatSession> createChatSession({
+    String? toUser,
+    String? serverId,
+    String? collectionId,
+    String? baseUrl,
+  }) async =>
+      ChatSession(channelId: 'new_session', refreshDate: DateTime.now());
+
   @override
   Future<List<ChatMessage>> fetchServerChatMessages(
     String channelId, {

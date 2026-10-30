@@ -18,11 +18,16 @@ class ServerChatTab extends ConsumerStatefulWidget {
   /// When set, chat in this event's channel.
   final String? eventId;
 
+  /// When set, opens this earlier session (channel) of the chat instead of
+  /// the current one. See Session History.
+  final String? initialChannelId;
+
   const ServerChatTab({
     super.key,
     required this.server,
     this.projectCollectionId,
     this.eventId,
+    this.initialChannelId,
   });
 
   @override
@@ -53,6 +58,24 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       _isConnecting = true;
       _connectionError = null;
     });
+
+    final sessionChannel = widget.initialChannelId;
+    if (sessionChannel != null) {
+      try {
+        await _openChannel(sessionChannel);
+      } catch (e, stack) {
+        AppErrorHandler.recordNonFatal(
+          e,
+          stack,
+          reason: 'Error opening chat session in ServerChatTab',
+          customKeys: {'channelId': sessionChannel},
+        );
+        if (mounted) setState(() => _connectionError = '$e');
+      } finally {
+        if (mounted) setState(() => _isConnecting = false);
+      }
+      return;
+    }
 
     final eventId = widget.eventId;
     if (eventId != null) {

@@ -9,6 +9,7 @@ import '../server/tabs/server_files_tab.dart';
 import '../server/tabs/server_finance_tab.dart';
 import '../server/tabs/server_goals_tab.dart';
 import 'entity_assets_screen.dart';
+import '../chats/session_history_screen.dart';
 import 'widgets/project_info_sheet.dart';
 import 'widgets/project_team_sheet.dart';
 
@@ -281,6 +282,31 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
               tooltip: 'More',
               onSelected: (value) {
                 switch (value) {
+                  case 'sessions':
+                    final collectionId = _collectionId;
+                    if (collectionId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Session history is not available: this project is not linked to a collection.',
+                          ),
+                        ),
+                      );
+                    } else {
+                      SessionHistoryScreen.show(
+                        context,
+                        collectionId: collectionId,
+                        onOpen: (session) => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => SessionChatScreen(
+                              server: currentServer,
+                              session: session,
+                              projectCollectionId: collectionId,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
                   case 'teams':
                     ProjectTeamSheet.show(context, collectionKey: key);
                   case 'entity_assets':
@@ -305,6 +331,7 @@ class _ProjectScreenState extends ConsumerState<ProjectScreen> {
                 }
               },
               itemBuilder: (_) => [
+                _menuItem('sessions', 'Session History', Icons.history_rounded),
                 _menuItem('teams', 'Teams', Icons.groups_rounded),
                 _menuItem(
                   'entity_assets',

@@ -5,6 +5,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_colors.dart';
+import '../chats/session_history_screen.dart';
 import 'tabs/server_chat_tab.dart';
 
 // TODO(server-tabs): Overview and Products tabs are removed; everything
@@ -158,7 +159,21 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
               borderRadius: BorderRadius.circular(14),
             ),
             onSelected: (value) async {
-              if (value == 'join') {
+              if (value == 'sessions') {
+                SessionHistoryScreen.show(
+                  context,
+                  serverId: currentServer.id,
+                  baseUrl: currentServer.serverMediaDBUrl,
+                  onOpen: (session) => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => SessionChatScreen(
+                        server: currentServer,
+                        session: session,
+                      ),
+                    ),
+                  ),
+                );
+              } else if (value == 'join') {
                 final wasJoined = currentServer.isJoined;
                 final success = await ref
                     .read(serverProvider.notifier)
@@ -219,6 +234,19 @@ class _ServerDetailScreenState extends ConsumerState<ServerDetailScreen> {
               }
             },
             itemBuilder: (ctx) => [
+              PopupMenuItem(
+                value: 'sessions',
+                child: Semantics(
+                  identifier: 'server_menu_sessions',
+                  child: const Row(
+                    children: [
+                      Icon(Icons.history_rounded, size: 18),
+                      SizedBox(width: 10),
+                      Text('Session History'),
+                    ],
+                  ),
+                ),
+              ),
               PopupMenuItem(
                 value: 'join',
                 child: Row(

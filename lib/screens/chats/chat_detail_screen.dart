@@ -9,9 +9,10 @@ import '../../widgets/chat/product_message_card.dart';
 import '../../widgets/chat/send_product_sheet.dart';
 import '../../providers/navigation_provider.dart';
 import '../../widgets/eme_world/eme_profile_card.dart';
+import 'session_history_screen.dart';
 import 'widgets/qr_connect_modal.dart';
 
-enum _ChatMenuAction { search, qr }
+enum _ChatMenuAction { sessions, search, qr }
 
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatModel chat;
@@ -430,6 +431,17 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
               tooltip: 'More',
               onSelected: (action) {
                 switch (action) {
+                  case _ChatMenuAction.sessions:
+                    SessionHistoryScreen.show(
+                      context,
+                      toUser: widget.chat.username,
+                      currentChannelId: widget.chat.channelId,
+                      onOpen: (session) => Navigator.of(context).push(
+                        ChatDetailScreen.route(
+                          widget.chat.copyWith(channelId: session.channelId),
+                        ),
+                      ),
+                    );
                   case _ChatMenuAction.search:
                     setState(() {
                       _isSearchOpen = !_isSearchOpen;
@@ -443,6 +455,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 }
               },
               itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: _ChatMenuAction.sessions,
+                  child: Semantics(
+                    identifier: 'chat_menu_sessions',
+                    child: const ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(Icons.history_rounded),
+                      title: Text('Session History'),
+                    ),
+                  ),
+                ),
                 PopupMenuItem(
                   value: _ChatMenuAction.search,
                   child: Semantics(

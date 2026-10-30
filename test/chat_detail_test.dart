@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eme_world/screens/chats/chat_detail_screen.dart';
+import 'package:eme_world/screens/chats/session_history_screen.dart';
 import 'test_helpers.dart';
 
 void main() {
@@ -45,6 +46,17 @@ void main() {
       await tester.tap(find.bySemanticsIdentifier('chat_menu_search'));
       await tester.pumpAndSettle();
       expect(find.text('Search in conversation...'), findsNothing);
+
+      // Session History is the first menu entry and opens its screen
+      await tester.tap(find.bySemanticsIdentifier('chat_overflow_menu'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsIdentifier('chat_menu_sessions'));
+      await tester.pumpAndSettle();
+      expect(find.byType(SessionHistoryScreen), findsOneWidget);
+      expect(find.text('No earlier sessions yet'), findsOneWidget);
+      expect(find.bySemanticsIdentifier('session_history_new'), findsOneWidget);
+      await tester.tap(find.bySemanticsIdentifier('session_history_close'));
+      await tester.pumpAndSettle();
 
       // 2. Test QR Code Modal
       await tester.tap(find.bySemanticsIdentifier('chat_overflow_menu'));
