@@ -278,6 +278,33 @@ class MockApiService implements IApiService {
     );
   }
 
+  /// Projects made through [createProject].
+  final createdProjects = <LibraryCollectionModel>[];
+
+  /// Logo filename and tags of the last [createProject] call.
+  String? createdProjectLogo;
+  List<String> createdProjectTags = const [];
+
+  @override
+  Future<LibraryCollectionModel> createProject({
+    required String name,
+    String? description,
+    String? urlName,
+    List<String> tags = const [],
+    MultipartFile? logo,
+  }) async {
+    createdProjectLogo = logo?.filename;
+    createdProjectTags = tags;
+    final project = LibraryCollectionModel(
+      id: 'proj_${createdProjects.length + 1}',
+      name: name,
+      description: description,
+      urlName: urlName,
+    );
+    createdProjects.add(project);
+    return project;
+  }
+
   @override
   Future<EventModel> createEvent({
     required String name,

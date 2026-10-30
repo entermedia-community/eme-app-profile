@@ -97,7 +97,7 @@ class _EntityAssetUploadButtonState
               ),
             )
           : IconButton(
-              icon: const Icon(Icons.upload_file_rounded),
+              icon: const Icon(Icons.add_circle_outline),
               color: AppColors.greenAccent,
               style: IconButton.styleFrom(
                 backgroundColor: AppColors.greenAccent.withValues(alpha: 0.1),
