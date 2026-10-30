@@ -24,7 +24,7 @@ String emeProfileLabel(EmUser? user, ProfileModel profile) {
 class ProfileAppBarButton extends ConsumerWidget {
   const ProfileAppBarButton({super.key});
 
-  static const double _avatarSize = 28;
+  static const double _avatarSize = 32;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -91,28 +91,10 @@ class ProfileAppBarButton extends ConsumerWidget {
           shape: const StadiumBorder(),
           clipBehavior: Clip.antiAlias,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+            padding: const EdgeInsets.all(4),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildAvatar(portraitUrl, initials, isDark),
-                const SizedBox(width: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 120),
-                  child: Text(
-                    emeProfileLabel(currentUser, profile),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? AppColors.textDarkPrimary
-                          : AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              ],
+              children: [_buildAvatar(portraitUrl, initials, isDark)],
             ),
           ),
         ),
@@ -195,7 +177,7 @@ class ProfileAppBarButton extends ConsumerWidget {
       child: Text(
         initials,
         style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w800,
           color: AppColors.primary,
         ),

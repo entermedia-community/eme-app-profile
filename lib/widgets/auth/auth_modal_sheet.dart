@@ -274,11 +274,7 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                 color: AppColors.primary.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.fingerprint_rounded,
-                color: AppColors.primary,
-                size: 24,
-              ),
+              child: const Icon(Icons.lock, color: AppColors.primary, size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(

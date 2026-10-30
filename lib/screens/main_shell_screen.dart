@@ -1,3 +1,4 @@
+import 'package:eme_world/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
@@ -54,7 +55,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           Semantics(
             identifier: 'chats_open_search',
             child: IconButton(
-              icon: const Icon(Icons.search_rounded),
+              icon: const Icon(Icons.search_rounded, color: AppColors.primary),
               tooltip: 'EME Search',
               onPressed: () => UnifiedSearchScreen.show(
                 context,
