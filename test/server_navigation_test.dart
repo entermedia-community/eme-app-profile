@@ -15,8 +15,8 @@ void main() {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // Joined servers are listed in the chat list under the Servers filter
-      await tester.tap(find.bySemanticsIdentifier('chat_filter_servers'));
+      // Joined servers are listed in the chat list under the Servers tab
+      await tester.tap(find.bySemanticsIdentifier('home_tab_servers'));
       await tester.pumpAndSettle();
       expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
       await tester.tap(find.text('Lakeview Stays & House Rentals'));
@@ -63,8 +63,8 @@ void main() {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // Joined servers are listed in the chat list under the Servers filter
-      await tester.tap(find.bySemanticsIdentifier('chat_filter_servers'));
+      // Joined servers are listed in the chat list under the Servers tab
+      await tester.tap(find.bySemanticsIdentifier('home_tab_servers'));
       await tester.pumpAndSettle();
       expect(find.text('Lakeview Stays & House Rentals'), findsOneWidget);
       await tester.tap(find.text('Lakeview Stays & House Rentals'));

@@ -11,8 +11,9 @@ void main() {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
 
-      // App opens on Chats (home)
-      expect(find.text('Search conversations...'), findsOneWidget);
+      // App opens on Chats (home); DMs live under the People tab
+      await tester.tap(find.bySemanticsIdentifier('home_tab_people'));
+      await tester.pumpAndSettle();
       expect(find.text('The Administrator'), findsWidgets);
 
       // Tap on the first chat item
@@ -77,7 +78,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ChatDetailScreen), findsNothing);
-      expect(find.text('Search conversations...'), findsOneWidget);
+      expect(find.bySemanticsIdentifier('home_tab_people'), findsOneWidget);
     },
   );
 }

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,19 +57,18 @@ enum ChatFilter {
   }
 }
 
+/// The chat list, limited to one kind of conversation (a main-shell tab).
 class ChatsScreen extends ConsumerStatefulWidget {
-  const ChatsScreen({super.key});
+  const ChatsScreen({super.key, required this.filter});
+
+  final ChatFilter filter;
 
   @override
   ConsumerState<ChatsScreen> createState() => _ChatsScreenState();
 }
 
-/// Active chat-list filter, shared so the app bar search opens pre-filtered.
-final chatFilterProvider = StateProvider<ChatFilter>((ref) => ChatFilter.all);
-
 class _ChatsScreenState extends ConsumerState<ChatsScreen> {
-  String _searchQuery = '';
-  ChatFilter get _activeFilter => ref.watch(chatFilterProvider);
+  ChatFilter get _activeFilter => widget.filter;
 
   Widget _buildAvatarFallback(UnifiedChatItem item) {
     // TODO(mcp): hidden for now.
@@ -256,98 +254,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
     final chatsAsync = ref.watch(unifiedChatsProvider);
     return Column(
       children: [
-        // Top Search Bar & open Search (people + servers)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Semantics(
-            identifier: 'chats_search_input',
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Search conversations...',
-                hintStyle: GoogleFonts.inter(fontSize: 13.5),
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Filter Tabs Row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          // IntrinsicHeight + stretch: the button takes the input's height.
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Icon(Icons.filter_list, color: Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ScrollConfiguration(
-                    behavior: ScrollConfiguration.of(context).copyWith(
-                      dragDevices: {
-                        PointerDeviceKind.touch,
-                        PointerDeviceKind.mouse,
-                        PointerDeviceKind.trackpad,
-                        PointerDeviceKind.stylus,
-                      },
-                    ),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _buildFilterChip(
-                            label: 'All',
-                            filter: ChatFilter.all,
-                            isDark: isDark,
-                          ),
-                          const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: 'People',
-                            filter: ChatFilter.users,
-                            isDark: isDark,
-                          ),
-                          const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: 'Projects',
-                            filter: ChatFilter.projects,
-                            isDark: isDark,
-                          ),
-                          const SizedBox(width: 8),
-                          _buildFilterChip(
-                            label: 'Servers',
-                            filter: ChatFilter.servers,
-                            isDark: isDark,
-                          ),
-                          // TODO(events): hidden for now.
-                          // const SizedBox(width: 8),
-                          // _buildFilterChip(
-                          //   label: 'Events',
-                          //   filter: ChatFilter.events,
-                          //   isDark: isDark,
-                          // ),
-                          // TODO(mcp): hidden for now.
-                          // const SizedBox(width: 8),
-                          // _buildFilterChip(
-                          //   label: 'MCP',
-                          //   filter: ChatFilter.mcp,
-                          //   isDark: isDark,
-                          // ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 6),
         Divider(height: 1, color: borderColor),
 
         // Chat & MCP List
@@ -401,7 +307,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
               ),
               data: (allItems) {
                 // 1. Filter by category
-                var filtered = allItems.where((item) {
+                final filtered = allItems.where((item) {
                   // TODO(events): events are hidden for now.
                   if (item.isEvent) return false;
                   if (_activeFilter == ChatFilter.users) {
@@ -420,16 +326,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                   if (item.isMcp) return false;
                   return true;
                 }).toList();
-
-                // 2. Filter by search query
-                if (_searchQuery.isNotEmpty) {
-                  filtered = filtered.where((item) {
-                    final query = _searchQuery.toLowerCase();
-                    return item.displayName.toLowerCase().contains(query) ||
-                        item.lastMessage.toLowerCase().contains(query) ||
-                        item.subtitle.toLowerCase().contains(query);
-                  }).toList();
-                }
 
                 if (filtered.isEmpty) {
                   return ListView(
@@ -451,10 +347,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? Icons.event_outlined
                                     : (_activeFilter == ChatFilter.servers
                                           ? Icons.dns_outlined
-                                          : (_searchQuery.isEmpty
-                                                ? Icons
-                                                      .chat_bubble_outline_rounded
-                                                : Icons.search_off_rounded)),
+                                          : Icons.chat_bubble_outline_rounded),
                                 size: 48,
                                 color: isDark
                                     ? AppColors.textDarkMuted
@@ -468,9 +361,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? 'No events yet'
                                     : (_activeFilter == ChatFilter.servers
                                           ? 'No servers yet'
-                                          : (_searchQuery.isEmpty
-                                                ? 'No conversations yet'
-                                                : 'No matching chats found')),
+                                          : 'No conversations yet'),
                                 style: GoogleFonts.plusJakartaSans(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
@@ -486,9 +377,7 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                     ? 'Find and join EME Servers in Search.'
                                     : _activeFilter == ChatFilter.users
                                     ? 'Start a chat with someone in EME Search.'
-                                    : _searchQuery.isEmpty
-                                    ? 'Start a chat from Search.'
-                                    : 'Try searching with a different name or message.',
+                                    : 'Start a chat from Search.',
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
@@ -498,50 +387,49 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              if (_searchQuery.isEmpty)
-                                // TODO(mcp): Add Remote MCP Server hidden for now.
-                                // if (_activeFilter == ChatFilter.mcp)
-                                //   ElevatedButton.icon(
-                                //     onPressed: () =>
-                                //         AddMcpServerSheet.show(context),
-                                //     icon: const Icon(
-                                //       Icons.add_rounded,
-                                //       size: 18,
-                                //     ),
-                                //     label: const Text('Add Remote MCP Server'),
-                                //     style: ElevatedButton.styleFrom(
-                                //       backgroundColor: const Color(0xFF6366F1),
-                                //       foregroundColor: Colors.white,
-                                //       padding: const EdgeInsets.symmetric(
-                                //         horizontal: 16,
-                                //         vertical: 10,
-                                //       ),
-                                //     ),
-                                //   )
-                                // else
-                                ElevatedButton.icon(
-                                  onPressed: () => UnifiedSearchScreen.show(
-                                    context,
-                                    initialType: _activeFilter.searchType,
-                                  ),
-                                  icon: const Icon(
-                                    Icons.search_rounded,
-                                    size: 18,
-                                  ),
-                                  label: Text(
-                                    _activeFilter == ChatFilter.all
-                                        ? 'Search EME'
-                                        : 'Search for ${_activeFilter.label}',
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF6366F1),
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
+                              // TODO(mcp): Add Remote MCP Server hidden for now.
+                              // if (_activeFilter == ChatFilter.mcp)
+                              //   ElevatedButton.icon(
+                              //     onPressed: () =>
+                              //         AddMcpServerSheet.show(context),
+                              //     icon: const Icon(
+                              //       Icons.add_rounded,
+                              //       size: 18,
+                              //     ),
+                              //     label: const Text('Add Remote MCP Server'),
+                              //     style: ElevatedButton.styleFrom(
+                              //       backgroundColor: const Color(0xFF6366F1),
+                              //       foregroundColor: Colors.white,
+                              //       padding: const EdgeInsets.symmetric(
+                              //         horizontal: 16,
+                              //         vertical: 10,
+                              //       ),
+                              //     ),
+                              //   )
+                              // else
+                              ElevatedButton.icon(
+                                onPressed: () => UnifiedSearchScreen.show(
+                                  context,
+                                  initialType: _activeFilter.searchType,
+                                ),
+                                icon: const Icon(
+                                  Icons.search_rounded,
+                                  size: 18,
+                                ),
+                                label: Text(
+                                  _activeFilter == ChatFilter.all
+                                      ? 'Search EME'
+                                      : 'Search for ${_activeFilter.label}',
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6366F1),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
                                   ),
                                 ),
+                              ),
                             ],
                           ),
                         ),
@@ -850,55 +738,6 @@ class _ChatsScreenState extends ConsumerState<ChatsScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildFilterChip({
-    required String label,
-    required ChatFilter filter,
-    required bool isDark,
-  }) {
-    final isSelected = _activeFilter == filter;
-
-    return Semantics(
-      identifier: 'chat_filter_${filter.name}',
-      button: true,
-      selected: isSelected,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => ref.read(chatFilterProvider.notifier).state = filter,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary
-                  : (isDark ? AppColors.darkSurface : AppColors.lightBg),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primary
-                    : (isDark
-                          ? AppColors.darkCardBorder
-                          : AppColors.lightCardBorder),
-              ),
-            ),
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? Colors.white
-                    : (isDark
-                          ? AppColors.textDarkSecondary
-                          : AppColors.textSecondary),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

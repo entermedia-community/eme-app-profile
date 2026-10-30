@@ -11,8 +11,11 @@ void main() {
     await tester.pumpWidget(createTestApp());
     await tester.pumpAndSettle();
 
-    // Chats is home; there is no bottom nav or drawer
-    expect(find.text('Search conversations...'), findsOneWidget);
+    // Chats is home with 4 bottom tabs; the conversation search box is gone
+    expect(find.text('Search conversations...'), findsNothing);
+    for (final id in ['my_eme', 'servers', 'projects', 'people']) {
+      expect(find.bySemanticsIdentifier('home_tab_$id'), findsOneWidget);
+    }
     expect(find.byIcon(Icons.menu_rounded), findsNothing);
 
     // EME Search is an icon-only button in the app bar

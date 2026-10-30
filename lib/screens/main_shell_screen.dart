@@ -7,6 +7,7 @@ import '../widgets/profile_app_bar_button.dart';
 import '../services/deep_link_handler.dart';
 import '../widgets/search/unified_search_screen.dart';
 import 'chats/chats_screen.dart';
+import 'chats/my_eme_screen.dart';
 import 'profile/profile_screen.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
@@ -29,6 +30,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   Widget build(BuildContext context) {
     final currentTab = ref.watch(navigationProvider);
     final onProfile = currentTab == NavTab.profile.index;
+    final homeTab = ref.watch(homeTabProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -59,7 +61,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
               tooltip: 'EME Search',
               onPressed: () => UnifiedSearchScreen.show(
                 context,
-                initialType: ref.read(chatFilterProvider).searchType,
+                initialType: ref.read(homeTabProvider).searchType,
               ),
             ),
           ),
@@ -70,8 +72,36 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
       ),
       body: IndexedStack(
         index: currentTab,
-        children: const [ChatsScreen(), ProfileScreen()],
+        children: [
+          IndexedStack(
+            index: homeTab.index,
+            children: const [
+              MyEmeScreen(),
+              ChatsScreen(filter: ChatFilter.servers),
+              ChatsScreen(filter: ChatFilter.projects),
+              ChatsScreen(filter: ChatFilter.users),
+            ],
+          ),
+          const ProfileScreen(),
+        ],
       ),
+      bottomNavigationBar: onProfile
+          ? null
+          : NavigationBar(
+              selectedIndex: homeTab.index,
+              onDestinationSelected: (i) =>
+                  ref.read(homeTabProvider.notifier).state = HomeTab.values[i],
+              destinations: [
+                for (final tab in HomeTab.values)
+                  Semantics(
+                    identifier: 'home_tab_${tab.id}',
+                    child: NavigationDestination(
+                      icon: Icon(tab.icon),
+                      label: tab.label,
+                    ),
+                  ),
+              ],
+            ),
     );
   }
 }

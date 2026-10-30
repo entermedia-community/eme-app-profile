@@ -13,7 +13,14 @@ import 'widgets/qr_connect_modal.dart';
 class ChatDetailScreen extends ConsumerStatefulWidget {
   final ChatModel chat;
 
-  const ChatDetailScreen({super.key, required this.chat});
+  /// True when hosted inside a main-shell tab: no back button.
+  final bool embedded;
+
+  const ChatDetailScreen({
+    super.key,
+    required this.chat,
+    this.embedded = false,
+  });
 
   /// Custom route to animate the screen in with smooth sliding transition
   static Route<void> route(ChatModel chat) {
@@ -286,11 +293,14 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         backgroundColor: surfaceColor,
         scrolledUnderElevation: 1,
         titleSpacing: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          tooltip: 'Back to Chats',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
+        leading: widget.embedded
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                tooltip: 'Back to Chats',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
         // Chat Nav Header: Avatar & Name
         title: InkWell(
           onTap: () {
