@@ -41,7 +41,7 @@ final class _FakeFile extends PlatformFile {
 void main() {
   const asset = EntityAssetModel(id: 'ea_1', name: 'Land Deed');
 
-  testWidgets('Digital Legacy lists the user\'s entity assets', (tester) async {
+  testWidgets('Knowledgebase lists the user\'s entity assets', (tester) async {
     final api = MockApiService()..entityAssets['me'] = [asset];
     await tester.pumpWidget(
       ProviderScope(
@@ -51,7 +51,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Your Digital Legacy'), findsOneWidget);
+    expect(find.text('Knowledgebase'), findsOneWidget);
     expect(find.text('Land Deed'), findsOneWidget);
     expect(find.bySemanticsIdentifier('entity_asset_ea_1'), findsOneWidget);
   });

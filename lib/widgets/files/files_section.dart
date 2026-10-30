@@ -5,8 +5,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../entity_assets/entity_asset_list.dart';
 import '../entity_assets/entity_asset_upload_button.dart';
 
-/// Digital legacy area of the EME profile page: the signed-in user's entity
-/// assets.
+/// Knowledgebase area: the signed-in user's entity assets.
 class FilesSection extends ConsumerWidget {
   const FilesSection({super.key});
 
@@ -20,7 +19,7 @@ class FilesSection extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                'Your Digital Legacy',
+                'Knowledgebase',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,

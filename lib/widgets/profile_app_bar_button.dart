@@ -6,9 +6,19 @@ import '../providers/navigation_provider.dart';
 import '../providers/theme_provider.dart';
 import '../theme/app_colors.dart';
 import 'notifications/notifications_sheet.dart';
+import '../screens/knowledgebase/my_knowledgebase_screen.dart';
+import '../screens/projects/my_projects_screen.dart';
 import '../screens/settings/settings_screen.dart';
 
-enum _MenuAction { profile, notifications, settings, toggleTheme, logout }
+enum _MenuAction {
+  profile,
+  projects,
+  knowledgebase,
+  notifications,
+  settings,
+  toggleTheme,
+  logout,
+}
 
 /// "EME" followed by the user's first name, e.g. "EME Christopher".
 String emeProfileLabel(EmUser? user, ProfileModel profile) {
@@ -19,7 +29,8 @@ String emeProfileLabel(EmUser? user, ProfileModel profile) {
 }
 
 /// App bar pill showing "EME" plus the user's first name, with a round portrait.
-/// Tapping it opens a menu: My profile, Notifications, Settings, theme toggle
+/// Tapping it opens a menu: My profile, My Projects, My Knowledgebase,
+/// Notifications, Settings, theme toggle
 /// and Log out.
 class ProfileAppBarButton extends ConsumerWidget {
   const ProfileAppBarButton({super.key});
@@ -62,12 +73,24 @@ class ProfileAppBarButton extends ConsumerWidget {
             'My profile',
           ),
           _item(
+            _MenuAction.projects,
+            'app_bar_menu_projects',
+            Icons.folder_rounded,
+            'My Projects',
+          ),
+          _item(
+            _MenuAction.knowledgebase,
+            'app_bar_menu_knowledgebase',
+            Icons.menu_book_rounded,
+            'My Knowledgebase',
+          ),
+          PopupMenuDivider(color: dividerColor),
+          _item(
             _MenuAction.notifications,
             'app_bar_menu_notifications',
             Icons.notifications_rounded,
             'Notifications',
           ),
-          PopupMenuDivider(color: dividerColor),
           _item(
             _MenuAction.settings,
             'app_bar_menu_settings',
@@ -161,6 +184,10 @@ class ProfileAppBarButton extends ConsumerWidget {
     switch (action) {
       case _MenuAction.profile:
         ref.read(navigationProvider.notifier).selectTab(NavTab.profile);
+      case _MenuAction.projects:
+        await MyProjectsScreen.open(context);
+      case _MenuAction.knowledgebase:
+        await MyKnowledgebaseScreen.open(context);
       case _MenuAction.notifications:
         await NotificationsSheet.show(context);
       case _MenuAction.settings:

@@ -127,17 +127,12 @@ void main() {
     expect(find.text('Chat with your EME'), findsOneWidget);
     expect(find.byTooltip('Edit Profile'), findsOneWidget);
 
-    // Message box for your own chat sits above Files
     expect(find.bySemanticsIdentifier('profile_chat_input'), findsOneWidget);
     expect(find.bySemanticsIdentifier('profile_chat_send'), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.bySemanticsIdentifier('profile_chat_input')).dy,
-      lessThan(tester.getTopLeft(find.byType(FilesSection)).dy),
-    );
 
-    // Files section replaces the servers section
-    expect(find.byType(FilesSection), findsOneWidget);
-    expect(find.text('Your Digital Legacy'), findsOneWidget);
+    // Projects and knowledgebase moved to their own screens
+    expect(find.byType(FilesSection), findsNothing);
+    expect(find.text('Projects'), findsNothing);
 
     // Back arrow returns to Chats
     await tester.tap(find.bySemanticsIdentifier('app_bar_back_to_chats'));
@@ -146,7 +141,7 @@ void main() {
   });
 
   testWidgets(
-    'Profile menu lists profile, notifications, settings, theme and Log out',
+    'Profile menu lists profile, projects, knowledgebase, notifications, settings, theme and Log out',
     (WidgetTester tester) async {
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
@@ -156,6 +151,14 @@ void main() {
 
       expect(
         tester.getTopLeft(find.text('My profile')).dy,
+        lessThan(tester.getTopLeft(find.text('My Projects')).dy),
+      );
+      expect(
+        tester.getTopLeft(find.text('My Projects')).dy,
+        lessThan(tester.getTopLeft(find.text('My Knowledgebase')).dy),
+      );
+      expect(
+        tester.getTopLeft(find.text('My Knowledgebase')).dy,
         lessThan(tester.getTopLeft(find.text('Notifications')).dy),
       );
       expect(
