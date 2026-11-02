@@ -117,7 +117,7 @@ void main() {
             home: Scaffold(
               body: OtpInputField(
                 length: 6,
-                onCompleted: (code) => enteredCode = code,
+                onChanged: (code) => enteredCode = code,
               ),
             ),
           ),
@@ -139,38 +139,98 @@ void main() {
       },
     );
 
-    testWidgets('OtpInputField paste button distributes multi-digit string', (
+    testWidgets(
+      'OtpInputField pasting a valid code into a box fills all boxes',
+      (WidgetTester tester) async {
+        String code = '';
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: OtpInputField(length: 6, onChanged: (c) => code = c),
+            ),
+          ),
+        );
+
+        await tester.enterText(find.byType(TextField).at(2), ' 135790 ');
+        await tester.pump();
+        await tester.pump();
+
+        expect(code, '135790');
+      },
+    );
+
+    testWidgets(
+      'OtpInputField backspace moves focus to and clears previous box',
+      (WidgetTester tester) async {
+        String code = '';
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: OtpInputField(length: 6, onChanged: (c) => code = c),
+            ),
+          ),
+        );
+
+        await tester.enterText(find.byType(TextField).at(0), '1');
+        await tester.pump();
+        // Focus is now on box 1 (empty); backspace should clear box 0.
+        await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
+        await tester.pump();
+
+        expect(code, '');
+        expect(
+          tester
+              .widget<TextField>(find.byType(TextField).at(0))
+              .controller!
+              .text,
+          '',
+        );
+      },
+    );
+
+    testWidgets('OtpInputField typing advances focus, even over a filled box', (
       WidgetTester tester,
     ) async {
-      String enteredCode = '';
-
-      // Mock system clipboard
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (MethodCall methodCall) async {
-          if (methodCall.method == 'Clipboard.getData') {
-            return {'text': '987654'};
-          }
-          return null;
-        },
+      await tester.pumpWidget(
+        MaterialApp(home: Scaffold(body: OtpInputField(length: 6))),
       );
 
+      TextField box(int i) =>
+          tester.widget<TextField>(find.byType(TextField).at(i));
+
+      await tester.enterText(find.byType(TextField).at(0), '1');
+      await tester.pump();
+      expect(box(1).focusNode!.hasFocus, isTrue);
+
+      // Back to box 0 (already holds '1') and type the same digit again.
+      box(0).focusNode!.requestFocus();
+      await tester.pump();
+      await tester.enterText(find.byType(TextField).at(0), '11');
+      await tester.pump();
+      await tester.pump();
+
+      expect(box(0).controller!.text, '1');
+      expect(box(1).focusNode!.hasFocus, isTrue);
+    });
+
+    testWidgets('OtpInputField rejects invalid paste with a snackbar', (
+      WidgetTester tester,
+    ) async {
+      String code = '';
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: OtpInputField(
-              length: 6,
-              onCompleted: (code) => enteredCode = code,
-            ),
+            body: OtpInputField(length: 6, onChanged: (c) => code = c),
           ),
         ),
       );
 
-      // Tap 'Paste code from clipboard' button
-      await tester.tap(find.text('Paste code from clipboard'));
+      await tester.enterText(find.byType(TextField).at(0), '12345');
+      await tester.pump();
       await tester.pump();
 
-      expect(enteredCode, '987654');
+      expect(code, '');
+      expect(find.byType(SnackBar), findsOneWidget);
     });
 
     testWidgets(

@@ -464,10 +464,6 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
           length: 6,
           enabled: !authState.isLoading,
           onChanged: (code) => _otpCode = code,
-          onCompleted: (code) {
-            _otpCode = code;
-            _handleVerifyOtp();
-          },
         ),
         const SizedBox(height: 16),
         Row(

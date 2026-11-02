@@ -5,7 +5,6 @@ import '../../theme/app_colors.dart';
 
 class OtpInputField extends StatefulWidget {
   final int length;
-  final ValueChanged<String>? onCompleted;
   final ValueChanged<String>? onChanged;
   final bool autoFocus;
   final bool enabled;
@@ -13,7 +12,6 @@ class OtpInputField extends StatefulWidget {
   const OtpInputField({
     super.key,
     this.length = 6,
-    this.onCompleted,
     this.onChanged,
     this.autoFocus = true,
     this.enabled = true,
@@ -31,7 +29,10 @@ class _OtpInputFieldState extends State<OtpInputField> {
   void initState() {
     super.initState();
     _controllers = List.generate(widget.length, (_) => TextEditingController());
-    _focusNodes = List.generate(widget.length, (_) => FocusNode());
+    _focusNodes = List.generate(
+      widget.length,
+      (index) => FocusNode(onKeyEvent: (_, event) => _onKey(index, event)),
+    );
 
     if (widget.autoFocus && _focusNodes.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -57,66 +58,103 @@ class _OtpInputFieldState extends State<OtpInputField> {
     return _controllers.map((c) => c.text).join();
   }
 
+  /// Fills every box from [text] if, once trimmed, it is exactly
+  /// `widget.length` digits. Otherwise shows an error and changes nothing.
   void _handlePaste(String text) {
-    final digits = text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.isEmpty) return;
-
-    final count = digits.length.clamp(0, widget.length);
-    for (int i = 0; i < count; i++) {
-      _controllers[i].text = digits[i];
+    final pasted = text.trim();
+    if (!RegExp('^\\d{${widget.length}}\$').hasMatch(pasted)) {
+      ScaffoldMessenger.maybeOf(context)
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Pasted text must be a ${widget.length}-digit code'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      return;
     }
-    // Clear remaining if any
-    for (int i = count; i < widget.length; i++) {
-      _controllers[i].clear();
-    }
 
-    final code = _currentCode;
-    widget.onChanged?.call(code);
-
-    if (count < widget.length) {
-      _focusNodes[count].requestFocus();
-    } else {
-      _focusNodes[widget.length - 1].unfocus();
-      widget.onCompleted?.call(code);
+    for (int i = 0; i < widget.length; i++) {
+      _controllers[i].text = pasted[i];
     }
+    _focusNodes[widget.length - 1].unfocus();
+    widget.onChanged?.call(_currentCode);
+    setState(() {});
   }
 
-  Future<void> _pasteFromClipboard() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text != null && data!.text!.isNotEmpty) {
-      _handlePaste(data.text!);
+  /// Detects a multi-character insertion into a single box and routes it to
+  /// [_handlePaste] instead of letting it land in the box.
+  TextInputFormatter _inputFormatter(int index) {
+    return TextInputFormatter.withFunction((oldValue, newValue) {
+      final isPaste =
+          newValue.text.length > 1 &&
+          (newValue.text.length - oldValue.text.length > 1 ||
+              !oldValue.selection.isCollapsed);
+      if (!isPaste) {
+        // Typing over an already-filled box: take the new digit and advance,
+        // even when it equals the old one (no onChanged would fire then).
+        if (newValue.text.length == 2 && oldValue.text.length == 1) {
+          final offset = newValue.selection.baseOffset.clamp(1, 2);
+          final typed = newValue.text[offset - 1];
+          if (!RegExp(r'\d').hasMatch(typed)) return oldValue;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _advanceFrom(index);
+          });
+          return TextEditingValue(
+            text: typed,
+            selection: const TextSelection.collapsed(offset: 1),
+          );
+        }
+        return newValue;
+      }
+
+      final text = newValue.text;
+      // Formatters run mid-edit; apply the paste after the frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _handlePaste(text);
+      });
+      return oldValue;
+    });
+  }
+
+  /// Runs on the focus node itself, ahead of the TextField's own backspace
+  /// handling (which swallows the key when the box is already empty).
+  KeyEventResult _onKey(int index, KeyEvent event) {
+    if (event is! KeyDownEvent ||
+        event.logicalKey != LogicalKeyboardKey.backspace) {
+      return KeyEventResult.ignored;
+    }
+    if (_controllers[index].text.isNotEmpty) {
+      // Delete this digit, then step back.
+      _controllers[index].clear();
+    } else if (index > 0) {
+      _controllers[index - 1].clear();
+    } else {
+      return KeyEventResult.ignored;
+    }
+    if (index > 0) _focusNodes[index - 1].requestFocus();
+    widget.onChanged?.call(_currentCode);
+    setState(() {});
+    return KeyEventResult.handled;
+  }
+
+  void _advanceFrom(int index) {
+    if (index < widget.length - 1) {
+      _focusNodes[index + 1].requestFocus();
+    } else {
+      _focusNodes[index].unfocus();
     }
   }
 
   void _onDigitChanged(int index, String value) {
-    if (value.length > 1) {
-      // User pasted into one of the textfields
-      _handlePaste(value);
-      return;
-    }
+    if (value.isNotEmpty) _advanceFrom(index);
 
-    if (value.isNotEmpty) {
-      if (index < widget.length - 1) {
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        _focusNodes[index].unfocus();
-      }
-    }
-
-    final code = _currentCode;
-    widget.onChanged?.call(code);
-
-    if (code.length == widget.length) {
-      widget.onCompleted?.call(code);
-    }
+    widget.onChanged?.call(_currentCode);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark
-        ? AppColors.darkCardBorder
-        : AppColors.lightCardBorder;
     final boxBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
 
     return Column(
@@ -128,76 +166,34 @@ class _OtpInputFieldState extends State<OtpInputField> {
             return SizedBox(
               width: 46,
               height: 56,
-              child: CallbackShortcuts(
-                bindings: {
-                  const SingleActivator(LogicalKeyboardKey.backspace): () {
-                    if (_controllers[index].text.isEmpty && index > 0) {
-                      _controllers[index - 1].clear();
-                      _focusNodes[index - 1].requestFocus();
-                      widget.onChanged?.call(_currentCode);
-                    }
-                  },
-                },
-                child: TextField(
-                  controller: _controllers[index],
-                  focusNode: _focusNodes[index],
-                  enabled: widget.enabled,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  maxLength: 1,
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? AppColors.textDarkPrimary
-                        : AppColors.textPrimary,
-                  ),
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    counterText: '',
-                    filled: true,
-                    fillColor: boxBg,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(
-                        color: _controllers[index].text.isNotEmpty
-                            ? AppColors.primary
-                            : borderColor,
-                        width: _controllers[index].text.isNotEmpty ? 1.5 : 1.0,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                        color: AppColors.primary,
-                        width: 2.0,
-                      ),
-                    ),
-                  ),
-                  onChanged: (val) => _onDigitChanged(index, val),
+              child: TextField(
+                controller: _controllers[index],
+                focusNode: _focusNodes[index],
+                enabled: widget.enabled,
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 1,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? AppColors.textDarkPrimary
+                      : AppColors.textPrimary,
                 ),
+                inputFormatters: [
+                  _inputFormatter(index),
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: boxBg,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onChanged: (val) => _onDigitChanged(index, val),
               ),
             );
           }),
-        ),
-        const SizedBox(height: 12),
-        // Quick paste button
-        TextButton.icon(
-          onPressed: widget.enabled ? _pasteFromClipboard : null,
-          icon: const Icon(Icons.content_paste_rounded, size: 16),
-          label: Text(
-            'Paste code from clipboard',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          ),
         ),
       ],
     );
