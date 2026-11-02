@@ -171,6 +171,16 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     ];
   }
 
+  /// Whether the user has joined this server or project, or is connected to
+  /// this person.
+  bool _isMine(_SearchResult r, SearchResults data) {
+    if (r.isProject) return data.joinedProjectIds.contains(r.collection!.id);
+    if (r.person != null) {
+      return data.connectedUsernames.contains(r.person!.username);
+    }
+    return r.isServer && r.server!.isJoined;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -223,13 +233,20 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
 
     final categories = _categoryNames(data);
 
-    // One combined list, A-Z by name.
-    final results = <_SearchResult>[
-      for (final p in people) _SearchResult.person(p),
-      for (final s in servers) _SearchResult.server(s),
-      for (final pr in projects) _SearchResult.project(pr),
-      for (final ev in events) _SearchResult.event(ev),
-    ]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    // One combined list: the user's own (connected people, joined servers and
+    // projects) first,
+    // then A-Z by name within each group.
+    final results =
+        <_SearchResult>[
+          for (final p in people) _SearchResult.person(p),
+          for (final s in servers) _SearchResult.server(s),
+          for (final pr in projects) _SearchResult.project(pr),
+          for (final ev in events) _SearchResult.event(ev),
+        ]..sort((a, b) {
+          final mine = (_isMine(b, data) ? 1 : 0) - (_isMine(a, data) ? 1 : 0);
+          if (mine != 0) return mine;
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
 
     final loading = results.isEmpty && searchAsync.isLoading;
     final errors = [if (searchAsync.hasError) 'Search: ${searchAsync.error}'];
@@ -624,6 +641,13 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     }
 
     final server = r.server;
+    final isMember =
+        r.isProject &&
+        (_lastResults?.joinedProjectIds.contains(r.collection!.id) ?? false);
+    final isConnected =
+        r.person != null &&
+        (_lastResults?.connectedUsernames.contains(r.person!.username) ??
+            false);
     final joining =
         server != null &&
         ref.watch(serverProvider.select((s) => s.isJoining(server.id)));
@@ -695,7 +719,27 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
                 ),
               ),
             ),
-            if (server != null && !r.isProject && !r.isEvent) ...[
+            if (r.person != null && isConnected) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Connected',
+                style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.greenAccent,
+                ),
+              ),
+            ] else if (r.isProject) ...[
+              const SizedBox(height: 4),
+              Text(
+                isMember ? 'Member' : 'Tap to preview',
+                style: GoogleFonts.inter(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w600,
+                  color: isMember ? AppColors.greenAccent : secondary,
+                ),
+              ),
+            ] else if (server != null && !r.isEvent) ...[
               const SizedBox(height: 4),
               Text(
                 joining
