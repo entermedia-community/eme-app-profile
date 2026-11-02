@@ -20,6 +20,7 @@ enum SearchResultType { all, people, projects, servers, events }
 /// (`searchProvider`) in one request. The category pills are the backend
 /// server categories plus the EME profile categories, de-duplicated by name;
 /// servers are matched by category name, and people by their profile category.
+/// The server categories come with the search response.
 class UnifiedSearchScreen extends ConsumerStatefulWidget {
   const UnifiedSearchScreen({
     super.key,
@@ -66,15 +67,6 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   String get _query => _searchController.text.trim();
 
   @override
-  void initState() {
-    super.initState();
-    // The server store holds the categories and the joined state of servers.
-    Future.microtask(
-      () => ref.read(serverProvider.notifier).loadServersFromApi(),
-    );
-  }
-
-  @override
   void dispose() {
     _debounceTimer?.cancel();
     _searchController.dispose();
@@ -95,15 +87,16 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   /// servers have a category by that name.
   String? _serverCategoryId() {
     if (_category == _allCategory) return null;
-    for (final c in ref.read(serverProvider).categories) {
+    final categories = _lastResults?.serverCategories ?? const [];
+    for (final c in categories) {
       if (_sameName(c.name, _category)) return c.id;
     }
     return null;
   }
 
-  /// Server categories from the backend, then EME profile categories that
-  /// aren't already listed.
-  List<String> _categoryNames(List<ServerCategoryModel> serverCategories) {
+  /// Server, project and people categories from the backend, de-duplicated
+  /// by name.
+  List<String> _categoryNames(SearchResults data) {
     final names = <String>[_allCategory];
     void add(String name) {
       if (name.trim().isEmpty) return;
@@ -111,10 +104,13 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       names.add(name);
     }
 
-    for (final c in serverCategories) {
+    for (final c in [
+      ...data.serverCategories,
+      ...data.projectCategories,
+      ...data.peopleCategories,
+    ]) {
       add(c.name);
     }
-    kEmeProfileCategories.forEach(add);
     return names;
   }
 
@@ -135,12 +131,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
   Future<void> _refresh() async {
     final key = _searchKey();
     ref.invalidate(searchProvider(key));
-    await Future.wait([
-      ref.read(searchProvider(key).future),
-      ref
-          .read(serverProvider.notifier)
-          .loadServersFromApi(forceRefreshCategories: true),
-    ]);
+    await ref.read(searchProvider(key).future);
   }
 
   SearchKey _searchKey() =>
@@ -225,7 +216,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     //     ? const <EventModel>[]
     //     : data.events;
 
-    final categories = _categoryNames(serverState.categories);
+    final categories = _categoryNames(data);
 
     // One combined list, A-Z by name.
     final results = <_SearchResult>[
