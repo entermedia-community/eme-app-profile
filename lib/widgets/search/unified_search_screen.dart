@@ -94,9 +94,18 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
     return null;
   }
 
-  /// Server, project and people categories from the backend, de-duplicated
-  /// by name.
+  /// The categories of the selected result type, from the backend. Empty for
+  /// All, which has no category row.
   List<String> _categoryNames(SearchResults data) {
+    final source = switch (_type) {
+      SearchResultType.servers => data.serverCategories,
+      SearchResultType.projects => data.projectCategories,
+      SearchResultType.people => data.peopleCategories,
+      SearchResultType.all || SearchResultType.events => const [],
+    };
+    if (_type == SearchResultType.all || _type == SearchResultType.events) {
+      return const [];
+    }
     final names = <String>[_allCategory];
     void add(String name) {
       if (name.trim().isEmpty) return;
@@ -104,11 +113,7 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       names.add(name);
     }
 
-    for (final c in [
-      ...data.serverCategories,
-      ...data.projectCategories,
-      ...data.peopleCategories,
-    ]) {
+    for (final c in source) {
       add(c.name);
     }
     return names;
@@ -257,8 +262,11 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               const SizedBox(height: 12),
               _buildSearchField(searchAsync.isLoading && _lastResults != null),
               const SizedBox(height: 12),
-              _buildCategoryBar(categories, isDark),
-              const SizedBox(height: 20),
+              if (categories.isNotEmpty) ...[
+                _buildCategoryBar(categories, isDark),
+                const SizedBox(height: 20),
+              ] else
+                const SizedBox(height: 8),
 
               _buildResultsHeader(
                 peopleCount: people.length,
@@ -361,9 +369,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
-                label: 'People',
-                type: SearchResultType.people,
-                semanticId: 'search_type_people',
+                label: 'Servers',
+                type: SearchResultType.servers,
+                semanticId: 'search_type_servers',
                 isDark: isDark,
               ),
               const SizedBox(width: 8),
@@ -375,9 +383,9 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
               ),
               const SizedBox(width: 8),
               _buildFilterChip(
-                label: 'Servers',
-                type: SearchResultType.servers,
-                semanticId: 'search_type_servers',
+                label: 'People',
+                type: SearchResultType.people,
+                semanticId: 'search_type_people',
                 isDark: isDark,
               ),
               // TODO(events): hidden for now.
@@ -410,7 +418,10 @@ class _UnifiedSearchScreenState extends ConsumerState<UnifiedSearchScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => setState(() => _type = type),
+          onTap: () => setState(() {
+            _type = type;
+            _category = _allCategory;
+          }),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
