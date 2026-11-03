@@ -20,6 +20,10 @@
 		"java.format.settings.url": "../eme-server/formatter.xml",
 		"java.compile.nullAnalysis.mode": "automatic",
 		"java.configuration.updateBuildConfiguration": "interactive",
+		// Velocity-templated JSON in eme-server (extension: eme-server/tools/vscode-velocity-json)
+		"files.associations": {
+			"**/eme-server/plugins/*/html/**/*.json": "velocity-json",
+		},
 	},
 	"extensions": {
 		"recommendations": ["eliostruyf.vscode-remote-control"],
