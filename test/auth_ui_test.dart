@@ -28,6 +28,9 @@ class MockAuthService implements IAuthService {
   Future<bool> refreshToken() async => false;
 
   @override
+  Future<void> authenticateRemoteServer(String serverMediaDbUrl) async {}
+
+  @override
   Future<bool> isAuthenticated() async =>
       mockToken != null && mockToken!.isNotEmpty;
 

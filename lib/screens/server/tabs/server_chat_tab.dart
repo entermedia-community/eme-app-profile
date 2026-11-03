@@ -62,6 +62,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     final sessionChannel = widget.initialChannelId;
     if (sessionChannel != null) {
       try {
+        await _authenticateWithServer();
         await _openChannel(sessionChannel);
       } catch (e, stack) {
         AppErrorHandler.recordNonFatal(
@@ -121,9 +122,10 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     }
 
     try {
+      await _authenticateWithServer();
       final channelId = await ref
           .read(apiServiceProvider)
-          .connectServerChat(widget.server.id);
+          .connectServerChat(widget.server.id, baseUrl: _serverBaseUrl);
       await _openChannel(channelId);
     } catch (e, stack) {
       AppErrorHandler.recordNonFatal(
@@ -145,6 +147,16 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           widget.server.serverMediaDBUrl.isNotEmpty
       ? widget.server.serverMediaDBUrl
       : null;
+
+  /// The user is signed in on the root server (e.g. eme.world), not on this
+  /// EME Server (e.g. impactbank.world). Has the server verify our key with
+  /// the root and start a session before any chat request goes to it. Skipped
+  /// for project/event chats and servers without their own address.
+  Future<void> _authenticateWithServer() async {
+    final serverUrl = _serverBaseUrl;
+    if (serverUrl == null) return;
+    await ref.read(authServiceProvider).authenticateRemoteServer(serverUrl);
+  }
 
   /// Points the socket and history at [channelId], reconnecting only when the
   /// channel changed (the socket ignores connect() while already connected).
@@ -1104,7 +1116,11 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       final projectId = widget.projectCollectionId;
       final channelId = projectId != null
           ? (await api.connectProjectChat(projectId, params: data)).channelId
-          : await api.connectServerChat(widget.server.id, params: data);
+          : await api.connectServerChat(
+              widget.server.id,
+              params: data,
+              baseUrl: _serverBaseUrl,
+            );
       await _openChannel(channelId);
     } catch (e, stack) {
       AppErrorHandler.recordNonFatal(

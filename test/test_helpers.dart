@@ -29,6 +29,9 @@ class AuthenticatedMockAuthService implements IAuthService {
   Future<bool> refreshToken() async => false;
 
   @override
+  Future<void> authenticateRemoteServer(String serverMediaDbUrl) async {}
+
+  @override
   Future<bool> isAuthenticated() async => true;
 
   @override
@@ -349,6 +352,7 @@ class MockApiService implements IApiService {
   Future<String> connectServerChat(
     String serverId, {
     Map<String, dynamic>? params,
+    String? baseUrl,
   }) async => 'ch_$serverId';
 
   @override
