@@ -55,10 +55,7 @@ class _SelfChatComposerState extends ConsumerState<SelfChatComposer> {
     setState(() => _sending = true);
 
     try {
-      final channelId = await ChatSocketService().connectUser(
-        fromUser: user.username,
-        toUser: user.username,
-      );
+      final channelId = await ref.read(apiServiceProvider).connectMyEmeChat();
       await ChatSocketService().connect(channel: channelId);
       // sendMessage drops messages silently when the socket is down, so
       // fail visibly instead.

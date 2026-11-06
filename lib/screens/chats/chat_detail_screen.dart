@@ -92,10 +92,14 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         final fromUser = AuthService.userId!;
         final toUser = widget.chat.username;
 
-        socketChannelId = await ChatSocketService().connectUser(
-          fromUser: fromUser,
-          toUser: toUser,
-        );
+        // My EME (chat with yourself) opens like a server chat on the root
+        // server; chats with other users use the user connect endpoint.
+        socketChannelId = toUser == fromUser
+            ? await ref.read(apiServiceProvider).connectMyEmeChat()
+            : await ChatSocketService().connectUser(
+                fromUser: fromUser,
+                toUser: toUser,
+              );
       }
 
       _channelId = socketChannelId;

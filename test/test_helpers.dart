@@ -356,6 +356,9 @@ class MockApiService implements IApiService {
   }) async => 'ch_$serverId';
 
   @override
+  Future<String> connectMyEmeChat() async => 'ch_my_eme';
+
+  @override
   Future<String> connectEventChat(String eventId) async => 'ch_$eventId';
 
   /// Topics returned by [fetchTutorialTopics].
