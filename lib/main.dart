@@ -42,6 +42,18 @@ Future<void> main() async {
       debugPrint(
         '[Main] Notification tapped: ${message.title} (data: ${message.data})',
       );
+      final serverId = message.serverId;
+      if (serverId != null && serverId.isNotEmpty) {
+        DeepLinkHandler.instance.handleDeepLink(
+          DeepLinkPayload(
+            rawUri: Uri.parse('emeworld://server/$serverId'),
+            type: DeepLinkType.server,
+            serverId: serverId,
+            channelId: message.channelId,
+          ),
+        );
+        return;
+      }
       final user = message.userId ?? message.data['username']?.toString();
       if (user != null && user.isNotEmpty) {
         DeepLinkHandler.instance.handleDeepLink(
