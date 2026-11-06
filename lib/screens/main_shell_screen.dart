@@ -77,9 +77,9 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             index: homeTab.index,
             children: const [
               MyEmeScreen(),
-              ChatsScreen(filter: ChatFilter.servers),
-              ChatsScreen(filter: ChatFilter.projects),
               ChatsScreen(filter: ChatFilter.users),
+              ChatsScreen(filter: ChatFilter.projects),
+              ChatsScreen(filter: ChatFilter.servers),
             ],
           ),
           const ProfileScreen(),
