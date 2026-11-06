@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:eme_world/widgets/delta_viewer.dart';
 import 'package:flutter/material.dart' hide FormField;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/chat/product_message_card.dart';
+import '../../../widgets/chat/session_resume_prompt.dart';
+import '../../../widgets/chat/tutorial_cards.dart';
+import '../../../widgets/chat/tutorial_picker_sheet.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../widgets/chat/chat_attachments.dart';
 
@@ -47,6 +51,20 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   String? _connectionError;
 
   late List<ChatMessage> _messages;
+
+  // Set when the chat opened in a session left idle for a while: when it was
+  // last active. Shows the continue / new session prompt.
+  DateTime? _idleSince;
+  bool _startingSession = false;
+
+  // Tutorial taken in this chat (null = ordinary server chat). The tutor
+  // answers over the socket in its own channel; see _startTutorial.
+  TutorialSummary? _tutorial;
+  bool _tutorialBusy = false;
+  Timer? _tutorialTimer;
+  static const _tutorialTimeout = Duration(seconds: 45);
+  final Map<String, ({String option, TutorialConfidence confidence})> _answers =
+      {};
 
   @override
   void initState() {
@@ -129,6 +147,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           .read(apiServiceProvider)
           .connectServerChat(widget.server.id, baseUrl: _serverBaseUrl);
       await _openChannel(channelId);
+      if (mounted) setState(() => _idleSince = idleSince(_messages));
     } catch (e, stack) {
       AppErrorHandler.recordNonFatal(
         e,
@@ -162,11 +181,15 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
 
   /// Points the socket and history at [channelId], reconnecting only when the
   /// channel changed (the socket ignores connect() while already connected).
-  Future<void> _openChannel(String channelId) async {
+  Future<void> _openChannel(String channelId, {String? channelType}) async {
     if (channelId == _channelId && ChatSocketService().isConnected) return;
     if (_channelId.isNotEmpty) ChatSocketService().disconnect();
     _channelId = channelId;
-    await _connectSocket(channelId, baseUrl: _serverBaseUrl);
+    await _connectSocket(
+      channelId,
+      baseUrl: _serverBaseUrl,
+      channelType: channelType,
+    );
     await _loadChatHistory(channelId, baseUrl: _serverBaseUrl);
   }
 
@@ -199,10 +222,15 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     }
   }
 
-  Future<void> _connectSocket(String channelId, {String? baseUrl}) async {
+  Future<void> _connectSocket(
+    String channelId, {
+    String? baseUrl,
+    String? channelType,
+  }) async {
     final currentUserId = AuthService.userId;
     await ChatSocketService().connect(
       channel: channelId,
+      channelType: channelType,
       userId: currentUserId,
       baseUrl: baseUrl,
     );
@@ -221,6 +249,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       }
 
       final added = _mergeIncoming(incomingMsg);
+      if (_tutorial != null && !incomingMsg.isUser) _tutorialReplied();
       setState(() {});
       if (added) _scrollToBottom();
     });
@@ -257,6 +286,357 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     return false;
   }
 
+  /// Starts a new session in this server chat and moves the chat to it. The
+  /// server welcomes the new session itself.
+  Future<void> _startNewSession() async {
+    setState(() => _startingSession = true);
+    try {
+      final session = await ref
+          .read(apiServiceProvider)
+          .createChatSession(
+            serverId: widget.server.id,
+            baseUrl: _serverBaseUrl,
+          );
+      if (!mounted) return;
+      setState(() {
+        _messages = [];
+        _idleSince = null;
+      });
+      await _openChannel(session.channelId);
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Failed to start a new session in ServerChatTab',
+        customKeys: {'serverId': widget.server.id},
+      );
+      _showError('Could not start a new session: $e');
+    } finally {
+      if (mounted) setState(() => _startingSession = false);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Tutorials
+  // ---------------------------------------------------------------------
+
+  bool get _canTakeTutorials =>
+      widget.projectCollectionId == null && widget.eventId == null;
+
+  void _showError(String text) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(backgroundColor: AppColors.redAccent, content: Text(text)),
+    );
+  }
+
+  Future<void> _pickTutorial() async {
+    final tutorial = await showTutorialPicker(
+      context,
+      api: ref.read(apiServiceProvider),
+      accent: widget.server.primaryColor,
+      baseUrl: _serverBaseUrl,
+    );
+    if (tutorial == null || !mounted) return;
+    await _startTutorial(tutorial);
+  }
+
+  /// Opens a fresh tutor channel for [tutorial], then asks the tutor to say
+  /// its welcome there. Every later step arrives over the socket.
+  Future<void> _startTutorial(TutorialSummary tutorial) async {
+    final api = ref.read(apiServiceProvider);
+    setState(() {
+      _isConnecting = true;
+      _connectionError = null;
+    });
+    try {
+      final session = await api.fetchTutorialSession(
+        tutorial.id,
+        createNew: true,
+        baseUrl: _serverBaseUrl,
+      );
+      if (!mounted) return;
+      setState(() {
+        _messages = [];
+        _answers.clear();
+        _tutorial = tutorial;
+      });
+      await _openChannel(session.id, channelType: 'agenttutorchat');
+      await api.startTutorial(
+        tutorial.id,
+        channel: session.id,
+        baseUrl: _serverBaseUrl,
+      );
+      _awaitTutor();
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error starting tutorial in ServerChatTab',
+        customKeys: {'tutorialId': tutorial.id, 'serverId': widget.server.id},
+      );
+      _showError('Could not start the tutorial: $e');
+      if (mounted && _tutorial != null) await _exitTutorial();
+    } finally {
+      if (mounted) setState(() => _isConnecting = false);
+    }
+  }
+
+  /// Leaves the tutor channel and returns to the server chat.
+  Future<void> _exitTutorial() async {
+    _tutorialTimer?.cancel();
+    setState(() {
+      _tutorial = null;
+      _tutorialBusy = false;
+      _messages = [];
+      _answers.clear();
+      _isConnecting = true;
+      _connectionError = null;
+    });
+    try {
+      await _authenticateWithServer();
+      final channelId = await ref
+          .read(apiServiceProvider)
+          .connectServerChat(widget.server.id, baseUrl: _serverBaseUrl);
+      await _openChannel(channelId);
+      if (mounted) setState(() => _idleSince = idleSince(_messages));
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error leaving tutorial in ServerChatTab',
+        customKeys: {'serverId': widget.server.id},
+      );
+      if (mounted) setState(() => _connectionError = '$e');
+    } finally {
+      if (mounted) setState(() => _isConnecting = false);
+    }
+  }
+
+  void _awaitTutor() {
+    _tutorialTimer?.cancel();
+    if (mounted) setState(() => _tutorialBusy = true);
+    _tutorialTimer = Timer(_tutorialTimeout, () {
+      if (!mounted || !_tutorialBusy) return;
+      setState(() => _tutorialBusy = false);
+      _showError('The tutor did not respond. Try again.');
+    });
+  }
+
+  void _tutorialReplied() {
+    _tutorialTimer?.cancel();
+    _tutorialBusy = false;
+  }
+
+  /// A message that is bookkeeping rather than conversation: the hidden
+  /// progress update and the system commands this device sent.
+  bool _isHidden(ChatMessage m) =>
+      m.messageRenderType.isProgressUpdate ||
+      (m.isUser && m.messageType == 'system');
+
+  /// Where the tutorial stands: the last message that carries a component.
+  ChatMessage? get _lastStep {
+    for (var i = _messages.length - 1; i >= 0; i--) {
+      if (_messages[i].contextValues.componentId != null) return _messages[i];
+    }
+    return null;
+  }
+
+  /// Sends [function] to the tutor. [from] is the step it refers to, the
+  /// latest one by default. Returns false (and says why) when it was not sent.
+  bool _sendTutorialStep(
+    String function, {
+    String message = '',
+    ChatMessage? from,
+    bool system = true,
+    Map<String, dynamic> extra = const {},
+  }) {
+    final tutorial = _tutorial;
+    if (tutorial == null || _channelId.isEmpty) return false;
+    if (!ChatSocketService().isConnected) {
+      _showError('Not connected. Try again in a moment.');
+      return false;
+    }
+    final step = from ?? _lastStep;
+    final sectionId = step?.contextValues.sectionId;
+    final componentId = step?.contextValues.componentId;
+    ChatSocketService().sendMessage(
+      message: message,
+      user: AuthService.userId ?? 'user',
+      channel: _channelId,
+      functionName: function,
+      command: 'messagereceived',
+      messageType: system ? 'system' : 'message',
+      extraData: {
+        'agentcontext': jsonEncode({
+          'tutorialid': tutorial.id,
+          'sectionid': ?sectionId,
+          'componentid': ?componentId,
+          ...extra,
+        }),
+      },
+    );
+    _awaitTutor();
+    _scrollToBottom();
+    return true;
+  }
+
+  void _submitAnswer(
+    ChatMessage message,
+    String option,
+    TutorialConfidence confidence,
+  ) {
+    final question = message.question;
+    if (question == null) return;
+    final sent = _sendTutorialStep(
+      'chat_tutor_answer',
+      message: option,
+      from: message,
+      extra: {
+        'messagerendertype': 'answer',
+        'questionid': question.id,
+        'selectedoption': option,
+        'confidence': confidence.name,
+      },
+    );
+    if (sent) {
+      setState(
+        () => _answers[message.messageId] = (
+          option: option,
+          confidence: confidence,
+        ),
+      );
+    }
+  }
+
+  /// The next visible message after [index], if any.
+  ChatMessage? _visibleAfter(int index) {
+    for (var i = index + 1; i < _messages.length; i++) {
+      if (!_isHidden(_messages[i])) return _messages[i];
+    }
+    return null;
+  }
+
+  Widget _buildTutorialCard(ChatMessage message, bool isDark) {
+    final accent = widget.server.primaryColor;
+    final type = message.messageRenderType;
+    if (type.isQuestion && message.question != null) {
+      final index = _messages.indexOf(message);
+      final next = _visibleAfter(index);
+      final eval = next != null && next.messageRenderType.isAnswerEval
+          ? next.contextValues
+          : null;
+      final local = _answers[message.messageId];
+      final answered = local != null || eval != null || next != null;
+      return TutorialQuestionCard(
+        question: message.question!,
+        enabled: !answered && !_tutorialBusy && _tutorial != null,
+        reveal: eval != null || local != null,
+        selectedOption: local?.option ?? eval?.selectedOption,
+        confidence: local?.confidence ?? eval?.confidence,
+        accent: accent,
+        isDark: isDark,
+        onSubmit: (option, confidence) =>
+            _submitAnswer(message, option, confidence),
+      );
+    }
+    if (type.isAnswerEval) {
+      return TutorialEvalCard(
+        text: message.text,
+        isCorrect: message.contextValues.isCorrect,
+        isDark: isDark,
+      );
+    }
+    if (type.isEnd) {
+      return TutorialEndCard(
+        text: message.text,
+        accent: accent,
+        isDark: isDark,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  /// The button that moves the tutorial on, or the wait indicator.
+  Widget? _buildTutorialFooter(bool isDark) {
+    if (_tutorial == null) return null;
+    final accent = widget.server.primaryColor;
+    if (_tutorialBusy) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(accent),
+            ),
+          ),
+        ),
+      );
+    }
+    final visible = _messages.where((m) => !_isHidden(m)).toList();
+    if (visible.isEmpty || visible.last.isUser) return null;
+    final type = visible.last.messageRenderType;
+    final String label;
+    if (type.isWelcome) {
+      label = 'Start';
+    } else if (type.isAsset || type.isAnswerEval || type.isAgentComment) {
+      label = 'Continue';
+    } else {
+      return null;
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: Semantics(
+          identifier: type.isWelcome ? 'tutorial_start' : 'tutorial_continue',
+          child: FilledButton(
+            onPressed: () => _sendTutorialStep('chat_tutor_continue'),
+            style: FilledButton.styleFrom(backgroundColor: accent),
+            child: Text(label),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTutorialBanner(bool isDark) {
+    final accent = widget.server.primaryColor;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 4, 8, 4),
+      color: accent.withValues(alpha: isDark ? 0.15 : 0.08),
+      child: Row(
+        children: [
+          Icon(Icons.school_outlined, size: 18, color: accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _tutorial!.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.textDarkPrimary
+                    : AppColors.textPrimary,
+              ),
+            ),
+          ),
+          Semantics(
+            identifier: 'tutorial_exit',
+            child: TextButton(
+              onPressed: _isConnecting ? null : _exitTutorial,
+              child: const Text('Exit'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -272,6 +652,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   @override
   void dispose() {
     _socketSubscription?.cancel();
+    _tutorialTimer?.cancel();
     ChatSocketService().disconnect();
     _textController.dispose();
     _searchController.dispose();
@@ -304,10 +685,22 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
+    if (_tutorial != null) {
+      _textController.clear();
+      _sendTutorialStep(
+        'chat_tutor_usercomment',
+        message: text,
+        system: false,
+        extra: {'messagerendertype': 'usercomment'},
+      );
+      return;
+    }
+
     final targetChannel = _channelId;
     final currentUserId = AuthService.userId ?? 'user';
 
     setState(() {
+      _idleSince = null;
       _textController.clear();
     });
 
@@ -385,9 +778,20 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final footer = _idleSince != null && _tutorial == null
+        ? SessionResumePrompt(
+            lastActive: _idleSince!,
+            accent: widget.server.primaryColor,
+            isDark: isDark,
+            busy: _startingSession,
+            onContinue: () => setState(() => _idleSince = null),
+            onNewSession: _startNewSession,
+          )
+        : _buildTutorialFooter(isDark);
 
     return Column(
       children: [
+        if (_tutorial != null) _buildTutorialBanner(isDark),
         // Message Feed
         Expanded(
           child: _isConnecting && _messages.isEmpty
@@ -501,8 +905,9 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  itemCount: _messages.length,
+                  itemCount: _messages.length + (footer == null ? 0 : 1),
                   itemBuilder: (context, index) {
+                    if (index == _messages.length) return footer!;
                     final msg = _messages[index];
                     return _buildMessageItem(msg, isDark);
                   },
@@ -518,6 +923,16 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   Widget _buildMessageItem(ChatMessage msg, bool isDark) {
     final isMe = msg.isUser;
     final timeStr = _formatTime(msg.createdAt);
+
+    if (_isHidden(msg)) return const SizedBox.shrink();
+
+    final renderType = msg.messageRenderType;
+    if (renderType.isQuestion || renderType.isAnswerEval || renderType.isEnd) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Center(child: _buildTutorialCard(msg, isDark)),
+      );
+    }
 
     if (msg.messageRenderType.isForm) {
       return Padding(
@@ -667,7 +1082,13 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
         return _buildWelcomeBubble(message, isMe, timeStr, isDark);
       case MessageRenderType.product:
       case MessageRenderType.text:
+      case MessageRenderType.agentcomment:
         return _buildStandardBubble(message.text, isMe, timeStr, isDark);
+      case MessageRenderType.question:
+      case MessageRenderType.answereval:
+      case MessageRenderType.end:
+      case MessageRenderType.progressupdate:
+        return _buildTutorialCard(message, isDark);
       case MessageRenderType.delta:
         return _buildDeltaBubble(message.deltaOps, isMe, timeStr, isDark);
       case MessageRenderType.form:
@@ -868,6 +1289,22 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
               color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
             ),
           ),
+          if (_canTakeTutorials && _tutorial == null) ...[
+            const SizedBox(height: 10),
+            Semantics(
+              identifier: 'server_chat_tutorials',
+              child: OutlinedButton.icon(
+                onPressed: _isConnecting ? null : _pickTutorial,
+                icon: const Icon(Icons.school_outlined, size: 18),
+                label: const Text('Tutorials'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: widget.server.primaryColor,
+                  side: BorderSide(color: widget.server.primaryColor),
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           Text(
             timeStr,

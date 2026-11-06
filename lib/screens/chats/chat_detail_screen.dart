@@ -8,6 +8,7 @@ import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/chat/product_message_card.dart';
 import '../../widgets/chat/chat_attachments.dart';
+import '../../widgets/chat/session_resume_prompt.dart';
 import '../../providers/navigation_provider.dart';
 import '../../widgets/eme_world/eme_profile_card.dart';
 import 'session_history_screen.dart';
@@ -21,17 +22,22 @@ class ChatDetailScreen extends ConsumerStatefulWidget {
   /// True when hosted inside a main-shell tab: no back button.
   final bool embedded;
 
+  /// Ask whether to continue or start a new session when the chat opens in
+  /// one left idle. Off for a session the user picked from Session History.
+  final bool promptIdle;
+
   const ChatDetailScreen({
     super.key,
     required this.chat,
     this.embedded = false,
+    this.promptIdle = true,
   });
 
   /// Custom route to animate the screen in with smooth sliding transition
-  static Route<void> route(ChatModel chat) {
+  static Route<void> route(ChatModel chat, {bool promptIdle = true}) {
     return PageRouteBuilder<void>(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          ChatDetailScreen(chat: chat),
+          ChatDetailScreen(chat: chat, promptIdle: promptIdle),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -57,8 +63,13 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final ScrollController _scrollController = ScrollController();
 
   StreamSubscription<ChatMessage>? _socketSubscription;
-  late final String _channelId;
+  late String _channelId;
   bool _isConnecting = false;
+
+  /// When the session this chat opened in was last active, if that is long
+  /// enough ago to ask the user about it.
+  DateTime? _idleSince;
+  bool _startingSession = false;
 
   bool _isSearchOpen = false;
   String _searchQuery = '';
@@ -91,6 +102,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
       await _connectSocket(_channelId);
       await _loadChatHistory(_channelId);
+      if (widget.promptIdle && mounted) {
+        setState(() => _idleSince = idleSince(_messages));
+      }
     } catch (e, stack) {
       debugPrint('Error establishing chat socket: $e');
       AppErrorHandler.recordNonFatal(
@@ -161,6 +175,41 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     });
   }
 
+  /// Starts a new session with this person and moves the chat to it.
+  Future<void> _startNewSession() async {
+    setState(() => _startingSession = true);
+    try {
+      final session = await ref
+          .read(apiServiceProvider)
+          .createChatSession(toUser: widget.chat.username);
+      if (!mounted) return;
+      ChatSocketService().disconnect();
+      setState(() {
+        _messages = [];
+        _idleSince = null;
+        _channelId = session.channelId;
+      });
+      await _connectSocket(_channelId);
+      await _loadChatHistory(_channelId);
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Failed to start a new session in ChatDetailScreen',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.redAccent,
+            content: Text('Could not start a new session: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _startingSession = false);
+    }
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -212,6 +261,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     final currentUserId = AuthService.userId!;
 
     setState(() {
+      _idleSince = null;
       _messageController.clear();
     });
 
@@ -326,6 +376,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         ? AppColors.darkCardBorder
         : AppColors.lightCardBorder;
 
+    final showResume = _idleSince != null && _searchQuery.isEmpty;
     final displayedMessages = _searchQuery.isEmpty
         ? _messages
         : _messages
@@ -452,6 +503,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       onOpen: (session) => Navigator.of(context).push(
                         ChatDetailScreen.route(
                           widget.chat.copyWith(channelId: session.channelId),
+                          promptIdle: false,
                         ),
                       ),
                     );
@@ -629,8 +681,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       horizontal: 16,
                       vertical: 16,
                     ),
-                    itemCount: displayedMessages.length,
+                    itemCount: displayedMessages.length + (showResume ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index == displayedMessages.length) {
+                        return SessionResumePrompt(
+                          lastActive: _idleSince!,
+                          accent: AppColors.primary,
+                          isDark: isDark,
+                          busy: _startingSession,
+                          onContinue: () => setState(() => _idleSince = null),
+                          onNewSession: _startNewSession,
+                        );
+                      }
                       final message = displayedMessages[index];
                       return _buildMessageBubble(message, isDark);
                     },
@@ -785,6 +847,12 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         return _buildWelcomeBubble(message, isMe, timeStr, isDark);
       case MessageRenderType.product:
       case MessageRenderType.text:
+      // Tutorials only run in server chat; a user chat shows them as text.
+      case MessageRenderType.question:
+      case MessageRenderType.answereval:
+      case MessageRenderType.agentcomment:
+      case MessageRenderType.end:
+      case MessageRenderType.progressupdate:
         return _buildStandardBubble(message.text, isMe, timeStr, isDark);
       case MessageRenderType.delta:
         return _buildDeltaBubble(message.deltaOps, isMe, timeStr, isDark);

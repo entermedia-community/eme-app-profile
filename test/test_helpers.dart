@@ -358,6 +358,37 @@ class MockApiService implements IApiService {
   @override
   Future<String> connectEventChat(String eventId) async => 'ch_$eventId';
 
+  /// Topics returned by [fetchTutorialTopics].
+  final tutorialTopics = <TutorialTopic>[];
+
+  /// Tutorials returned by [fetchTutorials], by topic id.
+  final tutorialsByTopic = <String, List<TutorialSummary>>{};
+  final startedTutorials = <String>[];
+
+  @override
+  Future<List<TutorialTopic>> fetchTutorialTopics({String? baseUrl}) async =>
+      tutorialTopics;
+
+  @override
+  Future<List<TutorialSummary>> fetchTutorials(
+    String topicId, {
+    String? baseUrl,
+  }) async => tutorialsByTopic[topicId] ?? const [];
+
+  @override
+  Future<TutorialChannel> fetchTutorialSession(
+    String tutorialId, {
+    bool createNew = false,
+    String? baseUrl,
+  }) async => TutorialChannel(id: 'tutor_$tutorialId');
+
+  @override
+  Future<void> startTutorial(
+    String tutorialId, {
+    required String channel,
+    String? baseUrl,
+  }) async => startedTutorials.add('$tutorialId@$channel');
+
   @override
   Future<ProjectChatConnection> connectProjectChat(
     String collectionId, {
