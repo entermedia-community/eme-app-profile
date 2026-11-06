@@ -35,9 +35,9 @@ final navigationProvider = StateNotifierProvider<NavigationNotifier, int>((
 /// Bottom tabs of the Chats home page.
 enum HomeTab {
   myEme('My EME', Icons.person_pin_rounded, 'my_eme'),
-  servers('Servers', Icons.dns_rounded, 'servers'),
+  people('People', Icons.people_alt_rounded, 'people'),
   projects('Projects', Icons.folder_special_rounded, 'projects'),
-  people('People', Icons.people_alt_rounded, 'people');
+  servers('Servers', Icons.dns_rounded, 'servers');
 
   final String label;
   final IconData icon;
