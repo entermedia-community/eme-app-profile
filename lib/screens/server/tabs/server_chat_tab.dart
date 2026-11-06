@@ -6,7 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/chat/product_message_card.dart';
-import '../../../widgets/chat/send_product_sheet.dart';
+import 'package:file_picker/file_picker.dart';
+import '../../../widgets/chat/chat_attachments.dart';
 
 class ServerChatTab extends ConsumerStatefulWidget {
   final ServerModel server;
@@ -36,6 +37,7 @@ class ServerChatTab extends ConsumerStatefulWidget {
 
 class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   final TextEditingController _textController = TextEditingController();
+  final List<PlatformFile> _attachments = [];
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -290,6 +292,15 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   }
 
   void _sendMessage() {
+    if (_attachments.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.redAccent,
+          content: Text('Sending attachments is not supported yet.'),
+        ),
+      );
+      return;
+    }
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
@@ -321,6 +332,8 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     }
   }
 
+  // Kept for the upcoming attach popup (Products / Services entries).
+  // ignore: unused_element
   void _sendProduct(ProductMessageModel product) {
     final targetChannel = _channelId;
     final currentUserId = AuthService.userId ?? 'user';
@@ -1011,90 +1024,90 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
       ),
       child: SafeArea(
         top: false,
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: Icon(
-                Icons.add_circle_outline_rounded,
-                color: isDark
-                    ? AppColors.textDarkSecondary
-                    : AppColors.textSecondary,
-                size: 22,
-              ),
-              tooltip: 'Share Product or Service',
-              onPressed: () {
-                SendProductSheet.show(
-                  context,
-                  onProductSelected: (product) => _sendProduct(product),
-                );
-              },
+            ChatAttachmentTray(
+              id: 'server_chat',
+              files: _attachments,
+              onRemove: (f) => setState(() => _attachments.remove(f)),
             ),
-            Expanded(
-              child: Semantics(
-                identifier: "server_chat_input",
-                child: TextField(
-                  controller: _textController,
-                  onSubmitted: (_) => _sendMessage(),
-                  decoration: InputDecoration(
-                    hintText: 'Type your message...',
-                    hintStyle: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: isDark
-                          ? AppColors.textDarkMuted
-                          : AppColors.textMuted,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? const Color(0xFF0F172A)
-                        : const Color(0xFFF8FAFC),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? AppColors.darkCardBorder
-                            : AppColors.lightCardBorder,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      borderSide: BorderSide(
-                        color: isDark
-                            ? AppColors.darkCardBorder
-                            : AppColors.lightCardBorder,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(22),
-                      borderSide: BorderSide(
-                        color: widget.server.primaryColor,
-                        width: 1.5,
+            Row(
+              children: [
+                ChatAttachButton(
+                  id: 'server_chat',
+                  iconSize: 22,
+                  onPicked: (files) =>
+                      setState(() => _attachments.addAll(files)),
+                ),
+                Expanded(
+                  child: Semantics(
+                    identifier: "server_chat_input",
+                    child: TextField(
+                      controller: _textController,
+                      onSubmitted: (_) => _sendMessage(),
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: isDark
+                              ? AppColors.textDarkMuted
+                              : AppColors.textMuted,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF0F172A)
+                            : const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? AppColors.darkCardBorder
+                                : AppColors.lightCardBorder,
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? AppColors.darkCardBorder
+                                : AppColors.lightCardBorder,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide(
+                            color: widget.server.primaryColor,
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: widget.server.primaryColor,
-                shape: BoxShape.circle,
-              ),
-              child: Semantics(
-                identifier: "server_chat_send",
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.send_rounded,
-                    size: 18,
-                    color: Colors.white,
+                const SizedBox(width: 8),
+                Container(
+                  decoration: BoxDecoration(
+                    color: widget.server.primaryColor,
+                    shape: BoxShape.circle,
                   ),
-                  onPressed: _sendMessage,
+                  child: Semantics(
+                    identifier: "server_chat_send",
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.send_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      onPressed: _sendMessage,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

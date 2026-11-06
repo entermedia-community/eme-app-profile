@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:eme_world/widgets/delta_viewer.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/chat/product_message_card.dart';
-import '../../widgets/chat/send_product_sheet.dart';
+import '../../widgets/chat/chat_attachments.dart';
 import '../../providers/navigation_provider.dart';
 import '../../widgets/eme_world/eme_profile_card.dart';
 import 'session_history_screen.dart';
@@ -51,6 +52,7 @@ class ChatDetailScreen extends ConsumerStatefulWidget {
 
 class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final List<PlatformFile> _attachments = [];
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
@@ -194,6 +196,15 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   }
 
   void _sendMessage() {
+    if (_attachments.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.redAccent,
+          content: Text('Sending attachments is not supported yet.'),
+        ),
+      );
+      return;
+    }
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
@@ -223,6 +234,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
+  // Kept for the upcoming attach popup (Products / Services entries).
+  // ignore: unused_element
   void _sendProduct(ProductMessageModel product) {
     final targetChannel = _channelId;
     final currentUserId = AuthService.userId!;
@@ -643,57 +656,61 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 24),
-                  color: isDark
-                      ? AppColors.textDarkSecondary
-                      : AppColors.textSecondary,
-                  tooltip: 'Share Product or Service',
-                  onPressed: () {
-                    SendProductSheet.show(
-                      context,
-                      onProductSelected: (product) => _sendProduct(product),
-                    );
-                  },
+                ChatAttachmentTray(
+                  id: 'chat_detail',
+                  files: _attachments,
+                  onRemove: (f) => setState(() => _attachments.remove(f)),
                 ),
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    onSubmitted: (_) => _sendMessage(),
-                    decoration: InputDecoration(
-                      hintText: 'Type a message...',
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: isDark
-                            ? AppColors.textDarkMuted
-                            : AppColors.textMuted,
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      fillColor: isDark ? AppColors.darkBg : AppColors.lightBg,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+                Row(
+                  children: [
+                    ChatAttachButton(
+                      id: 'chat_detail',
+                      onPicked: (files) =>
+                          setState(() => _attachments.addAll(files)),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        onSubmitted: (_) => _sendMessage(),
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          hintStyle: GoogleFonts.inter(
+                            fontSize: 14,
+                            color: isDark
+                                ? AppColors.textDarkMuted
+                                : AppColors.textMuted,
+                          ),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          fillColor: isDark
+                              ? AppColors.darkBg
+                              : AppColors.lightBg,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _sendMessage,
-                  icon: const Icon(Icons.send_rounded, size: 19),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(12),
-                  ),
-                  tooltip: 'Send',
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      onPressed: _sendMessage,
+                      icon: const Icon(Icons.send_rounded, size: 19),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      tooltip: 'Send',
+                    ),
+                  ],
                 ),
               ],
             ),
