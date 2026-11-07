@@ -570,6 +570,7 @@ class MockApiService implements IApiService {
     String? serverId,
     String? collectionId,
     String? baseUrl,
+    bool myEme = false,
   }) async => chatSessions;
 
   @override

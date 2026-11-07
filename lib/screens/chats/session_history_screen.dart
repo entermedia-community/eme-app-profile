@@ -92,6 +92,7 @@ class _SessionHistoryScreenState extends ConsumerState<SessionHistoryScreen> {
         serverId: widget.serverId,
         collectionId: widget.collectionId,
         baseUrl: widget.baseUrl,
+        myEme: widget.myEme,
       );
 
   void _open(ChatSession session) {
