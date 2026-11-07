@@ -82,6 +82,9 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     _initChatConnection();
   }
 
+  /// My EME: the chat with yourself, opened through `connectmyeme.json`.
+  bool get _isSelfChat => widget.chat.username == AuthService.userId;
+
   Future<void> _initChatConnection() async {
     setState(() => _isConnecting = true);
 
@@ -94,7 +97,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
 
         // My EME (chat with yourself) opens like a server chat on the root
         // server; chats with other users use the user connect endpoint.
-        socketChannelId = toUser == fromUser
+        socketChannelId = _isSelfChat
             ? await ref.read(apiServiceProvider).connectMyEmeChat()
             : await ChatSocketService().connectUser(
                 fromUser: fromUser,
@@ -183,15 +186,18 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
   Future<void> _startNewSession() async {
     setState(() => _startingSession = true);
     try {
-      final session = await ref
-          .read(apiServiceProvider)
-          .createChatSession(toUser: widget.chat.username);
+      final newChannelId = _isSelfChat
+          ? await ref.read(apiServiceProvider).connectMyEmeChat(createNew: true)
+          : (await ref
+                    .read(apiServiceProvider)
+                    .createChatSession(toUser: widget.chat.username))
+                .channelId;
       if (!mounted) return;
       ChatSocketService().disconnect();
       setState(() {
         _messages = [];
         _idleSince = null;
-        _channelId = session.channelId;
+        _channelId = newChannelId;
       });
       await _connectSocket(_channelId);
       await _loadChatHistory(_channelId);
@@ -503,6 +509,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                     SessionHistoryScreen.show(
                       context,
                       toUser: widget.chat.username,
+                      myEme: _isSelfChat,
                       currentChannelId: widget.chat.channelId,
                       onOpen: (session) => Navigator.of(context).push(
                         ChatDetailScreen.route(

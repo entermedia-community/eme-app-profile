@@ -356,7 +356,8 @@ class MockApiService implements IApiService {
   }) async => 'ch_$serverId';
 
   @override
-  Future<String> connectMyEmeChat() async => 'ch_my_eme';
+  Future<String> connectMyEmeChat({bool createNew = false}) async =>
+      createNew ? 'ch_my_eme_new' : 'ch_my_eme';
 
   @override
   Future<String> connectEventChat(String eventId) async => 'ch_$eventId';

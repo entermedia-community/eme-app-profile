@@ -15,6 +15,7 @@ class SessionHistoryScreen extends ConsumerStatefulWidget {
     this.serverId,
     this.collectionId,
     this.baseUrl,
+    this.myEme = false,
     this.currentChannelId,
     required this.onOpen,
   });
@@ -23,6 +24,9 @@ class SessionHistoryScreen extends ConsumerStatefulWidget {
   final String? serverId;
   final String? collectionId;
   final String? baseUrl;
+
+  /// The chat is My EME: a new session is started through `connectmyeme.json`.
+  final bool myEme;
 
   /// The session being viewed now, marked in the list.
   final String? currentChannelId;
@@ -38,6 +42,7 @@ class SessionHistoryScreen extends ConsumerStatefulWidget {
     String? serverId,
     String? collectionId,
     String? baseUrl,
+    bool myEme = false,
     String? currentChannelId,
     required void Function(ChatSession session) onOpen,
   }) {
@@ -56,6 +61,7 @@ class SessionHistoryScreen extends ConsumerStatefulWidget {
             serverId: serverId,
             collectionId: collectionId,
             baseUrl: baseUrl,
+            myEme: myEme,
             currentChannelId: currentChannelId,
             onOpen: onOpen,
           ),
@@ -96,14 +102,15 @@ class _SessionHistoryScreenState extends ConsumerState<SessionHistoryScreen> {
   Future<void> _startNew() async {
     setState(() => _starting = true);
     try {
-      final session = await ref
-          .read(apiServiceProvider)
-          .createChatSession(
-            toUser: widget.toUser,
-            serverId: widget.serverId,
-            collectionId: widget.collectionId,
-            baseUrl: widget.baseUrl,
-          );
+      final api = ref.read(apiServiceProvider);
+      final session = widget.myEme
+          ? ChatSession(channelId: await api.connectMyEmeChat(createNew: true))
+          : await api.createChatSession(
+              toUser: widget.toUser,
+              serverId: widget.serverId,
+              collectionId: widget.collectionId,
+              baseUrl: widget.baseUrl,
+            );
       if (mounted) _open(session);
     } catch (e, stack) {
       AppErrorHandler.recordNonFatal(
