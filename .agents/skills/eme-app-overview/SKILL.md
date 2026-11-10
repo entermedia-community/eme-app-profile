@@ -19,6 +19,21 @@ REST, WebSocket, auth, providers — lives in the sibling SDK `../eme-app-sdk`
 (`import 'package:eme_app_sdk/eme_app_sdk.dart';`). Changing data or protocol usually means changing
 the SDK first. See the `eme-sdk-overview` skill there.
 
+## Terminology: "Project" = `librarycollection`
+
+In this app (and in anything the owner says), a **Project** is a `librarycollection` row
+(`LibraryCollectionModel`, `projectCollectionId`, `librarycollection/*.json`). It is **not** a
+`collectiveproject` — that is a different server table (a sub-space *inside* a librarycollection,
+e.g. the auto-created "Public" one, linked by `parentcollectionid`). Never call
+`collectiveproject` / `emeproject` endpoints when the task says "project". `collectiveproject` is
+planned for removal (replaced by channels) once tutorials are tested and working, so don't build
+new features on it.
+
+Listing "my projects" (`librarycollection/viewprojects.json` → `ProjectManager.viewUserProjects`)
+returns collections where the user has a `librarycollectionusers` row with `ontheteam=true`,
+**and** `collectiontype=1` ("User Defined"), and `organizationstatus` not disabled/closed/
+pendingdelete. Being `owner` alone does not make a project show up.
+
 ## Startup (`lib/main.dart`)
 
 `DioUtil.init()` → `OpenI().initialize({mediadb, siteroot, catalogid})` →
