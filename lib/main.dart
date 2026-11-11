@@ -7,11 +7,9 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import 'providers/theme_provider.dart';
-import 'screens/auth/auth_gate.dart';
+import 'router/app_router.dart';
 import 'services/deep_link_handler.dart';
 import 'theme/app_theme.dart';
-
-final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -94,7 +92,8 @@ class EmeWorldApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: ref.watch(appRouterProvider),
       title: 'EME World',
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -103,7 +102,6 @@ class EmeWorldApp extends ConsumerWidget {
         FlutterQuillLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en')],
-      navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         dragDevices: {
@@ -130,7 +128,6 @@ class EmeWorldApp extends ConsumerWidget {
           ),
         ),
       ),
-      home: const AuthGate(),
     );
   }
 }

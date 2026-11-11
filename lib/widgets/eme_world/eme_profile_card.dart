@@ -1,11 +1,12 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
 import '../pill_badge.dart';
-import '../../screens/chats/chat_detail_screen.dart';
 import 'greeting_draft.dart';
 
 class EmeProfileCard extends ConsumerWidget {
@@ -557,7 +558,10 @@ class EmeProfileCard extends ConsumerWidget {
               : 'EM',
         );
 
-        Navigator.of(context).push(ChatDetailScreen.route(chat));
+        context.push(
+          AppRoutes.chatPath(chat.username),
+          extra: ChatRouteExtra(chat),
+        );
       }
     } catch (e, stack) {
       debugPrint('Error connecting with profile: $e');

@@ -1,9 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
-import '../main.dart';
-import '../screens/chats/chat_detail_screen.dart';
-import '../screens/server/server_detail_screen.dart';
+import 'package:go_router/go_router.dart';
+import '../router/app_router.dart';
 
 class DeepLinkHandler {
   static final DeepLinkHandler instance = DeepLinkHandler._internal();
@@ -76,9 +75,12 @@ class DeepLinkHandler {
 
       DeepLinkService.instance.clearPendingDeepLink();
 
-      final navState = rootNavigatorKey.currentState;
-      if (navState != null) {
-        navState.push(ChatDetailScreen.route(chat));
+      final navContext2 = rootNavigatorKey.currentContext;
+      if (navContext2 != null && navContext2.mounted) {
+        navContext2.push(
+          AppRoutes.chatPath(targetUsername),
+          extra: ChatRouteExtra(chat),
+        );
       }
     } catch (e, stack) {
       debugPrint('[DeepLinkHandler] Error opening chat from deeplink: $e');
@@ -110,7 +112,10 @@ class DeepLinkHandler {
         return;
       }
       DeepLinkService.instance.clearPendingDeepLink();
-      rootNavigatorKey.currentState?.push(ServerDetailScreen.route(server));
+      final navContext = rootNavigatorKey.currentContext;
+      if (navContext != null && navContext.mounted) {
+        navContext.push(AppRoutes.serverPath(server.id), extra: server);
+      }
     } catch (e, stack) {
       debugPrint('[DeepLinkHandler] Error opening server $serverId: $e');
       AppErrorHandler.recordNonFatal(

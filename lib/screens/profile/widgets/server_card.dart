@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../router/app_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../../theme/app_colors.dart';
-import '../../server/server_detail_screen.dart';
 
 class ServerCard extends ConsumerWidget {
   final ServerModel server;
@@ -389,6 +390,6 @@ class ServerCard extends ConsumerWidget {
       if (ref.read(serverProvider).isJoining(server.id)) return;
       if (!await _join(context, ref) || !context.mounted) return;
     }
-    Navigator.of(context).push(ServerDetailScreen.route(server));
+    context.push(AppRoutes.serverPath(server.id), extra: server);
   }
 }
