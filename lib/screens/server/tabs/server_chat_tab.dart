@@ -121,9 +121,11 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     final projectId = widget.projectCollectionId;
     if (projectId != null) {
       try {
-        final connection = await ref.read(
-          projectChatConnectionProvider(projectId).future,
-        );
+        // Asked fresh on every open (not the cached provider): the project's
+        // channel comes from librarycollection/connectchat.json.
+        final connection = await ref
+            .read(apiServiceProvider)
+            .connectProjectChat(projectId);
         _channelId = connection.channelId;
         await _connectSocket(_channelId);
         await _loadChatHistory(_channelId);
