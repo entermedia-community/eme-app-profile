@@ -22,12 +22,10 @@ the SDK first. See the `eme-sdk-overview` skill there.
 ## Terminology: "Project" = `librarycollection`
 
 In this app (and in anything the owner says), a **Project** is a `librarycollection` row
-(`LibraryCollectionModel`, `projectCollectionId`, `librarycollection/*.json`). It is **not** a
-`collectiveproject` — that is a different server table (a sub-space *inside* a librarycollection,
-e.g. the auto-created "Public" one, linked by `parentcollectionid`). Never call
-`collectiveproject` / `emeproject` endpoints when the task says "project". `collectiveproject` is
-planned for removal (replaced by channels) once tutorials are tested and working, so don't build
-new features on it.
+(`LibraryCollectionModel`, `projectCollectionId`, `librarycollection/*.json`). The old
+`collectiveproject` "topic" table has been removed because it kept being mistaken for a project; a
+project's team chat is a `channel` with `searchtype=librarycollection` pointing at the collection,
+shared by web and app. Never call `collectiveproject` / `emeproject` endpoints.
 
 Listing "my projects" (`librarycollection/viewprojects.json` → `ProjectManager.viewUserProjects`)
 returns collections where the user has a `librarycollectionusers` row with `ontheteam=true`,

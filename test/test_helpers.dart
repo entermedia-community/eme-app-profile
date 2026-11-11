@@ -403,7 +403,6 @@ class MockApiService implements IApiService {
     }
     return ProjectChatConnection(
       channelId: 'ch_$collectionId',
-      topicId: 'topic_general',
       canEditCollection: projectCanEdit,
       canViewSettings: projectCanViewSettings,
     );
