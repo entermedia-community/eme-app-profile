@@ -375,6 +375,43 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
+  void _handleLinkTap(String link, Map<String, dynamic> data) async {
+    debugPrint("Link: $link");
+    debugPrint("Data: $data");
+    // Only My EME (chat with yourself) is backed by an agent that renders
+    // scenario links; chats with other users have no link callbacks.
+    if (!_isSelfChat) return;
+    try {
+      final newChannelId = await ChatSocketService().connectChat(
+        null,
+        endpoint: 'chat/connectmyeme.json',
+        params: data,
+      );
+      if (!mounted) return;
+      if (newChannelId != _channelId) {
+        ChatSocketService().disconnect();
+        setState(() {
+          _messages = [];
+          _idleSince = null;
+          _channelId = newChannelId;
+        });
+        await _connectSocket(_channelId);
+      }
+      await _loadChatHistory(_channelId);
+    } catch (e, stack) {
+      AppErrorHandler.recordNonFatal(
+        e,
+        stack,
+        reason: 'Error handling chat link tap in ServerChatTab',
+        customKeys: {'channelId': widget.chat.channelId ?? '', 'link': link},
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not open: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -991,7 +1028,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             : CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          DeltaViewer(deltaOps: deltas),
+          DeltaViewer(deltaOps: deltas, onLinkTap: _handleLinkTap),
           const SizedBox(height: 4),
           Row(
             mainAxisSize: MainAxisSize.min,

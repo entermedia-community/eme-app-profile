@@ -5,8 +5,12 @@ import 'package:flutter_quill/flutter_quill.dart';
 
 class DeltaViewer extends StatefulWidget {
   final List<dynamic> deltaOps;
-  final Function(String link, Map<String, dynamic> data)? onLinkTap;
-  const DeltaViewer({super.key, required this.deltaOps, this.onLinkTap});
+  final Function(String link, Map<String, dynamic> data) onLinkTap;
+  const DeltaViewer({
+    super.key,
+    required this.deltaOps,
+    required this.onLinkTap,
+  });
   @override
   State<DeltaViewer> createState() => _DeltaViewerState();
 }
@@ -52,7 +56,7 @@ class _DeltaViewerState extends State<DeltaViewer> {
             }
 
             return TapGestureRecognizer()
-              ..onTap = () => widget.onLinkTap?.call(link, data);
+              ..onTap = () => widget.onLinkTap.call(link, data);
           }
           return null;
         },
