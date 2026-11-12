@@ -58,6 +58,24 @@ Shared widgets: `lib/widgets/delta_viewer.dart` (read-only Quill delta, handles 
 
 `message.isUser` decides alignment and colour. `message.createdAt` is formatted to `timeStr` by the caller.
 
+## Streamed agent replies
+
+My EME chat (`ChatDetailScreen`, hosting the self chat) shows an agent reply that is built up by
+patches of one message id (SDK: `mergeChatMessage`, `MessageStatus`; see `eme-sdk-chat-messages`).
+
+- The socket listener calls `mergeChatMessage(_messages, msg)` and acts on the outcome: scroll for
+  `added`, follow the reply for `updated`, reload the history without scrolling for `needsReload`.
+  It scrolls only when the reader was near the bottom (`_isNearBottom`).
+- List items are keyed by `messageId`, so a reply's state stays with it.
+- `DeltaViewer` rebuilds its Quill document in `didUpdateWidget` when the ops change.
+- `lib/widgets/chat/agent_status_widgets.dart`: `AgentStatusIndicator` shows a spinner (`working`)
+  or typing dots (`streaming`) inside the bubble, Semantics id `agent_status_<messageId>` (gone when
+  the reply is done). An `error` reply gets a red-tinted bubble.
+- Input and send have the ids `chat_detail_input` and `chat_detail_send`.
+- `ServerChatTab` does not use patches yet; it still replaces by id only.
+- Tests: `test/agent_message_test.dart`. Widget tests with a status animation can't
+  `pumpAndSettle`; pump fixed frames.
+
 ## Adding a new message type
 
 1. SDK: add the enum value and parsing (`eme-sdk-chat-messages` skill).

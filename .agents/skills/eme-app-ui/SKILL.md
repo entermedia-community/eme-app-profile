@@ -109,10 +109,18 @@ Wrap every button, input, chip and tappable row you add or touch in
 `search_input`, `search_type_all|people|servers`, `search_category_bar`, `search_category_$i`,
 `search_results`, `search_result_$i`, `add_custom_server`, `profile_edit_button`,
 `profile_chat_input`, `profile_chat_send`, `profile_greeting_input`, `profile_greeting_send`,
-`profile_details_close`, `server_chat_input`, `server_chat_send`.
+`profile_details_close`, `server_chat_input`, `server_chat_send`, `chat_detail_input`,
+`chat_detail_send`, `agent_status_<messageId>` (spinner/typing dots in a streaming agent reply; gone when done).
 
 ## Widget-test gotchas (learned the hard way)
 
+- A screen showing a spinner or `TypingDots` (an agent reply with status `working` / `streaming`) never
+  settles, so `pumpAndSettle` times out. Pump fixed frames instead:
+  `for (var i = 0; i < 5; i++) { await tester.pump(const Duration(milliseconds: 100)); }`.
+- Quill text lives in a `RichText`: use `find.textContaining('x', findRichText: true)`.
+- Nothing in the tests can push a socket message into the `ChatSocketService` singleton. Cover merging with
+  SDK unit tests (`mergeChatMessage`) and cover the screen with history messages (subclass `MockApiService`
+  and override `fetchUserChatMessages`; see `test/agent_message_test.dart`).
 - Find by id: `find.bySemanticsIdentifier('id')`; for the inner `TextField` use
   `find.descendant(of: find.bySemanticsIdentifier('id'), matching: find.byType(TextField))`.
 - `find.text('X').last` often hits a heading with the same text; prefer ids.

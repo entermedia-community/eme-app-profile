@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:eme_world/theme/app_colors.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +29,16 @@ class _DeltaViewerState extends State<DeltaViewer> {
       selection: const TextSelection.collapsed(offset: 0),
       readOnly: true,
     );
+  }
+
+  /// The ops of a message that is still being built up change under the same
+  /// widget, so the document is rebuilt from them when they differ.
+  @override
+  void didUpdateWidget(DeltaViewer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (identical(oldWidget.deltaOps, widget.deltaOps)) return;
+    if (jsonEncode(oldWidget.deltaOps) == jsonEncode(widget.deltaOps)) return;
+    _controller.document = Document.fromJson(widget.deltaOps);
   }
 
   @override

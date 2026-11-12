@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eme_app_sdk/eme_app_sdk.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/chat/agent_status_widgets.dart';
 import '../../widgets/chat/product_message_card.dart';
 import '../../widgets/chat/chat_attachments.dart';
 import '../../widgets/chat/session_resume_prompt.dart';
@@ -130,7 +131,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
-  Future<void> _loadChatHistory(String channelId) async {
+  Future<void> _loadChatHistory(String channelId, {bool scroll = true}) async {
     try {
       final history = await ref
           .read(apiServiceProvider)
@@ -142,7 +143,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         setState(() {
           _messages = history;
         });
-        _scrollToBottom();
+        if (scroll) _scrollToBottom();
       }
     } catch (e, stack) {
       debugPrint('Error loading chat history: $e');
@@ -166,7 +167,7 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       incomingMsg,
     ) {
       debugPrint('ChatSocketService incomingMsg: ${incomingMsg.toJson()}');
-      if (incomingMsg.isKeepAlive || incomingMsg.isMessageRemoved) return;
+      if (incomingMsg.isKeepAlive) return;
       if (!mounted) return;
 
       if (incomingMsg.channel.isNotEmpty &&
@@ -175,11 +176,39 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         return;
       }
 
-      setState(() {
-        _messages.add(incomingMsg);
-      });
-      _scrollToBottom();
+      // The agent builds one reply up from patches (messageappend /
+      // messagereplace) of the same message id; everything else is added, or
+      // replaces the message with that id. Decide before the list grows
+      // whether the reader is at the bottom and should be kept there.
+      final follow = _isNearBottom();
+      late ChatMergeOutcome outcome;
+      setState(() => outcome = mergeChatMessage(_messages, incomingMsg));
+      switch (outcome) {
+        case ChatMergeOutcome.added:
+          _scrollToBottom(onlyIf: follow || incomingMsg.isUser);
+        case ChatMergeOutcome.updated:
+          _scrollToBottom(onlyIf: follow, animate: false);
+        case ChatMergeOutcome.needsReload:
+          // A patch was missed; the chat history has the message as saved
+          _resyncHistory(channelId);
+        case ChatMergeOutcome.removed:
+        case ChatMergeOutcome.ignored:
+          break;
+      }
     });
+  }
+
+  bool _resyncing = false;
+
+  /// Loads the history again after a missed patch, without moving the scroll.
+  Future<void> _resyncHistory(String channelId) async {
+    if (_resyncing) return;
+    _resyncing = true;
+    try {
+      await _loadChatHistory(channelId, scroll: false);
+    } finally {
+      _resyncing = false;
+    }
   }
 
   /// Starts a new session with this person and moves the chat to it.
@@ -220,14 +249,32 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     }
   }
 
-  void _scrollToBottom() {
+  /// Whether the reader is at (or within a bubble's height of) the bottom, so
+  /// a growing reply should keep scrolling. Someone reading up the chat is
+  /// left where they are.
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    final position = _scrollController.position;
+    return position.maxScrollExtent - position.pixels < 120;
+  }
+
+  /// Scrolls to the end after the next frame. [onlyIf] false does nothing, so
+  /// callers can pass the reader-was-at-the-bottom check. [animate] false jumps,
+  /// which keeps a reply that grows every few hundred milliseconds from lagging.
+  void _scrollToBottom({bool onlyIf = true, bool animate = true}) {
+    if (!onlyIf) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
+        final end = _scrollController.position.maxScrollExtent;
+        if (animate) {
+          _scrollController.animateTo(
+            end,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+          );
+        } else {
+          _scrollController.jumpTo(end);
+        }
       }
     });
   }
@@ -730,6 +777,16 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                       vertical: 16,
                     ),
                     itemCount: displayedMessages.length + (showResume ? 1 : 0),
+                    // Keep a bubble's state (its text being built up, a
+                    // running status animation) with its message when the
+                    // list changes around it.
+                    findChildIndexCallback: (key) {
+                      if (key is! ValueKey<String>) return null;
+                      final i = displayedMessages.indexWhere(
+                        (m) => m.messageId == key.value,
+                      );
+                      return i < 0 ? null : i;
+                    },
                     itemBuilder: (context, index) {
                       if (index == displayedMessages.length) {
                         return SessionResumePrompt(
@@ -742,7 +799,10 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         );
                       }
                       final message = displayedMessages[index];
-                      return _buildMessageBubble(message, isDark);
+                      return KeyedSubtree(
+                        key: ValueKey<String>(message.messageId),
+                        child: _buildMessageBubble(message, isDark),
+                      );
                     },
                   ),
           ),
@@ -782,43 +842,49 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                           setState(() => _attachments.addAll(files)),
                     ),
                     Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        onSubmitted: (_) => _sendMessage(),
-                        decoration: InputDecoration(
-                          hintText: 'Type a message...',
-                          hintStyle: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: isDark
-                                ? AppColors.textDarkMuted
-                                : AppColors.textMuted,
-                          ),
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          fillColor: isDark
-                              ? AppColors.darkBg
-                              : AppColors.lightBg,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
+                      child: Semantics(
+                        identifier: 'chat_detail_input',
+                        child: TextField(
+                          controller: _messageController,
+                          onSubmitted: (_) => _sendMessage(),
+                          decoration: InputDecoration(
+                            hintText: 'Type a message...',
+                            hintStyle: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: isDark
+                                  ? AppColors.textDarkMuted
+                                  : AppColors.textMuted,
+                            ),
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            fillColor: isDark
+                                ? AppColors.darkBg
+                                : AppColors.lightBg,
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton.filled(
-                      onPressed: _sendMessage,
-                      icon: const Icon(Icons.send_rounded, size: 19),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(12),
+                    Semantics(
+                      identifier: 'chat_detail_send',
+                      child: IconButton.filled(
+                        onPressed: _sendMessage,
+                        icon: const Icon(Icons.send_rounded, size: 19),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.all(12),
+                        ),
+                        tooltip: 'Send',
                       ),
-                      tooltip: 'Send',
                     ),
                   ],
                 ),
@@ -901,9 +967,23 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
       case MessageRenderType.agentcomment:
       case MessageRenderType.end:
       case MessageRenderType.progressupdate:
-        return _buildStandardBubble(message.text, isMe, timeStr, isDark);
+        return _buildStandardBubble(
+          message.text,
+          isMe,
+          timeStr,
+          isDark,
+          messageId: message.messageId,
+          status: message.messageStatus,
+        );
       case MessageRenderType.delta:
-        return _buildDeltaBubble(message.deltaOps, isMe, timeStr, isDark);
+        return _buildDeltaBubble(
+          message.deltaOps,
+          isMe,
+          timeStr,
+          isDark,
+          messageId: message.messageId,
+          status: message.messageStatus,
+        );
       case MessageRenderType.form:
         return _buildFormBubble(message, isMe, timeStr, isDark);
     }
@@ -913,14 +993,19 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     String text,
     bool isMe,
     String timeStr,
-    bool isDark,
-  ) {
+    bool isDark, {
+    String? messageId,
+    MessageStatus? status,
+  }) {
+    final failed = status == MessageStatus.error;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
       decoration: BoxDecoration(
         color: isMe
             ? AppColors.primary
-            : (isDark ? AppColors.darkSurface : Colors.white),
+            : (failed
+                  ? AppColors.redAccent.withValues(alpha: isDark ? 0.15 : 0.06)
+                  : (isDark ? AppColors.darkSurface : Colors.white)),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),
@@ -930,9 +1015,11 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         border: isMe
             ? null
             : Border.all(
-                color: isDark
-                    ? AppColors.darkCardBorder
-                    : AppColors.lightCardBorder,
+                color: failed
+                    ? AppColors.redAccent
+                    : (isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder),
               ),
         boxShadow: [
           BoxShadow(
@@ -959,6 +1046,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
                         : AppColors.textPrimary),
             ),
           ),
+          if (messageId != null)
+            AgentStatusIndicator(id: messageId, status: status),
           const SizedBox(height: 4),
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -993,14 +1082,19 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     List<dynamic> deltas,
     bool isMe,
     String timeStr,
-    bool isDark,
-  ) {
+    bool isDark, {
+    String? messageId,
+    MessageStatus? status,
+  }) {
+    final failed = status == MessageStatus.error;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
       decoration: BoxDecoration(
         color: isMe
             ? AppColors.primary
-            : (isDark ? AppColors.darkSurface : Colors.white),
+            : (failed
+                  ? AppColors.redAccent.withValues(alpha: isDark ? 0.15 : 0.06)
+                  : (isDark ? AppColors.darkSurface : Colors.white)),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),
@@ -1010,9 +1104,11 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         border: isMe
             ? null
             : Border.all(
-                color: isDark
-                    ? AppColors.darkCardBorder
-                    : AppColors.lightCardBorder,
+                color: failed
+                    ? AppColors.redAccent
+                    : (isDark
+                          ? AppColors.darkCardBorder
+                          : AppColors.lightCardBorder),
               ),
         boxShadow: [
           BoxShadow(
@@ -1029,6 +1125,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           DeltaViewer(deltaOps: deltas, onLinkTap: _handleLinkTap),
+          if (messageId != null)
+            AgentStatusIndicator(id: messageId, status: status),
           const SizedBox(height: 4),
           Row(
             mainAxisSize: MainAxisSize.min,

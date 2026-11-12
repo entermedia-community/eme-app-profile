@@ -54,7 +54,7 @@ Override with `--dart-define=SITEROOT=...` (and optionally `MEDIADB=...`).
 | `lib/screens/eme_world/widgets/` | `eme_profile_card.dart` (person card + `showDetails` sheet with greeting composer), `greeting_draft.dart` (what two users have in common → draft greeting) |
 | `lib/screens/server/` | `server_detail_screen.dart` (tabbed server view), `server_chat_screen.dart`, `tabs/` (chat, products, goals, finance, blog, files, overview), `widgets/server_bottom_nav.dart` |
 | `lib/screens/auth/` | `AuthGate`, `AuthScreen`. OTP widgets are in `lib/widgets/auth/` |
-| `lib/widgets/` | Shared: `profile_app_bar_button.dart` (+ `emeProfileLabel`), `app_bar_overflow_menu.dart`, `settings_dialog.dart`, `pill_badge`, `delta_viewer` (Quill read-only), `chat/` (product card/sheet/modal), `notifications/` |
+| `lib/widgets/` | Shared: `profile_app_bar_button.dart` (+ `emeProfileLabel`), `app_bar_overflow_menu.dart`, `settings_dialog.dart`, `pill_badge`, `delta_viewer` (Quill read-only, repaints when its ops change), `chat/` (product card/sheet/modal, `agent_status_widgets.dart` spinner and typing dots for a streaming agent reply), `notifications/` |
 | `lib/services/deep_link_handler.dart` | Opens a DM from `emeworld://chat/<user>` or a push-notification tap, using `rootNavigatorKey` |
 | `lib/theme/` | `AppColors` (constants), `AppTheme.lightTheme/darkTheme`. `themeModeProvider` is in `lib/providers/theme_provider.dart` |
 
@@ -65,6 +65,10 @@ Override with `--dart-define=SITEROOT=...` (and optionally `MEDIADB=...`).
 | User ↔ user (incl. self chat) | `screens/chats/chat_detail_screen.dart` | `ChatSocketService.connectUser` → `connect` → `messageStream` / `sendMessage`; history `fetchUserChatMessages`. Self chat = `connectUser(me, me)` |
 | User ↔ EME Server | `screens/server/tabs/server_chat_tab.dart` (hosted by `server_detail_screen` / `server_chat_screen`), opened from the chat list or Search | `connectChat(serverId)` → `connect(baseUrl: server.serverMediaDBUrl)`; history `fetchServerChatMessages`; form submit via `connectChat(..., params:)`. Joined servers come from `userServersProvider` (`fetchUserServers`) |
 | User ↔ MCP server | `screens/chats/mcp_chat_detail_screen.dart` | `mcpConversationsProvider` / `McpClientService` |
+
+My EME (the self chat in `chat_detail_screen.dart`) streams the agent's reply as patches of one message id
+(`messageappend` / `messagereplace`, `messagestatus`); the screen merges them with the SDK's
+`mergeChatMessage`. Server chat does not use patches yet. See `eme-app-chat-ui`.
 
 DM and server chat each have their **own** `_buildMessageContent` switch over `MessageRenderType`.
 Keep them in step. See the `eme-app-chat-ui` skill.
