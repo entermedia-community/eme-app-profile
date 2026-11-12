@@ -49,6 +49,11 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
   String _channelId = '';
   bool _isConnecting = false;
   String? _connectionError;
+  Map<String, dynamic> _extraData = {};
+
+  /// Last `functionname` seen on a tapped chat link; sent along with later
+  /// link posts and typed messages.
+  String? _previousFunctionName;
 
   late List<ChatMessage> _messages;
 
@@ -693,8 +698,9 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
         'chat_tutor_usercomment',
         message: text,
         system: false,
-        extra: {'messagerendertype': 'usercomment'},
+        extra: {'messagerendertype': 'usercomment', ..._extraData},
       );
+      _extraData = {};
       return;
     }
 
@@ -713,6 +719,7 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
           user: currentUserId,
           channel: targetChannel,
           command: 'messagereceived',
+          functionName: _previousFunctionName ?? '',
           extraData: {"entityid": widget.server.id},
         );
       }
@@ -1554,26 +1561,54 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     );
   }
 
+  /// Last `functionname` found on a link in earlier messages (newest first).
+  String? _lookupFunctionNameFromHistory() {
+    for (final msg in _messages.reversed) {
+      for (final op in msg.deltaOps.reversed) {
+        if (op is! Map) continue;
+        final attrs = op['attributes'];
+        if (attrs is! Map || attrs['link'] == null) continue;
+        final fn = attrs['data-functionname']?.toString();
+        if (fn != null && fn.isNotEmpty) return fn;
+      }
+    }
+    return null;
+  }
+
   void _handleLinkTap(String link, Map<String, dynamic> data) async {
-    debugPrint(
-      "Link: $link",
-    ); //e.g.: /site/mediadb/views/modules/emeserver/editors/entitychat/chatterbox/changescenario.html
-    debugPrint(
-      "Data: $data",
-    ); //e.g.; {targetdiv: changescenario, channel: AaFAj3-udKixTInEx17X, currentscenario: eme_server_search_media, functionname: eme_server_search_media_confirm, oemaxlevel: 1}
-    // Event chat has no form callbacks yet.
-    if (widget.eventId != null) return;
+    debugPrint("Data: $data");
+    final funName =
+        data['functionname'] ??
+        ((_previousFunctionName?.isNotEmpty ?? false)
+            ? _previousFunctionName
+            : _lookupFunctionNameFromHistory());
+    if (link == '#') {
+      if (data.containsKey("prefix")) {
+        // dispatch a message with prefix as message body + the other data as payload
+        ChatSocketService().sendMessage(
+          message: data['prefix'],
+          user: AuthService.userId ?? 'user',
+          channel: _channelId,
+          functionName: funName,
+          command: 'messagereceived',
+        );
+        _previousFunctionName = funName;
+        return;
+      }
+    }
+
+    debugPrint("Link: $link");
+    if (link.contains("/changescenario.html")) {
+      link = '/services/chat/changescenario.json';
+    }
     try {
-      final api = ref.read(apiServiceProvider);
-      final projectId = widget.projectCollectionId;
-      final channelId = projectId != null
-          ? (await api.connectProjectChat(projectId, params: data)).channelId
-          : await api.connectServerChat(
-              widget.server.id,
-              params: data,
-              baseUrl: _serverBaseUrl,
-            );
-      await _openChannel(channelId);
+      await ChatSocketService().postChatLink(
+        link,
+        channel: _channelId,
+        data: {...data, 'functionname': ?funName},
+        baseUrl: _serverBaseUrl,
+      );
+      _previousFunctionName = funName;
     } catch (e, stack) {
       AppErrorHandler.recordNonFatal(
         e,
