@@ -15,6 +15,31 @@ class DeltaViewer extends StatefulWidget {
   });
   @override
   State<DeltaViewer> createState() => _DeltaViewerState();
+
+  /// Custom attribute the server sets on the text op of its interim
+  /// "Analyzing…" status message (AgentJobManager.handleStatusUpdate).
+  static const processingAttribute = 'processing';
+
+  /// The status text when [ops] is the server's interim processing message
+  /// (text ops marked with the [processingAttribute] attribute), else null.
+  /// The real answer later replaces this message under the same id.
+  static String? processingText(List<dynamic> ops) {
+    final buffer = StringBuffer();
+    var marked = false;
+    for (final op in ops) {
+      if (op is! Map || op['insert'] is! String) return null;
+      final attrs = op['attributes'];
+      print("======");
+      print(attrs);
+      if (attrs is Map && attrs[processingAttribute] == true) {
+        marked = true;
+        buffer.write(op['insert']);
+      }
+    }
+    if (!marked) return null;
+    final result = buffer.toString().trim();
+    return result.isEmpty ? null : result;
+  }
 }
 
 class _DeltaViewerState extends State<DeltaViewer> {
@@ -49,6 +74,8 @@ class _DeltaViewerState extends State<DeltaViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final processing = DeltaViewer.processingText(widget.deltaOps);
+    if (processing != null) return _ProcessingMessage(text: processing);
     return QuillEditor.basic(
       controller: _controller,
       config: QuillEditorConfig(
@@ -96,6 +123,42 @@ class _DeltaViewerState extends State<DeltaViewer> {
           //   null,
           // ),
         ),
+      ),
+    );
+  }
+}
+
+class _ProcessingMessage extends StatelessWidget {
+  final String text;
+  const _ProcessingMessage({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final color = isDark
+        ? AppColors.textDarkSecondary
+        : AppColors.textSecondary;
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              text.endsWith('...') || text.endsWith('…') ? text : '$text…',
+              style: TextStyle(fontSize: 14, color: color),
+            ),
+          ),
+        ],
       ),
     );
   }

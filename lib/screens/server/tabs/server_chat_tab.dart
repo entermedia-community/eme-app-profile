@@ -1081,9 +1081,11 @@ class _ServerChatTabState extends ConsumerState<ServerChatTab> {
     String timeStr,
     bool isDark,
   ) {
+    print("*******************");
     debugPrint(
       'ServerChatTab rendering message type: ${message.messageRenderType}',
     );
+    print(message.message);
     switch (message.messageRenderType) {
       case MessageRenderType.asset:
         return _buildAssetCard(message, isMe, timeStr, isDark);
