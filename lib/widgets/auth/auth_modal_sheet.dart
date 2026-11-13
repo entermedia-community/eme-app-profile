@@ -28,6 +28,10 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
   final TextEditingController _lastNameController = TextEditingController();
 
   String _otpCode = '';
+  bool _verifying = false;
+  int _failedAttempts = 0;
+  static const int _maxAttempts = 3;
+  int _otpAttempt = 0;
   Timer? _countdownTimer;
   int _secondsRemaining = 60;
   bool _canResend = false;
@@ -53,6 +57,7 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
   void _startCountdown() {
     _countdownTimer?.cancel();
     setState(() {
+      _failedAttempts = 0;
       _secondsRemaining = 60;
       _canResend = false;
     });
@@ -124,9 +129,31 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
     }
 
     final email = _emailController.text.trim();
+    setState(() => _verifying = true);
     final res = await ref
         .read(authProvider.notifier)
         .loginWithCode(email: email, code: _otpCode);
+    if (!mounted) return;
+    setState(() {
+      _verifying = false;
+      if (!res.isSuccess) {
+        _otpCode = '';
+        _otpAttempt++; // rebuild the OTP field empty for a retry
+        _failedAttempts++;
+      }
+    });
+
+    if (!res.isSuccess && _failedAttempts >= _maxAttempts) {
+      _failedAttempts = 0;
+      ref.read(authProvider.notifier).resetFlow();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Too many incorrect codes. Please request a new code.'),
+          backgroundColor: Color(0xFFDC2626),
+        ),
+      );
+      return;
+    }
 
     if (res.isSuccess && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -236,7 +263,7 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
                 _buildAuthenticatedView(authState, isDark)
               else if (authState.isNeedRegistration)
                 _buildRegistrationForm(authState, isDark)
-              else if (authState.isCodeSent)
+              else if (authState.isCodeSent || _verifying)
                 _buildOtpVerificationView(authState, isDark)
               else
                 _buildEmailInputView(authState, isDark),
@@ -257,7 +284,7 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
     } else if (authState.isNeedRegistration) {
       title = 'Create Your Profile';
       subtitle = 'No existing account found. Complete registration below.';
-    } else if (authState.isCodeSent) {
+    } else if (authState.isCodeSent || _verifying) {
       title = 'Verification Code';
       subtitle =
           'We sent a 6-digit verification code to ${_emailController.text}';
@@ -461,9 +488,15 @@ class _AuthModalSheetState extends ConsumerState<AuthModalSheet> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         OtpInputField(
+          key: ValueKey('otp_$_otpAttempt'),
           length: 6,
           enabled: !authState.isLoading,
-          onChanged: (code) => _otpCode = code,
+          onChanged: (code) {
+            _otpCode = code;
+            if (code.length == 6 && !_verifying && !authState.isLoading) {
+              _handleVerifyOtp();
+            }
+          },
         ),
         const SizedBox(height: 16),
         Row(
