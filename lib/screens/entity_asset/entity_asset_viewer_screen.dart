@@ -15,14 +15,9 @@ class EntityAssetViewerScreen extends StatelessWidget {
     builder: (_) => EntityAssetViewerScreen(asset: asset),
   );
 
-  /// The media URLs need the same bearer token as the API calls.
-  static Future<Map<String, String>> authHeaders() async {
-    final token = await SharedPref.getEMKey() ?? AuthService.token;
-    return {
-      'X-tokentype': 'entermedia',
-      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
-    };
-  }
+  /// The media URLs need the same signed X-token as the API calls.
+  static Future<Map<String, String>> authHeaders() =>
+      SignedTokenProvider.instance.headers();
 
   static Future<void> download(BuildContext context, String url) async {
     final messenger = ScaffoldMessenger.of(context);
